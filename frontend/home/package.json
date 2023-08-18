@@ -1,0 +1,29 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test": "vitest",
+    "test:e2e": "cypress open",
+    "test:e2e:server": "start-server-and-test dev http://localhost:3000 test:e2e"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@nuxt/test-utils": "^3.6.5",
+    "@nuxtjs/google-fonts": "^3.0.2",
+    "@nuxtjs/i18n": "8.0.0-rc.2",
+    "@nuxtjs/tailwindcss": "^6.8.0",
+    "@types/node": "^18.17.3",
+    "cypress": "^12.17.3",
+    "daisyui": "^3.5.1",
+    "nuxt": "^3.6.5",
+    "nuxt-svgo": "^3.4.0",
+    "sass": "^1.65.1",
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.1"
+  }
+}
