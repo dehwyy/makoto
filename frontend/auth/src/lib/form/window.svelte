@@ -1,4 +1,6 @@
-<section class="p-5 sm:p-10 gradient-border bg-base-300 flex flex-col gap-y-3 w-full">
+<section
+	data-testid="form"
+	class="p-5 sm:p-10 gradient-border bg-base-300 flex flex-col gap-y-3 w-full">
 	<slot />
 </section>
 

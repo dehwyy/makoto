@@ -46,7 +46,7 @@
 					<Input
 						bind:value={repeatedPassword}
 						isPasswordConstType={true}
-						fieldName="repeat password" />
+						fieldName="confirm password" />
 				</div>
 				<div class="mt-10 w-full">
 					<Button>Log In</Button>

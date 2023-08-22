@@ -11,6 +11,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
+	data-testid="google"
 	on:mouseenter={() => (isHover = true)}
 	on:mouseleave={() => (isHover = false)}
 	class="google flex gap-x-5 items-center justify-center w-full cursor-pointer">

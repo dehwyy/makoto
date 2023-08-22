@@ -1,4 +1,4 @@
-<div class="absolute left-0 right-0 bottom-0 top-0 bg-base-300">
+<div data-testid="hoshi-boshi-bg" class="absolute left-0 right-0 bottom-0 top-0 bg-base-300">
 	<div id="stars" />
 	<div id="stars2" />
 	<div id="stars3" />
