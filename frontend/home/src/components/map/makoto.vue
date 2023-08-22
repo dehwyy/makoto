@@ -25,7 +25,7 @@
   })
 </script>
 <template>
-  <div class="min-h-screen h-full flex justify-center items-center select-none relative">
+  <div data-cy="makoto-text" class="min-h-screen h-full flex justify-center items-center select-none relative">
     <div ref="makoto" class="title">
       <h1 class="font-Jua text-7xl z-20">
         Makoto

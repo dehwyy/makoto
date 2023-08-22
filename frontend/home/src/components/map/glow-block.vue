@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-center">
+  <div data-cy="glow-block" class="flex justify-center">
     <div class="card relative">
       <div
         class="face p-5 rounded-2xl border-2 min-h-[100px] min-w-[150px] transition-all duration-500 flex justify-center items-center z-[1] relative bg-base-300">

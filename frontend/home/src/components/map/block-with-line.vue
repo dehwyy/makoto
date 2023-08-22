@@ -72,6 +72,7 @@
 <template>
   <makoto-line v-if="elCenter.x && elCenter.y && isMounted" :x1="elCenter.x" :y1="elCenter.y" :x2="rootX" :y2="rootY" />
   <div
+    data-cy="moveable-block"
     ref="el"
     @dragstart.prevent=""
     @drag.prevent=""

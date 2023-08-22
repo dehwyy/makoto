@@ -1,5 +1,5 @@
 <template>
-  <div class="line" :style="lineStyle">
+  <div data-cy="line" class="line" :style="lineStyle">
     <div class="pulse right-0 bottom-0 h-[2px] w-[50px]"></div>
   </div>
 </template>
