@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "github.com/dehwyy/Makoto/backend/auth";
+
+package auth;
+
+message UserCreateRequest {
+  string username = 1;
+  string password = 2;
+  string question = 3;
+  string answer = 4;
+}
+
+message UserReply {
+  int32 id = 1;
+}
+
+service User {
+  rpc SignUp(UserCreateRequest) returns (UserReply);
+}

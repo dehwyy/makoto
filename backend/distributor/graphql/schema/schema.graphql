@@ -1,0 +1,29 @@
+interface UserInterface {
+  username: String!
+  password: String!
+  question: String!
+  answer: String!
+}
+
+type UserCredentials implements UserInterface {
+  userId: ID!
+  username: String!
+  password: String!
+  question: String!
+  answer: String!
+}
+
+input SignUpInput {
+  username: String!
+  password: String!
+  question: String!
+  answer: String!
+}
+
+type Mutation {
+  signUp(input: SignUpInput): ID! # would only return the id
+}
+
+type Query {
+  getQuestion(username: String!): String!
+}
