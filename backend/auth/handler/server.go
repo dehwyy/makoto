@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	auth "github.com/dehwyy/Makoto/backend/auth/grpc"
 	"github.com/dehwyy/Makoto/backend/auth/logger"
+	auth "github.com/dehwyy/Makoto/backend/grpc/gen/auth/go/proto"
 	"google.golang.org/grpc"
 )
 

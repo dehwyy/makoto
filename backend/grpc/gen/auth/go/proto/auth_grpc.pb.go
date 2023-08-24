@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: grpc/auth.proto
+// source: proto/auth.proto
 
-package auth
+package authGrpc
 
 import (
 	context "context"
@@ -35,7 +35,7 @@ func NewUserClient(cc grpc.ClientConnInterface) UserClient {
 
 func (c *userClient) SignUp(ctx context.Context, in *UserCreateRequest, opts ...grpc.CallOption) (*UserReply, error) {
 	out := new(UserReply)
-	err := c.cc.Invoke(ctx, "/auth.User/SignUp", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/SignUp", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _User_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.User/SignUp",
+		FullMethod: "/authGrpc.User/SignUp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServer).SignUp(ctx, req.(*UserCreateRequest))
@@ -92,7 +92,7 @@ func _User_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interfa
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var User_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "auth.User",
+	ServiceName: "authGrpc.User",
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -101,5 +101,5 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "grpc/auth.proto",
+	Metadata: "proto/auth.proto",
 }

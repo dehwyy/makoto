@@ -2,14 +2,16 @@ module github.com/dehwyy/Makoto/backend/auth
 
 go 1.20
 
+replace github.com/dehwyy/Makoto/backend/grpc => ../grpc
+
 require (
+	github.com/dehwyy/Makoto/backend/grpc v0.0.0-20230823231942-a77cbbbe49b6
+	github.com/dehwyy/logd v0.1.0-alpha
 	github.com/spf13/viper v1.16.0
 	google.golang.org/grpc v1.57.0
-	google.golang.org/protobuf v1.31.0
 )
 
 require (
-	github.com/dehwyy/logd v0.1.0-alpha // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -28,6 +30,8 @@ require (
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

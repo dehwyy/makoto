@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	authGrpc "github.com/dehwyy/Makoto/backend/auth/grpc"
 	"github.com/dehwyy/Makoto/backend/distributor/config"
 	"github.com/dehwyy/Makoto/backend/distributor/graphql/model"
+	authGrpc "github.com/dehwyy/Makoto/backend/grpc/gen/auth/go/proto"
 )
 
 var (
