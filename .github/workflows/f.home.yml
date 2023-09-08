@@ -19,7 +19,7 @@ jobs:
           version: latest
 
 
-      - name: Cypress setup
+      - name: Cypress setu and App build
         uses: cypress-io/github-action@v5
         with:
           working-directory: frontend/home
