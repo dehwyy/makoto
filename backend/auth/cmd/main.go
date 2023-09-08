@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"github.com/dehwyy/Makoto/backend/auth/config"
-	"github.com/dehwyy/Makoto/backend/auth/db"
+	database "github.com/dehwyy/Makoto/backend/auth/db"
 	"github.com/dehwyy/Makoto/backend/auth/handler"
 	"github.com/dehwyy/Makoto/backend/auth/logger"
 )
@@ -12,11 +12,12 @@ import (
 func main() {
 	// initialize logger
 	l := logger.New()
-
-	db.New()
+	// initiaize database and run migration
+	db := database.New(l)
+	db.RunAllMigrations()
 
 	// get `port` var from config
-	port, isFound := config.GetOptionByKey("server.auth")
+	port, isFound := config.GetOptionByKeyWithFlag("server.auth")
 	if !isFound {
 		l.Fatalf("port variable was not found")
 	}
@@ -30,9 +31,9 @@ func main() {
 	// create new grpc server
 	srv := handler.NewServer(l)
 
+	// serve it
 	l.Infof("Serving on port %s", port)
 
-	// serve it
 	if err := srv.Serve(lis); err != nil {
 		l.Fatalf("failed to start server: %v", err)
 	}

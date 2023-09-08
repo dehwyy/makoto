@@ -10,7 +10,7 @@ var (
 )
 
 func init() {
-	viper.SetConfigName("cfg")
+	viper.SetConfigName("config")
 	viper.AddConfigPath("../../_config")
 	if err := viper.ReadInConfig(); err != nil {
 		l.Fatalf("Error reading config file: %s", err)

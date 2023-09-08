@@ -10,15 +10,26 @@ var (
 )
 
 func init() {
-	viper.SetConfigName("cfg")
+	// read global config
+	viper.SetConfigName("config")
 	viper.AddConfigPath("../../_config")
 	if err := viper.ReadInConfig(); err != nil {
-		l.Fatalf("Error reading config file: %s", err)
+		l.Fatalf("Error reading global config file: %s", err)
 	}
+
+	viper.SetConfigName("local.config")
+	viper.AddConfigPath("./auth/config")
+	viper.MergeInConfig()
 }
 
-func GetOptionByKey(key string) (value string, isFound bool) {
+func GetOptionByKeyWithFlag(key string) (value string, isFound bool) {
 	val := viper.GetString(key)
 
 	return val, len(val) > 1
+}
+
+func GetOptionByKey(key string) string {
+	val := viper.GetString(key)
+
+	return val
 }

@@ -1,0 +1,8 @@
+# check <root>/_config/config.example.yaml
+db:
+  postgres: # postgres connection
+    port: <INT>
+    password: <STR>
+    user: <STR>
+jwt:
+  key: <STR>
