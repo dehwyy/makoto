@@ -16,11 +16,14 @@ var (
 )
 
 func init() {
+	authHost, _ := config.GetOptionByKey("docker_services.auth")
 	authPort, _ := config.GetOptionByKey("server.auth")
-	authAddr = fmt.Sprintf("localhost:%s", authPort)
+	authAddr = fmt.Sprintf("%s:%s", authHost, authPort)
 }
 
 func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (string, error) {
+	fmt.Println(authAddr)
+
 	conn := grpcConnection(authAddr, m.log)
 	defer conn.Close()
 
@@ -38,7 +41,7 @@ func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (str
 
 	res, err := cl.SignUp(ctx, payload)
 	if err != nil {
-		m.log.Fatalf("Error calling SignUp: %v", err)
+		m.log.Errorf("Error calling SignUp: %v", err)
 	}
 
 	m.log.Debugf("Received: %v", res.Id)

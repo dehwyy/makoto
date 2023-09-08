@@ -1,7 +1,13 @@
 .SILENT:
 
 run-distr:
-	cd distributor/cmd && go run main.go
+	cd distributor && make docker-up
 
 run-auth:
-	cd auth/cmd && go run main.go
+	cd auth && make docker-up
+
+docker-create-network:
+	docker network create makoto_micro
+
+setup:
+	make dockker-create-network

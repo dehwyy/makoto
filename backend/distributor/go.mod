@@ -6,7 +6,6 @@ replace github.com/dehwyy/Makoto/backend/grpc => ../grpc
 
 require (
 	github.com/99designs/gqlgen v0.17.36
-	github.com/dehwyy/Makoto/backend/auth v0.0.0-20230823231942-a77cbbbe49b6
 	github.com/dehwyy/Makoto/backend/grpc v0.0.0-20230823231942-a77cbbbe49b6
 	github.com/dehwyy/logd v0.1.0-alpha
 	github.com/spf13/viper v1.16.0

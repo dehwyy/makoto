@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/dehwyy/Makoto/backend/auth/logger"
+	"github.com/dehwyy/Makoto/backend/distributor/logger"
 	"github.com/spf13/viper"
 )
 

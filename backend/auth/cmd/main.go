@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/dehwyy/Makoto/backend/auth/config"
+	"github.com/dehwyy/Makoto/backend/auth/db"
 	"github.com/dehwyy/Makoto/backend/auth/handler"
 	"github.com/dehwyy/Makoto/backend/auth/logger"
 )
@@ -11,6 +12,8 @@ import (
 func main() {
 	// initialize logger
 	l := logger.New()
+
+	db.New()
 
 	// get `port` var from config
 	port, isFound := config.GetOptionByKey("server.auth")

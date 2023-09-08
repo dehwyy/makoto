@@ -1,0 +1,12 @@
+server:
+  distributor: "4000"
+  auth: "4001"
+docker_services:
+  distributor: "distributor"
+  auth: "auth"
+db:
+  auth:
+    postgres:
+      port: "5432"
+      password: "qwerty"
+      user: "postgres"
