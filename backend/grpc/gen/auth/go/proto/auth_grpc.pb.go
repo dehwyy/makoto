@@ -22,7 +22,15 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserClient interface {
-	SignUp(ctx context.Context, in *UserCreateRequest, opts ...grpc.CallOption) (*UserReply, error)
+	// query
+	GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error)
+	// mutation
+	SignUp(ctx context.Context, in *UserSignUpRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	SignIn(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	RecoverPasswordByQuestion(ctx context.Context, in *UserSubmitAnswerRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	ChangePassword(ctx context.Context, in *UserChangePasswordRequest, opts ...grpc.CallOption) (*Status, error)
+	// side request
+	ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*ValidateAuthResponse, error)
 }
 
 type userClient struct {
@@ -33,9 +41,54 @@ func NewUserClient(cc grpc.ClientConnInterface) UserClient {
 	return &userClient{cc}
 }
 
-func (c *userClient) SignUp(ctx context.Context, in *UserCreateRequest, opts ...grpc.CallOption) (*UserReply, error) {
-	out := new(UserReply)
+func (c *userClient) GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error) {
+	out := new(UserQuestionResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/GetQuestion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) SignUp(ctx context.Context, in *UserSignUpRequest, opts ...grpc.CallOption) (*UserResponse, error) {
+	out := new(UserResponse)
 	err := c.cc.Invoke(ctx, "/authGrpc.User/SignUp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) SignIn(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserResponse, error) {
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/SignIn", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) RecoverPasswordByQuestion(ctx context.Context, in *UserSubmitAnswerRequest, opts ...grpc.CallOption) (*UserResponse, error) {
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/RecoverPasswordByQuestion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) ChangePassword(ctx context.Context, in *UserChangePasswordRequest, opts ...grpc.CallOption) (*Status, error) {
+	out := new(Status)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/ChangePassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*ValidateAuthResponse, error) {
+	out := new(ValidateAuthResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/ValidateAuth", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +99,15 @@ func (c *userClient) SignUp(ctx context.Context, in *UserCreateRequest, opts ...
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
 type UserServer interface {
-	SignUp(context.Context, *UserCreateRequest) (*UserReply, error)
+	// query
+	GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error)
+	// mutation
+	SignUp(context.Context, *UserSignUpRequest) (*UserResponse, error)
+	SignIn(context.Context, *UserSignInRequest) (*UserResponse, error)
+	RecoverPasswordByQuestion(context.Context, *UserSubmitAnswerRequest) (*UserResponse, error)
+	ChangePassword(context.Context, *UserChangePasswordRequest) (*Status, error)
+	// side request
+	ValidateAuth(context.Context, *AccessToken) (*ValidateAuthResponse, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -54,8 +115,23 @@ type UserServer interface {
 type UnimplementedUserServer struct {
 }
 
-func (UnimplementedUserServer) SignUp(context.Context, *UserCreateRequest) (*UserReply, error) {
+func (UnimplementedUserServer) GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetQuestion not implemented")
+}
+func (UnimplementedUserServer) SignUp(context.Context, *UserSignUpRequest) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignUp not implemented")
+}
+func (UnimplementedUserServer) SignIn(context.Context, *UserSignInRequest) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
+}
+func (UnimplementedUserServer) RecoverPasswordByQuestion(context.Context, *UserSubmitAnswerRequest) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecoverPasswordByQuestion not implemented")
+}
+func (UnimplementedUserServer) ChangePassword(context.Context, *UserChangePasswordRequest) (*Status, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (UnimplementedUserServer) ValidateAuth(context.Context, *AccessToken) (*ValidateAuthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateAuth not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -70,8 +146,26 @@ func RegisterUserServer(s grpc.ServiceRegistrar, srv UserServer) {
 	s.RegisterService(&User_ServiceDesc, srv)
 }
 
+func _User_GetQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserGetQuestionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetQuestion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/GetQuestion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetQuestion(ctx, req.(*UserGetQuestionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _User_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserCreateRequest)
+	in := new(UserSignUpRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -83,7 +177,79 @@ func _User_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: "/authGrpc.User/SignUp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).SignUp(ctx, req.(*UserCreateRequest))
+		return srv.(UserServer).SignUp(ctx, req.(*UserSignUpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSignInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).SignIn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/SignIn",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).SignIn(ctx, req.(*UserSignInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_RecoverPasswordByQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSubmitAnswerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).RecoverPasswordByQuestion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/RecoverPasswordByQuestion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).RecoverPasswordByQuestion(ctx, req.(*UserSubmitAnswerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserChangePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).ChangePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/ChangePassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).ChangePassword(ctx, req.(*UserChangePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_ValidateAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessToken)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).ValidateAuth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/ValidateAuth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).ValidateAuth(ctx, req.(*AccessToken))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +262,28 @@ var User_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetQuestion",
+			Handler:    _User_GetQuestion_Handler,
+		},
+		{
 			MethodName: "SignUp",
 			Handler:    _User_SignUp_Handler,
+		},
+		{
+			MethodName: "SignIn",
+			Handler:    _User_SignIn_Handler,
+		},
+		{
+			MethodName: "RecoverPasswordByQuestion",
+			Handler:    _User_RecoverPasswordByQuestion_Handler,
+		},
+		{
+			MethodName: "ChangePassword",
+			Handler:    _User_ChangePassword_Handler,
+		},
+		{
+			MethodName: "ValidateAuth",
+			Handler:    _User_ValidateAuth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

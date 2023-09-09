@@ -32,7 +32,7 @@ func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (str
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	payload := &authGrpc.UserCreateRequest{
+	payload := &authGrpc.UserSignUpRequest{
 		Username: input.Username,
 		Password: input.Password,
 		Question: input.Question,
@@ -43,8 +43,6 @@ func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (str
 	if err != nil {
 		m.log.Errorf("Error calling SignUp: %v", err)
 	}
-
-	m.log.Debugf("Received: %v", res.Id)
 
 	return strconv.Itoa(int(res.Id)), nil
 }
