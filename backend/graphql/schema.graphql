@@ -1,11 +1,4 @@
-interface UserInterface {
-  username: String!
-  password: String!
-  question: String!
-  answer: String!
-}
-
-type UserCredentials implements UserInterface {
+type UserCredentials {
   userId: ID!
   username: String!
   password: String!
@@ -20,8 +13,18 @@ input SignUpInput {
   answer: String!
 }
 
+type Tokens {
+  access_token: String!
+  refresh_token: String!
+}
+
+type UserAuthResponse {
+  tokens: Tokens!
+  userId: ID!
+}
+
 type Mutation {
-  signUp(input: SignUpInput): ID! # would only return the id
+  signUp(input: SignUpInput): UserAuthResponse! # returns tokens and user_id
 }
 
 type Query {

@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/dehwyy/Makoto/backend/distributor/config"
@@ -21,7 +20,7 @@ func init() {
 	authAddr = fmt.Sprintf("%s:%s", authHost, authPort)
 }
 
-func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (string, error) {
+func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*model.UserAuthResponse, error) {
 	fmt.Println(authAddr)
 
 	conn := grpcConnection(authAddr, m.log)
@@ -44,7 +43,13 @@ func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (str
 		m.log.Errorf("Error calling SignUp: %v", err)
 	}
 
-	return strconv.Itoa(int(res.Id)), nil
+	return &model.UserAuthResponse{
+		UserID: res.UserId,
+		Tokens: &model.Tokens{
+			AccessToken:  res.AccessToken,
+			RefreshToken: res.RefreshToken,
+		},
+	}, nil
 }
 
 func (q *queryResolver) GetQuestion(ctx context.Context, username string) (string, error) {

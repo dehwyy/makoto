@@ -12,18 +12,18 @@ var (
 	jwtKey = config.GetOptionByKey("jwt.key")
 )
 
-type Jwt struct{}
+type jwt_maker struct{}
 
 type JwtPayload struct {
 	Username string
 	UserId   string
 }
 
-func NewJwt() *Jwt {
-	return new(Jwt)
+func NewJwt() *jwt_maker {
+	return new(jwt_maker)
 }
 
-func newJwtToken(payload JwtPayload, exp_minutes int) (string, error) {
+func (j *jwt_maker) newJwtToken(payload JwtPayload, exp_minutes int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": payload.Username,
 		"userId":   payload.UserId,
@@ -37,16 +37,16 @@ func newJwtToken(payload JwtPayload, exp_minutes int) (string, error) {
 	return signed_token, nil
 }
 
-func (j *Jwt) NewRefreshToken(payload JwtPayload) (string, error) {
+func (j *jwt_maker) NewRefreshToken(payload JwtPayload) (string, error) {
 	// exp_minutes is equals to 14 days 60(minutes) * 24(hours) * 14(days)
-	return newJwtToken(payload, 60*24*14)
+	return j.newJwtToken(payload, 60*24*14)
 }
 
-func (j *Jwt) NewAccessToken(payload JwtPayload) (string, error) {
-	return newJwtToken(payload, 30)
+func (j *jwt_maker) NewAccessToken(payload JwtPayload) (string, error) {
+	return j.newJwtToken(payload, 30)
 }
 
-func (j *Jwt) ValidateJwtToken(token_string string) error {
+func (j *jwt_maker) ValidateJwtToken(token_string string) error {
 	// parse token
 	token, err := jwt.Parse(token_string, func(token *jwt.Token) (interface{}, error) {
 		// validate algorithm

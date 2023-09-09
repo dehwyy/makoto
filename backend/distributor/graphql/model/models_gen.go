@@ -2,19 +2,21 @@
 
 package model
 
-type UserInterface interface {
-	IsUserInterface()
-	GetUsername() string
-	GetPassword() string
-	GetQuestion() string
-	GetAnswer() string
-}
-
 type SignUpInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
+}
+
+type Tokens struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type UserAuthResponse struct {
+	Tokens *Tokens `json:"tokens"`
+	UserID string  `json:"userId"`
 }
 
 type UserCredentials struct {
@@ -24,9 +26,3 @@ type UserCredentials struct {
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
 }
-
-func (UserCredentials) IsUserInterface()         {}
-func (this UserCredentials) GetUsername() string { return this.Username }
-func (this UserCredentials) GetPassword() string { return this.Password }
-func (this UserCredentials) GetQuestion() string { return this.Question }
-func (this UserCredentials) GetAnswer() string   { return this.Answer }

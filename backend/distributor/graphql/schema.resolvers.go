@@ -12,9 +12,8 @@ import (
 )
 
 // SignUp is the resolver for the signUp field.
-func (r *mutationResolver) SignUp(ctx context.Context, input *model.SignUpInput) (string, error) {
-	fmt.Println(input.Username)
-	return input.Username, nil
+func (r *mutationResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*model.UserAuthResponse, error) {
+	panic(fmt.Errorf("not implemented: SignUp - signUp"))
 }
 
 // GetQuestion is the resolver for the getQuestion field.

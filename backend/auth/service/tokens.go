@@ -1,13 +1,13 @@
 package service
 
-import "github.com/dehwyy/Makoto/backend/auth/logger"
+import (
+	"github.com/dehwyy/Makoto/backend/auth/logger"
+	"github.com/dehwyy/Makoto/backend/auth/tools"
+)
 
-type jwtPayload struct {
-	Username string
-	UserId   string
-}
+type jwtPayload = tools.JwtPayload
 
-type JwtHandler interface {
+type jwtHandler interface {
 	// (payload jwtPayload) => (token: string, error: error)
 	NewRefreshToken(jwtPayload) (string, error)
 	// same as previous
@@ -16,18 +16,19 @@ type JwtHandler interface {
 	ValidateJwtToken(string) error
 }
 
-type token_service struct {
-	jwt JwtHandler
+type TokenService struct {
+	jwt jwtHandler
 	l   logger.AppLogger
 }
 
-func NewTokenService(jwt JwtHandler) *token_service {
-	return &token_service{
+func NewTokenService(jwt jwtHandler, l logger.AppLogger) *TokenService {
+	return &TokenService{
 		jwt: jwt,
+		l:   l,
 	}
 }
 
-func (t *token_service) newJwtPayload(username, userId string) jwtPayload {
+func (t *TokenService) newJwtPayload(username, userId string) jwtPayload {
 	return jwtPayload{
 		Username: username,
 		UserId:   userId,
@@ -35,7 +36,7 @@ func (t *token_service) newJwtPayload(username, userId string) jwtPayload {
 }
 
 // Signing access and refresh tokens; The refresh one would be saved to db; Returns (ACCESS_TOKEN, REFRESH_TOKEN).
-func (t *token_service) SignTokensAndSave(username, userId string) (string, string) {
+func (t *TokenService) SignTokensAndSave(username, userId string) (string, string) {
 	payload := t.newJwtPayload(username, userId)
 
 	refresh_token, err := t.jwt.NewRefreshToken(payload)
