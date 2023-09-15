@@ -7,6 +7,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/dehwyy/Makoto/backend/distributor/graphql"
 	"github.com/dehwyy/Makoto/backend/distributor/logger"
+	"github.com/dehwyy/Makoto/backend/distributor/middleware"
+	"github.com/go-chi/chi/v5"
 )
 
 type handler struct {
@@ -15,18 +17,22 @@ type handler struct {
 
 func New(port string, l logger.AppLogger) *handler {
 	graphQLServer := createGraphQLServer(l)
-	serverMux := http.NewServeMux()
+	router := chi.NewRouter()
+
+	// Add middleware
+	m := middleware.New(l)
+	router.Use(m.Auth())
 
 	// Initialize routes for GraphQL
-	serverMux.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	serverMux.Handle("/query", graphQLServer)
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", graphQLServer)
 
 	l.Infof("Connect to graphql playground on http://localhost:%s", port)
 
 	return &handler{
 		srv: &http.Server{
 			Addr:    ":" + port,
-			Handler: serverMux,
+			Handler: router,
 		},
 	}
 }

@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// create new grpc server
-	srv := handler.NewServer(l)
+	srv := handler.NewServer(l, db)
 
 	// serve it
 	l.Infof("Serving on port %s", port)

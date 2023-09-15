@@ -17,12 +17,12 @@ var (
 	dsn               = fmt.Sprintf("host=db user=%s password=%s dbname=postgres port=%s sslmode=disable", postgres_user, postgres_password, postgres_port)
 )
 
-type conn struct {
+type Conn struct {
 	DB *gorm.DB
 	l  logger.AppLogger
 }
 
-func New(l logger.AppLogger) *conn {
+func New(l logger.AppLogger) *Conn {
 	// open db
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		PrepareStmt: true,
@@ -31,14 +31,14 @@ func New(l logger.AppLogger) *conn {
 		l.Fatalf("failed to connect database: %v", err)
 	}
 
-	return &conn{
+	return &Conn{
 		DB: db,
 		l:  l,
 	}
 }
 
-func (c *conn) RunAllMigrations() {
-	if err := c.DB.AutoMigrate(&models.Credentials{}, &models.Credentials{}); err != nil {
+func (c *Conn) RunAllMigrations() {
+	if err := c.DB.AutoMigrate(&models.Token{}, &models.Credentials{}); err != nil {
 		c.l.Fatalf("failed to run migrations: %v", err)
 	}
 }

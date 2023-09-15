@@ -1,8 +1,10 @@
 package service
 
 import (
+	"github.com/dehwyy/Makoto/backend/auth/db/models"
 	"github.com/dehwyy/Makoto/backend/auth/logger"
 	"github.com/dehwyy/Makoto/backend/auth/tools"
+	"gorm.io/gorm"
 )
 
 type jwtPayload = tools.JwtPayload
@@ -18,12 +20,14 @@ type jwtHandler interface {
 
 type TokenService struct {
 	jwt jwtHandler
+	db  *gorm.DB
 	l   logger.AppLogger
 }
 
-func NewTokenService(jwt jwtHandler, l logger.AppLogger) *TokenService {
+func NewTokenService(jwt jwtHandler, db *gorm.DB, l logger.AppLogger) *TokenService {
 	return &TokenService{
 		jwt: jwt,
+		db:  db,
 		l:   l,
 	}
 }
@@ -43,7 +47,12 @@ func (t *TokenService) SignTokensAndSave(username, userId string) (string, strin
 	if err != nil {
 		t.l.Errorf("Error creating refresh token: %v", err)
 	}
-	// TODO: save to db
+
+	// saving refresh token to db
+	t.db.Create(&models.Token{
+		Token:  refresh_token,
+		UserId: userId,
+	})
 	t.l.Infof("Generated refresh token: %v", refresh_token)
 
 	access_token, err := t.jwt.NewAccessToken(payload)

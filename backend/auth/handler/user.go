@@ -26,3 +26,12 @@ func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.
 	}, nil
 
 }
+
+func (s *server) ValidateAuth(ctx context.Context, in *auth.AccessToken) (*auth.ValidateAuthResponse, error) {
+	s.log.Debugf("REQUEST IN %v", in.AccessToken)
+	return &auth.ValidateAuthResponse{
+		IsOk:         true,
+		UserId:       "test:dehwyy",
+		RefreshToken: "REFRESH_DEHWYY",
+	}, nil
+}

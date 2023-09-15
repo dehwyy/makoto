@@ -7,6 +7,8 @@ import (
 
 	"github.com/dehwyy/Makoto/backend/distributor/config"
 	"github.com/dehwyy/Makoto/backend/distributor/graphql/model"
+	"github.com/dehwyy/Makoto/backend/distributor/middleware"
+	"github.com/dehwyy/Makoto/backend/distributor/tools"
 	authGrpc "github.com/dehwyy/Makoto/backend/grpc/gen/auth/go/proto"
 )
 
@@ -21,12 +23,17 @@ func init() {
 }
 
 func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*model.UserAuthResponse, error) {
-	fmt.Println(authAddr)
+	// TODO: shouldn't be used in /auth microservice
+	v, _ := middleware.ReadAuthContext(ctx)
+	m.log.Debugf("Context value is %v", *v)
 
-	conn := grpcConnection(authAddr, m.log)
-	defer conn.Close()
+	// init and call to create new grpc connection
+	g := tools.NewGrpcTools()
+	// read desc of func
+	g.CreateConnection(authAddr, m.log)
+	defer g.Conn.Close()
 
-	cl := authGrpc.NewUserClient(conn)
+	cl := authGrpc.NewUserClient(g.Conn)
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
