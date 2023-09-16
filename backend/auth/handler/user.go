@@ -17,7 +17,7 @@ func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.
 	}
 
 	// Generating tokens based on user_id and username
-	access_token, refresh_token := s.token_service.SignTokensAndSave(in.Username, user_id)
+	access_token, refresh_token := s.token_service.SignTokensAndCreate(in.Username, user_id)
 
 	return &auth.UserResponse{
 		UserId:       user_id,
@@ -29,9 +29,21 @@ func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.
 
 func (s *server) ValidateAuth(ctx context.Context, in *auth.AccessToken) (*auth.ValidateAuthResponse, error) {
 	s.log.Debugf("REQUEST IN %v", in.AccessToken)
+
+	userId, username, isValid := s.token_service.ValidateToken(in.AccessToken)
+
+	if !isValid {
+		return &auth.ValidateAuthResponse{
+			IsOk: false,
+		}, nil
+	}
+
+	acccess_token, refresh_token := s.token_service.SignTokensAndUpdate(username, userId)
+
 	return &auth.ValidateAuthResponse{
 		IsOk:         true,
-		UserId:       "test:dehwyy",
-		RefreshToken: "REFRESH_DEHWYY",
+		UserId:       userId,
+		RefreshToken: refresh_token,
+		AccessToken:  acccess_token,
 	}, nil
 }

@@ -62,6 +62,7 @@ message ValidateAuthResponse {
   bool isOk = 1;
   string user_id = 2;
   string refresh_token = 3;
+  string access_token = 4;
 }
 
 service User {

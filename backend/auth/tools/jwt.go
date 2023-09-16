@@ -46,7 +46,7 @@ func (j *jwt_maker) NewAccessToken(payload JwtPayload) (string, error) {
 	return j.newJwtToken(payload, 30)
 }
 
-func (j *jwt_maker) ValidateJwtToken(token_string string) error {
+func (j *jwt_maker) ValidateJwtToken(token_string string) (*JwtPayload, error) {
 	// parse token
 	token, err := jwt.Parse(token_string, func(token *jwt.Token) (interface{}, error) {
 		// validate algorithm
@@ -57,13 +57,13 @@ func (j *jwt_maker) ValidateJwtToken(token_string string) error {
 	})
 	// clarify whether parse is succeed
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Expect claims to be
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
 
 	// getting expiration time and computing
@@ -72,8 +72,11 @@ func (j *jwt_maker) ValidateJwtToken(token_string string) error {
 	exp := int64(claims["exp"].(float64))
 	isExpired := time.Now().After(time.Unix(exp, 0))
 	if isExpired {
-		return fmt.Errorf("token is expired")
+		return nil, fmt.Errorf("token is expired")
 	}
 
-	return nil
+	return &JwtPayload{
+		Username: claims["username"].(string),
+		UserId:   claims["userId"].(string),
+	}, nil
 }

@@ -15,7 +15,7 @@ type jwtHandler interface {
 	// same as previous
 	NewAccessToken(jwtPayload) (string, error)
 	// (token: string) => error (if valid => nil)
-	ValidateJwtToken(string) error
+	ValidateJwtToken(string) (*jwtPayload, error)
 }
 
 type TokenService struct {
@@ -39,20 +39,13 @@ func (t *TokenService) newJwtPayload(username, userId string) jwtPayload {
 	}
 }
 
-// Signing access and refresh tokens; The refresh one would be saved to db; Returns (ACCESS_TOKEN, REFRESH_TOKEN).
-func (t *TokenService) SignTokensAndSave(username, userId string) (string, string) {
-	payload := t.newJwtPayload(username, userId)
+func (t *TokenService) signTokens(payload jwtPayload) (string, string) {
+	// TODO: remove logs
 
 	refresh_token, err := t.jwt.NewRefreshToken(payload)
 	if err != nil {
 		t.l.Errorf("Error creating refresh token: %v", err)
 	}
-
-	// saving refresh token to db
-	t.db.Create(&models.Token{
-		Token:  refresh_token,
-		UserId: userId,
-	})
 	t.l.Infof("Generated refresh token: %v", refresh_token)
 
 	access_token, err := t.jwt.NewAccessToken(payload)
@@ -62,4 +55,40 @@ func (t *TokenService) SignTokensAndSave(username, userId string) (string, strin
 	t.l.Infof("Generated access token: %v", access_token)
 
 	return access_token, refresh_token
+}
+
+// Signing access and refresh tokens; The refresh one would be saved to db; Returns (ACCESS_TOKEN, REFRESH_TOKEN).
+func (t *TokenService) SignTokensAndCreate(username, userId string) (string, string) {
+	payload := t.newJwtPayload(username, userId)
+
+	access_token, refresh_token := t.signTokens(payload)
+
+	// saving refresh token to db
+	t.db.Create(&models.Token{
+		Token:  refresh_token,
+		UserId: userId,
+	})
+
+	return access_token, refresh_token
+}
+
+func (t *TokenService) SignTokensAndUpdate(username, userId string) (string, string) {
+	payload := t.newJwtPayload(username, userId)
+
+	access_token, refresh_token := t.signTokens(payload)
+
+	// updating refresh token
+	t.db.Model(&models.Token{}).Where("token = ?", refresh_token).Update("token", refresh_token)
+
+	return access_token, refresh_token
+}
+
+// returns UserId | Username | isValid
+func (t *TokenService) ValidateToken(token string) (string, string, bool) {
+	claims, err := t.jwt.ValidateJwtToken(token)
+	if err != nil {
+		t.l.Errorf("Error validating token: %v", err)
+	}
+
+	return claims.UserId, claims.Username, err == nil
 }
