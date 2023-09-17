@@ -4,23 +4,28 @@ option go_package = "github.com/dehwyy/Makoto/backend/grpc/authGrpc";
 
 package authGrpc;
 
-// requests
+// Types
 
+message TypeTokens {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+// Requests
+
+// QUERIES
 message UserGetQuestionRequest {
-  oneof UserData {
-    string user_name = 1;
-    string user_id = 2;
+  string user_id = 1;
+}
+
+message UserGetRequest {
+  oneof find_by {
+    string user_id = 1;
+    string username = 2;
   }
 }
 
-message UserSubmitAnswerRequest {
-  oneof UserData {
-    string user_name = 1;
-    string user_id = 2;
-  }
-  string answer = 3;
-}
-
+// MUTATIONS
 message UserSignUpRequest {
   string username = 1;
   string password = 2;
@@ -33,10 +38,14 @@ message UserSignInRequest {
   string password = 2;
 }
 
-message UserChangePasswordRequest {
-  string access_token = 1;
-  string user_name = 2;
+message UserSendAnswerRequest {
+  string answer = 1;
 }
+
+message UserChangePasswordRequest {
+  string user_name = 1;
+}
+
 
 message AccessToken {
   string access_token = 1;
@@ -44,35 +53,33 @@ message AccessToken {
 
 // responses
 
-message UserQuestionResponse {
-  string question = 1;
-}
-
+// Only no token required (no auth required) request OR ValidateAuth
 message UserResponse {
   string user_id = 1;
   string access_token = 2;
   string refresh_token = 3;
 }
 
-message Status {
-  bool isOk = 1;
+
+message UserQuestionResponse {
+  string question = 1;
 }
 
-message ValidateAuthResponse {
-  bool isOk = 1;
-  string user_id = 2;
-  string refresh_token = 3;
-  string access_token = 4;
+message UserDataResponse {
+  string username = 1;
 }
 
 service User {
+  // mutation && no token (on each request tokens pair would generate and save to db)
+  rpc SignUp(UserSignUpRequest) returns (UserResponse); // done
+  rpc SignIn(UserSignInRequest) returns (UserResponse); // done
+  rpc ValidateAuth(AccessToken) returns (UserResponse); // done
+
+  // With token ( authed )
   // query
   rpc GetQuestion(UserGetQuestionRequest) returns (UserQuestionResponse);
+  rpc GetUser(UserGetRequest) returns (UserDataResponse);
   // mutation
-  rpc SignUp(UserSignUpRequest) returns (UserResponse); // 1.
-  rpc SignIn(UserSignInRequest) returns (UserResponse);
-  rpc RecoverPasswordByQuestion(UserSubmitAnswerRequest) returns (UserResponse); // user would get the tokens and it's possible continue using same password as before
-  rpc ChangePassword(UserChangePasswordRequest) returns (Status);
-  // side request
-  rpc ValidateAuth(AccessToken) returns (ValidateAuthResponse);
+  rpc RecoverPasswordByQuestion(UserSendAnswerRequest) returns (UserQuestionResponse);
+  rpc ChangePassword(UserChangePasswordRequest) returns (UserResponse);
 }

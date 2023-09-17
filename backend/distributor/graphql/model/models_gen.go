@@ -2,6 +2,11 @@
 
 package model
 
+type SignInInput struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type SignUpInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -25,4 +30,10 @@ type UserCredentials struct {
 	Password string `json:"password"`
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
+}
+
+type UserResponse struct {
+	Tokens   *Tokens `json:"tokens"`
+	UserID   string  `json:"userId"`
+	Username string  `json:"username"`
 }

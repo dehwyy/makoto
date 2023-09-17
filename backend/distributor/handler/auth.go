@@ -14,6 +14,7 @@ import (
 
 var (
 	authAddr string
+	rpc      = tools.NewGrpcTools()
 )
 
 func init() {
@@ -27,13 +28,11 @@ func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*mo
 	v, _ := middleware.ReadAuthContext(ctx)
 	m.log.Debugf("Context value is %v", *v)
 
-	// init and call to create new grpc connection
-	g := tools.NewGrpcTools()
 	// read desc of func
-	g.CreateConnection(authAddr, m.log)
-	defer g.Conn.Close()
+	rpc.CreateConnection(authAddr, m.log)
+	defer rpc.Conn.Close()
 
-	cl := authGrpc.NewUserClient(g.Conn)
+	cl := authGrpc.NewUserClient(rpc.Conn)
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -48,6 +47,36 @@ func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*mo
 	res, err := cl.SignUp(ctx, payload)
 	if err != nil {
 		m.log.Errorf("Error calling SignUp: %v", err)
+		return nil, err
+	}
+
+	return &model.UserAuthResponse{
+		UserID: res.UserId,
+		Tokens: &model.Tokens{
+			AccessToken:  res.AccessToken,
+			RefreshToken: res.RefreshToken,
+		},
+	}, nil
+}
+
+func (m *mutResolver) SignIn(ctx context.Context, input *model.SignInInput) (*model.UserAuthResponse, error) {
+	rpc.CreateConnection(authAddr, m.log)
+	defer rpc.Conn.Close()
+
+	cl := authGrpc.NewUserClient(rpc.Conn)
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	payload := &authGrpc.UserSignInRequest{
+		Username: input.Username,
+		Password: input.Password,
+	}
+
+	res, err := cl.SignIn(ctx, payload)
+	if err != nil {
+		m.log.Errorf("Error calling SignIn: %v", err)
+		return nil, err
 	}
 
 	return &model.UserAuthResponse{

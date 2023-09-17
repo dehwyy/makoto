@@ -1,32 +1,40 @@
-type UserCredentials {
-  userId: ID!
-  username: String!
-  password: String!
-  question: String!
-  answer: String!
-}
-
 input SignUpInput {
   username: String!
   password: String!
   question: String!
   answer: String!
 }
-
+# !
 type Tokens {
   access_token: String!
   refresh_token: String!
 }
 
+# !Responses
 type UserAuthResponse {
   tokens: Tokens!
   userId: ID!
 }
 
+type UserResponse {
+  tokens: Tokens!
+  userId: ID!
+  username: String!
+}
+
+# !Mutations
 type Mutation {
+  # No token required
   signUp(input: SignUpInput): UserAuthResponse! # returns tokens and user_id
+  signIn(username: String!, password: String!): UserAuthResponse!
+  # With token
+  changePassword(password: String!, token: String!): UserAuthResponse!
+  changePasswordByAnswer(answer: String!, token: String!): UserAuthResponse!
 }
 
 type Query {
-  getQuestion(username: String!): String!
+  # always with token
+  getUserByUsername(username: String!, token: String!) UserResponse!
+  getUserById(userId: String!, token: String!) UserResponse!
+  getQuestion(token: String!): String!
 }

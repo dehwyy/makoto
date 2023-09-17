@@ -16,6 +16,21 @@ func (r *mutationResolver) SignUp(ctx context.Context, input *model.SignUpInput)
 	panic(fmt.Errorf("not implemented: SignUp - signUp"))
 }
 
+// SignIn is the resolver for the signIn field.
+func (r *mutationResolver) SignIn(ctx context.Context, input *model.SignInInput) (*model.UserAuthResponse, error) {
+	panic(fmt.Errorf("not implemented: SignIn - signIn"))
+}
+
+// ChangePassword is the resolver for the changePassword field.
+func (r *mutationResolver) ChangePassword(ctx context.Context, password string, token string) (bool, error) {
+	panic(fmt.Errorf("not implemented: ChangePassword - changePassword"))
+}
+
+// GetUser is the resolver for the getUser field.
+func (r *queryResolver) GetUser(ctx context.Context, username string) (*model.UserResponse, error) {
+	panic(fmt.Errorf("not implemented: GetUser - getUser"))
+}
+
 // GetQuestion is the resolver for the getQuestion field.
 func (r *queryResolver) GetQuestion(ctx context.Context, username string) (string, error) {
 	panic(fmt.Errorf("not implemented: GetQuestion - getQuestion"))

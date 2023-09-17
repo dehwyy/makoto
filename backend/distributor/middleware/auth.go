@@ -28,6 +28,7 @@ var (
 
 	_NO_AUTH_ENDPOINTS = map[string]bool{
 		"signUp": true,
+		"signIn": true,
 	}
 )
 
@@ -109,7 +110,7 @@ func (m *middleware) Auth() func(http.Handler) http.Handler {
 			}
 
 			ctx = context.WithValue(r.Context(), _CONTEXT_AUTH_KEY, &auth_context_value{
-				IsAuth:       res.IsOk,
+				IsAuth:       err == nil,
 				UserId:       res.UserId,
 				AccessToken:  res.AccessToken,
 				RefreshToken: res.RefreshToken,
