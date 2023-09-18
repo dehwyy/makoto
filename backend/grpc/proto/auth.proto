@@ -38,12 +38,13 @@ message UserSignInRequest {
   string password = 2;
 }
 
-message UserSendAnswerRequest {
-  string answer = 1;
+message UserChangePasswordRequest {
+  string old_password = 1;
 }
 
-message UserChangePasswordRequest {
-  string user_name = 1;
+message UserSendAnswerAndChangePasswordRequest {
+  string answer = 1;
+  string old_password = 2;
 }
 
 
@@ -69,6 +70,9 @@ message UserDataResponse {
   string username = 1;
 }
 
+message UserChangePasswordResponse {
+}
+
 service User {
   // mutation && no token (on each request tokens pair would generate and save to db)
   rpc SignUp(UserSignUpRequest) returns (UserResponse); // done
@@ -80,6 +84,6 @@ service User {
   rpc GetQuestion(UserGetQuestionRequest) returns (UserQuestionResponse);
   rpc GetUser(UserGetRequest) returns (UserDataResponse);
   // mutation
-  rpc RecoverPasswordByQuestion(UserSendAnswerRequest) returns (UserQuestionResponse);
-  rpc ChangePassword(UserChangePasswordRequest) returns (UserResponse);
+  rpc RecoverPasswordByQuestion(UserSendAnswerAndChangePasswordRequest) returns (UserChangePasswordResponse);
+  rpc ChangePassword(UserChangePasswordRequest) returns (UserChangePasswordResponse);
 }

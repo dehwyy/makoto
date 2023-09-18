@@ -22,15 +22,17 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserClient interface {
-	// query
-	GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error)
-	// mutation
+	// mutation && no token (on each request tokens pair would generate and save to db)
 	SignUp(ctx context.Context, in *UserSignUpRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	SignIn(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserResponse, error)
-	RecoverPasswordByQuestion(ctx context.Context, in *UserSubmitAnswerRequest, opts ...grpc.CallOption) (*UserResponse, error)
-	ChangePassword(ctx context.Context, in *UserChangePasswordRequest, opts ...grpc.CallOption) (*Status, error)
-	// side request
-	ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*ValidateAuthResponse, error)
+	ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*UserResponse, error)
+	// With token ( authed )
+	// query
+	GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error)
+	GetUser(ctx context.Context, in *UserGetRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
+	// mutation
+	RecoverPasswordByQuestion(ctx context.Context, in *UserSendAnswerAndChangePasswordRequest, opts ...grpc.CallOption) (*UserChangePasswordResponse, error)
+	ChangePassword(ctx context.Context, in *UserChangePasswordRequest, opts ...grpc.CallOption) (*UserChangePasswordResponse, error)
 }
 
 type userClient struct {
@@ -39,15 +41,6 @@ type userClient struct {
 
 func NewUserClient(cc grpc.ClientConnInterface) UserClient {
 	return &userClient{cc}
-}
-
-func (c *userClient) GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error) {
-	out := new(UserQuestionResponse)
-	err := c.cc.Invoke(ctx, "/authGrpc.User/GetQuestion", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *userClient) SignUp(ctx context.Context, in *UserSignUpRequest, opts ...grpc.CallOption) (*UserResponse, error) {
@@ -68,8 +61,35 @@ func (c *userClient) SignIn(ctx context.Context, in *UserSignInRequest, opts ...
 	return out, nil
 }
 
-func (c *userClient) RecoverPasswordByQuestion(ctx context.Context, in *UserSubmitAnswerRequest, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *userClient) ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*UserResponse, error) {
 	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/ValidateAuth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error) {
+	out := new(UserQuestionResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/GetQuestion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetUser(ctx context.Context, in *UserGetRequest, opts ...grpc.CallOption) (*UserDataResponse, error) {
+	out := new(UserDataResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/GetUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) RecoverPasswordByQuestion(ctx context.Context, in *UserSendAnswerAndChangePasswordRequest, opts ...grpc.CallOption) (*UserChangePasswordResponse, error) {
+	out := new(UserChangePasswordResponse)
 	err := c.cc.Invoke(ctx, "/authGrpc.User/RecoverPasswordByQuestion", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,18 +97,9 @@ func (c *userClient) RecoverPasswordByQuestion(ctx context.Context, in *UserSubm
 	return out, nil
 }
 
-func (c *userClient) ChangePassword(ctx context.Context, in *UserChangePasswordRequest, opts ...grpc.CallOption) (*Status, error) {
-	out := new(Status)
+func (c *userClient) ChangePassword(ctx context.Context, in *UserChangePasswordRequest, opts ...grpc.CallOption) (*UserChangePasswordResponse, error) {
+	out := new(UserChangePasswordResponse)
 	err := c.cc.Invoke(ctx, "/authGrpc.User/ChangePassword", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userClient) ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*ValidateAuthResponse, error) {
-	out := new(ValidateAuthResponse)
-	err := c.cc.Invoke(ctx, "/authGrpc.User/ValidateAuth", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,15 +110,17 @@ func (c *userClient) ValidateAuth(ctx context.Context, in *AccessToken, opts ...
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
 type UserServer interface {
-	// query
-	GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error)
-	// mutation
+	// mutation && no token (on each request tokens pair would generate and save to db)
 	SignUp(context.Context, *UserSignUpRequest) (*UserResponse, error)
 	SignIn(context.Context, *UserSignInRequest) (*UserResponse, error)
-	RecoverPasswordByQuestion(context.Context, *UserSubmitAnswerRequest) (*UserResponse, error)
-	ChangePassword(context.Context, *UserChangePasswordRequest) (*Status, error)
-	// side request
-	ValidateAuth(context.Context, *AccessToken) (*ValidateAuthResponse, error)
+	ValidateAuth(context.Context, *AccessToken) (*UserResponse, error)
+	// With token ( authed )
+	// query
+	GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error)
+	GetUser(context.Context, *UserGetRequest) (*UserDataResponse, error)
+	// mutation
+	RecoverPasswordByQuestion(context.Context, *UserSendAnswerAndChangePasswordRequest) (*UserChangePasswordResponse, error)
+	ChangePassword(context.Context, *UserChangePasswordRequest) (*UserChangePasswordResponse, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -115,23 +128,26 @@ type UserServer interface {
 type UnimplementedUserServer struct {
 }
 
-func (UnimplementedUserServer) GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetQuestion not implemented")
-}
 func (UnimplementedUserServer) SignUp(context.Context, *UserSignUpRequest) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignUp not implemented")
 }
 func (UnimplementedUserServer) SignIn(context.Context, *UserSignInRequest) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
 }
-func (UnimplementedUserServer) RecoverPasswordByQuestion(context.Context, *UserSubmitAnswerRequest) (*UserResponse, error) {
+func (UnimplementedUserServer) ValidateAuth(context.Context, *AccessToken) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateAuth not implemented")
+}
+func (UnimplementedUserServer) GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetQuestion not implemented")
+}
+func (UnimplementedUserServer) GetUser(context.Context, *UserGetRequest) (*UserDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
+}
+func (UnimplementedUserServer) RecoverPasswordByQuestion(context.Context, *UserSendAnswerAndChangePasswordRequest) (*UserChangePasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecoverPasswordByQuestion not implemented")
 }
-func (UnimplementedUserServer) ChangePassword(context.Context, *UserChangePasswordRequest) (*Status, error) {
+func (UnimplementedUserServer) ChangePassword(context.Context, *UserChangePasswordRequest) (*UserChangePasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
-}
-func (UnimplementedUserServer) ValidateAuth(context.Context, *AccessToken) (*ValidateAuthResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ValidateAuth not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -144,24 +160,6 @@ type UnsafeUserServer interface {
 
 func RegisterUserServer(s grpc.ServiceRegistrar, srv UserServer) {
 	s.RegisterService(&User_ServiceDesc, srv)
-}
-
-func _User_GetQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserGetQuestionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServer).GetQuestion(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/authGrpc.User/GetQuestion",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).GetQuestion(ctx, req.(*UserGetQuestionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _User_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -200,8 +198,62 @@ func _User_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_ValidateAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessToken)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).ValidateAuth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/ValidateAuth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).ValidateAuth(ctx, req.(*AccessToken))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserGetQuestionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetQuestion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/GetQuestion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetQuestion(ctx, req.(*UserGetQuestionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserGetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/GetUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUser(ctx, req.(*UserGetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _User_RecoverPasswordByQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserSubmitAnswerRequest)
+	in := new(UserSendAnswerAndChangePasswordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -213,7 +265,7 @@ func _User_RecoverPasswordByQuestion_Handler(srv interface{}, ctx context.Contex
 		FullMethod: "/authGrpc.User/RecoverPasswordByQuestion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).RecoverPasswordByQuestion(ctx, req.(*UserSubmitAnswerRequest))
+		return srv.(UserServer).RecoverPasswordByQuestion(ctx, req.(*UserSendAnswerAndChangePasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -236,24 +288,6 @@ func _User_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _User_ValidateAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessToken)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServer).ValidateAuth(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/authGrpc.User/ValidateAuth",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).ValidateAuth(ctx, req.(*AccessToken))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -261,10 +295,6 @@ var User_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "authGrpc.User",
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetQuestion",
-			Handler:    _User_GetQuestion_Handler,
-		},
 		{
 			MethodName: "SignUp",
 			Handler:    _User_SignUp_Handler,
@@ -274,16 +304,24 @@ var User_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _User_SignIn_Handler,
 		},
 		{
+			MethodName: "ValidateAuth",
+			Handler:    _User_ValidateAuth_Handler,
+		},
+		{
+			MethodName: "GetQuestion",
+			Handler:    _User_GetQuestion_Handler,
+		},
+		{
+			MethodName: "GetUser",
+			Handler:    _User_GetUser_Handler,
+		},
+		{
 			MethodName: "RecoverPasswordByQuestion",
 			Handler:    _User_RecoverPasswordByQuestion_Handler,
 		},
 		{
 			MethodName: "ChangePassword",
 			Handler:    _User_ChangePassword_Handler,
-		},
-		{
-			MethodName: "ValidateAuth",
-			Handler:    _User_ValidateAuth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

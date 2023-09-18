@@ -123,7 +123,9 @@ func (m *middleware) Auth() func(http.Handler) http.Handler {
 	}
 }
 
-func ReadAuthContext(ctx context.Context) (*auth_context_value, bool) {
-	val, isOk := ctx.Value(_CONTEXT_AUTH_KEY).(*auth_context_value)
-	return val, isOk
+func ReadAuthContext(ctx context.Context) *auth_context_value {
+	// I guess even if read fails, val would be nil, so it satisfies our condition
+	val, _ := ctx.Value(_CONTEXT_AUTH_KEY).(*auth_context_value)
+
+	return val
 }

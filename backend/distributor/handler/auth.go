@@ -23,9 +23,12 @@ func init() {
 	authAddr = fmt.Sprintf("%s:%s", authHost, authPort)
 }
 
-func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*model.UserAuthResponse, error) {
+//! Mutations
+
+// no token
+func (m *mutResolver) SignUp(ctx context.Context, input model.SignUpInput) (*model.UserAuthResponse, error) {
 	// TODO: shouldn't be used in /auth microservice
-	v, _ := middleware.ReadAuthContext(ctx)
+	v := middleware.ReadAuthContext(ctx)
 	m.log.Debugf("Context value is %v", *v)
 
 	// read desc of func
@@ -59,7 +62,8 @@ func (m *mutResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*mo
 	}, nil
 }
 
-func (m *mutResolver) SignIn(ctx context.Context, input *model.SignInInput) (*model.UserAuthResponse, error) {
+// no token
+func (m *mutResolver) SignIn(ctx context.Context, input model.SignInInput) (*model.UserAuthResponse, error) {
 	rpc.CreateConnection(authAddr, m.log)
 	defer rpc.Conn.Close()
 
@@ -88,6 +92,28 @@ func (m *mutResolver) SignIn(ctx context.Context, input *model.SignInInput) (*mo
 	}, nil
 }
 
-func (q *queryResolver) GetQuestion(ctx context.Context, username string) (string, error) {
-	return "", nil
+func (m *mutResolver) SignOut(ctx context.Context, input model.Token) (bool, error) {
+	return false, nil
+}
+
+func (m *mutResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (*model.UserAuthResponse, error) {
+	return nil, nil
+}
+
+func (m *mutResolver) ChangePasswordByAnswer(ctx context.Context, input model.ChangePasswordByAnswerInput) (*model.UserAuthResponse, error) {
+	return nil, nil
+}
+
+// ! Queries
+
+func (q *queryResolver) GetUserByUsername(ctx context.Context, input model.GetUserByUsernameInput) (*model.UserResponse, error) {
+	return nil, nil
+}
+
+func (q *queryResolver) GetUserByID(ctx context.Context, input model.GetUserByIDInput) (*model.UserResponse, error) {
+	return nil, nil
+}
+
+func (q *queryResolver) GetQuestion(ctx context.Context, input model.Token) (*model.UserQuestionResponse, error) {
+	return nil, nil
 }

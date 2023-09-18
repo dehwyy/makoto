@@ -2,6 +2,26 @@
 
 package model
 
+type ChangePasswordByAnswerInput struct {
+	Change *ChangePasswordInput `json:"change"`
+	Answer string               `json:"answer"`
+}
+
+type ChangePasswordInput struct {
+	Password string `json:"password"`
+	Token    *Token `json:"token"`
+}
+
+type GetUserByIDInput struct {
+	UserID string `json:"userId"`
+	Token  *Token `json:"token"`
+}
+
+type GetUserByUsernameInput struct {
+	Username string `json:"username"`
+	Token    *Token `json:"token"`
+}
+
 type SignInInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -14,6 +34,10 @@ type SignUpInput struct {
 	Answer   string `json:"answer"`
 }
 
+type Token struct {
+	Access string `json:"access"`
+}
+
 type Tokens struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -24,16 +48,12 @@ type UserAuthResponse struct {
 	UserID string  `json:"userId"`
 }
 
-type UserCredentials struct {
-	UserID   string `json:"userId"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Question string `json:"question"`
-	Answer   string `json:"answer"`
+type UserQuestionResponse struct {
+	Auth     *UserAuthResponse `json:"auth"`
+	Question string            `json:"question"`
 }
 
 type UserResponse struct {
-	Tokens   *Tokens `json:"tokens"`
-	UserID   string  `json:"userId"`
-	Username string  `json:"username"`
+	Auth     *UserAuthResponse `json:"auth"`
+	Username string            `json:"username"`
 }

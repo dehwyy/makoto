@@ -12,27 +12,42 @@ import (
 )
 
 // SignUp is the resolver for the signUp field.
-func (r *mutationResolver) SignUp(ctx context.Context, input *model.SignUpInput) (*model.UserAuthResponse, error) {
+func (r *mutationResolver) SignUp(ctx context.Context, input model.SignUpInput) (*model.UserAuthResponse, error) {
 	panic(fmt.Errorf("not implemented: SignUp - signUp"))
 }
 
 // SignIn is the resolver for the signIn field.
-func (r *mutationResolver) SignIn(ctx context.Context, input *model.SignInInput) (*model.UserAuthResponse, error) {
+func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) (*model.UserAuthResponse, error) {
 	panic(fmt.Errorf("not implemented: SignIn - signIn"))
 }
 
+// SignOut is the resolver for the signOut field.
+func (r *mutationResolver) SignOut(ctx context.Context, input model.Token) (bool, error) {
+	panic(fmt.Errorf("not implemented: SignOut - signOut"))
+}
+
 // ChangePassword is the resolver for the changePassword field.
-func (r *mutationResolver) ChangePassword(ctx context.Context, password string, token string) (bool, error) {
+func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (*model.UserAuthResponse, error) {
 	panic(fmt.Errorf("not implemented: ChangePassword - changePassword"))
 }
 
-// GetUser is the resolver for the getUser field.
-func (r *queryResolver) GetUser(ctx context.Context, username string) (*model.UserResponse, error) {
-	panic(fmt.Errorf("not implemented: GetUser - getUser"))
+// ChangePasswordByAnswer is the resolver for the changePasswordByAnswer field.
+func (r *mutationResolver) ChangePasswordByAnswer(ctx context.Context, input model.ChangePasswordByAnswerInput) (*model.UserAuthResponse, error) {
+	panic(fmt.Errorf("not implemented: ChangePasswordByAnswer - changePasswordByAnswer"))
+}
+
+// GetUserByUsername is the resolver for the getUserByUsername field.
+func (r *queryResolver) GetUserByUsername(ctx context.Context, input model.GetUserByUsernameInput) (*model.UserResponse, error) {
+	panic(fmt.Errorf("not implemented: GetUserByUsername - getUserByUsername"))
+}
+
+// GetUserByID is the resolver for the getUserById field.
+func (r *queryResolver) GetUserByID(ctx context.Context, input model.GetUserByIDInput) (*model.UserResponse, error) {
+	panic(fmt.Errorf("not implemented: GetUserByID - getUserById"))
 }
 
 // GetQuestion is the resolver for the getQuestion field.
-func (r *queryResolver) GetQuestion(ctx context.Context, username string) (string, error) {
+func (r *queryResolver) GetQuestion(ctx context.Context, input model.Token) (*model.UserQuestionResponse, error) {
 	panic(fmt.Errorf("not implemented: GetQuestion - getQuestion"))
 }
 
@@ -44,3 +59,13 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) GetUser(ctx context.Context, username string) (*model.UserResponse, error) {
+	panic(fmt.Errorf("not implemented: GetUser - getUser"))
+}
