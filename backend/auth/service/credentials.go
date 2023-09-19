@@ -2,19 +2,14 @@ package service
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/dehwyy/Makoto/backend/auth/db/models"
+	"github.com/dehwyy/Makoto/backend/auth/dto"
 	"github.com/dehwyy/Makoto/backend/auth/logger"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
-
-type signUpUserPayload struct {
-	username string
-	password string
-	question string
-	answer   string
-}
 
 type password_hasher interface {
 	Hash(string) (string, error)
@@ -35,32 +30,58 @@ func NewCredentialsService(hasher password_hasher, db *gorm.DB, l logger.AppLogg
 	}
 }
 
-// Helpers
-func (s *CredentialsService) CreateUserPayload(username, password, question, answer string) signUpUserPayload {
-	return signUpUserPayload{
-		username: username,
-		password: password,
-		question: question,
-		answer:   answer,
-	}
+func (s *CredentialsService) schema() *gorm.DB {
+	return s.db.Model(&models.Credentials{})
 }
 
 // Service calls
-func (s *CredentialsService) CreateUser(payload signUpUserPayload) (userId string, err error) {
-	hashed_password, err := s.hasher.Hash(payload.password)
-	if err != nil {
-		return "", errors.New("error hashing password")
+
+// ! C - create
+func (s *CredentialsService) CreateUser(payload dto.CreateUser) (userId string, err error) {
+	// as we hash 2 times, to improve performance, I decided to make it in goroutines
+	var hashed_password, hashed_answer string
+	var err_password, err_answer error
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
+	// hashing password
+	go func() {
+		hashed_password, err = s.hasher.Hash(payload.Password)
+		if err != nil {
+			err_password = errors.New("error hashing password")
+		}
+		wg.Done()
+
+	}()
+
+	// hashing answer
+	go func() {
+		hashed_answer, err = s.hasher.Hash(payload.Answer)
+		if err != nil {
+			err_answer = errors.New("error hashing answer")
+		}
+	}()
+
+	wg.Wait()
+
+	if err_password != nil {
+		return "", err_password
+
+	} else if err_answer != nil {
+		return "", err_answer
+
 	}
 
 	// by default, it should be stringified number which represents len(TotalUser) + 1; f.e. if you have 300 users, it should be 301 to be 100% unique
 	unique_user_id := uuid.NewString()
 
 	res := s.db.Create(&models.Credentials{
-		UniqueUserId: unique_user_id,
-		Username:     payload.username,
-		Password:     hashed_password,
-		Question:     payload.question,
-		Answer:       payload.answer,
+		UniqueUserId: unique_user_id, // generated (on create, could be changed later)
+		Username:     payload.Username,
+		Password:     hashed_password, // hashed
+		Question:     payload.Question,
+		Answer:       hashed_answer, // hashed
 	})
 	if res.Error != nil {
 		return "", res.Error
@@ -72,6 +93,8 @@ func (s *CredentialsService) CreateUser(payload signUpUserPayload) (userId strin
 	return unique_user_id, nil
 }
 
+//! V - validate
+
 func (s *CredentialsService) ValidateUser(username, password string) (userId string, err error) {
 	// getting user by provided userId and select
 	user := new(struct {
@@ -79,16 +102,68 @@ func (s *CredentialsService) ValidateUser(username, password string) (userId str
 		Password     string
 	})
 
-	result := s.db.Model(&models.Credentials{}).Where("username = ?", username).Select("password", "unique_user_id").Find(user)
+	result := s.schema().Where("username = ?", username).Select("password", "unique_user_id").Find(user)
 	if result.Error != nil {
-		return "", result.Error
+		return "404", result.Error
 	}
 
 	if !s.hasher.Compare(password, user.Password) {
-		return "", errors.New("wrong password")
+		return "403", errors.New("wrong password")
 	}
 
 	s.l.Debugf("Found user: %v", *user)
 
 	return user.UniqueUserId, nil
+}
+
+func (s *CredentialsService) ValidateUserPasswordById(userId, password string) (err error) {
+	user := new(struct {
+		Password string
+	})
+
+	result := s.schema().Where("unique_user_id = ?", userId).Select("password").Find(user)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if !s.hasher.Compare(password, user.Password) {
+		return errors.New("wrong password")
+	}
+
+	return nil
+}
+
+//! G - get
+
+func (s *CredentialsService) GetQuestion(userId string) (question string, err error) {
+	user := new(struct {
+		Question string
+	})
+
+	result := s.schema().Where("unique_user_id = ?", userId).Select("question").Find(user)
+	if result.Error != nil {
+		return "", result.Error
+	}
+
+	return user.Question, nil
+}
+
+func (s *CredentialsService) GetUserById(userId string) (user *dto.User, err error) {
+	user = new(dto.User)
+
+	result := s.schema().Where("unique_user_id = ?", userId).Select("username").Find(user)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return user, nil
+}
+
+//! U - update
+
+func (s *CredentialsService) UpdatePassword(userId, new_password string) error {
+	res := s.schema().Where("unique_user_id = ?", userId).Update("password", new_password)
+
+	return res.Error
 }

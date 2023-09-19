@@ -9,17 +9,14 @@ type ChangePasswordByAnswerInput struct {
 
 type ChangePasswordInput struct {
 	Password string `json:"password"`
-	Token    *Token `json:"token"`
 }
 
 type GetUserByIDInput struct {
 	UserID string `json:"userId"`
-	Token  *Token `json:"token"`
 }
 
 type GetUserByUsernameInput struct {
 	Username string `json:"username"`
-	Token    *Token `json:"token"`
 }
 
 type SignInInput struct {
@@ -32,10 +29,6 @@ type SignUpInput struct {
 	Password string `json:"password"`
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
-}
-
-type Token struct {
-	Access string `json:"access"`
 }
 
 type Tokens struct {

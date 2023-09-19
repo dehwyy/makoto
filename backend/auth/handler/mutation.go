@@ -1,20 +1,29 @@
+// @read README.md
 package handler
 
 import (
 	"context"
 
+	"github.com/dehwyy/Makoto/backend/auth/dto"
 	auth "github.com/dehwyy/Makoto/backend/grpc/gen/auth/go/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.UserResponse, error) {
 	// Creating user payload
-	user_payload := s.credentials_service.CreateUserPayload(in.Username, in.Password, in.Question, in.Answer)
+	user_payload := dto.CreateUser{
+		Username: in.Username,
+		Password: in.Password,
+		Question: in.Question,
+		Answer:   in.Answer,
+	}
 
 	// Creating userj
 	user_id, err := s.credentials_service.CreateUser(user_payload)
 	if err != nil {
 		s.log.Errorf("Error creating user: %v", err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "error creating user")
 	}
 
 	// Generating tokens based on user_id and username
@@ -25,7 +34,6 @@ func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.
 		AccessToken:  access_token,
 		RefreshToken: refresh_token,
 	}, nil
-
 }
 
 func (s *server) SignIn(ctx context.Context, in *auth.UserSignInRequest) (*auth.UserResponse, error) {
@@ -33,7 +41,10 @@ func (s *server) SignIn(ctx context.Context, in *auth.UserSignInRequest) (*auth.
 
 	if err != nil {
 		s.log.Errorf("Error validating user: %v", err)
-		return nil, err
+		if userId == "403" {
+			return nil, status.Errorf(codes.PermissionDenied, "invalid password")
+		}
+		return nil, status.Errorf(codes.NotFound, "user with such username was not found")
 	}
 
 	access_token, refresh_token := s.token_service.SignTokensAndUpdate(in.Username, userId)
@@ -45,20 +56,17 @@ func (s *server) SignIn(ctx context.Context, in *auth.UserSignInRequest) (*auth.
 	}, nil
 }
 
-func (s *server) ValidateAuth(ctx context.Context, in *auth.AccessToken) (*auth.ValidateAuthResponse, error) {
+func (s *server) ValidateAuth(ctx context.Context, in *auth.AccessToken) (*auth.UserResponse, error) {
 	// Validate access_token token sign and encrypt method
 	userId, username, isValid := s.token_service.ValidateToken(in.AccessToken)
 
 	if !isValid {
-		return &auth.ValidateAuthResponse{
-			IsOk: false,
-		}, nil
+		return nil, status.Errorf(codes.Unauthenticated, "Invalid access token")
 	}
 
 	acccess_token, refresh_token := s.token_service.SignTokensAndUpdate(username, userId)
 
-	return &auth.ValidateAuthResponse{
-		IsOk:         true,
+	return &auth.UserResponse{
 		UserId:       userId,
 		RefreshToken: refresh_token,
 		AccessToken:  acccess_token,

@@ -48,12 +48,12 @@ type ComplexityRoot struct {
 		ChangePassword         func(childComplexity int, input model.ChangePasswordInput) int
 		ChangePasswordByAnswer func(childComplexity int, input model.ChangePasswordByAnswerInput) int
 		SignIn                 func(childComplexity int, input model.SignInInput) int
-		SignOut                func(childComplexity int, input model.Token) int
+		SignOut                func(childComplexity int) int
 		SignUp                 func(childComplexity int, input model.SignUpInput) int
 	}
 
 	Query struct {
-		GetQuestion       func(childComplexity int, input model.Token) int
+		GetQuestion       func(childComplexity int) int
 		GetUserByID       func(childComplexity int, input model.GetUserByIDInput) int
 		GetUserByUsername func(childComplexity int, input model.GetUserByUsernameInput) int
 	}
@@ -82,14 +82,14 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	SignUp(ctx context.Context, input model.SignUpInput) (*model.UserAuthResponse, error)
 	SignIn(ctx context.Context, input model.SignInInput) (*model.UserAuthResponse, error)
-	SignOut(ctx context.Context, input model.Token) (bool, error)
+	SignOut(ctx context.Context) (bool, error)
 	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (*model.UserAuthResponse, error)
 	ChangePasswordByAnswer(ctx context.Context, input model.ChangePasswordByAnswerInput) (*model.UserAuthResponse, error)
 }
 type QueryResolver interface {
 	GetUserByUsername(ctx context.Context, input model.GetUserByUsernameInput) (*model.UserResponse, error)
 	GetUserByID(ctx context.Context, input model.GetUserByIDInput) (*model.UserResponse, error)
-	GetQuestion(ctx context.Context, input model.Token) (*model.UserQuestionResponse, error)
+	GetQuestion(ctx context.Context) (*model.UserQuestionResponse, error)
 }
 
 type executableSchema struct {
@@ -148,12 +148,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_Mutation_signOut_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.SignOut(childComplexity, args["input"].(model.Token)), true
+		return e.complexity.Mutation.SignOut(childComplexity), true
 
 	case "Mutation.signUp":
 		if e.complexity.Mutation.SignUp == nil {
@@ -172,12 +167,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_Query_getQuestion_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetQuestion(childComplexity, args["input"].(model.Token)), true
+		return e.complexity.Query.GetQuestion(childComplexity), true
 
 	case "Query.getUserById":
 		if e.complexity.Query.GetUserByID == nil {
@@ -273,7 +263,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGetUserByUsernameInput,
 		ec.unmarshalInputSignInInput,
 		ec.unmarshalInputSignUpInput,
-		ec.unmarshalInputToken,
 	)
 	first := true
 
@@ -373,11 +362,6 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "../../graphql/schema.graphql", Input: `# !Input
 
-#! polimorphism no tame ni (Input)
-input Token {
-  access: String!
-}
-
 input SignUpInput {
   username: String!
   password: String!
@@ -392,7 +376,6 @@ input SignInInput {
 
 input ChangePasswordInput {
   password: String!
-  token: Token!
 }
 
 input ChangePasswordByAnswerInput {
@@ -403,12 +386,10 @@ input ChangePasswordByAnswerInput {
 #
 input GetUserByIdInput {
   userId: ID!
-  token: Token!
 }
 
 input GetUserByUsernameInput {
   username: String!
-  token: Token!
 }
 
 
@@ -440,7 +421,7 @@ type Mutation {
   signUp(input: SignUpInput!): UserAuthResponse! # returns tokens and user_id
   signIn(input: SignInInput!): UserAuthResponse!
   # With token
-  signOut(input: Token!): Boolean!
+  signOut: Boolean!
   changePassword(input: ChangePasswordInput!): UserAuthResponse!
   changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse!
 }
@@ -449,7 +430,7 @@ type Query {
   # always with token
   getUserByUsername(input: GetUserByUsernameInput!): UserResponse!
   getUserById(input: GetUserByIdInput!): UserResponse!
-  getQuestion(input: Token!): UserQuestionResponse!
+  getQuestion: UserQuestionResponse!
 }
 `, BuiltIn: false},
 }
@@ -504,21 +485,6 @@ func (ec *executionContext) field_Mutation_signIn_args(ctx context.Context, rawA
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_signOut_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.Token
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNToken2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐToken(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_signUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -546,21 +512,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_getQuestion_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.Token
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNToken2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐToken(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
 	return args, nil
 }
 
@@ -768,7 +719,7 @@ func (ec *executionContext) _Mutation_signOut(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SignOut(rctx, fc.Args["input"].(model.Token))
+		return ec.resolvers.Mutation().SignOut(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -794,17 +745,6 @@ func (ec *executionContext) fieldContext_Mutation_signOut(ctx context.Context, f
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_signOut_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -1067,7 +1007,7 @@ func (ec *executionContext) _Query_getQuestion(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetQuestion(rctx, fc.Args["input"].(model.Token))
+		return ec.resolvers.Query().GetQuestion(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1099,17 +1039,6 @@ func (ec *executionContext) fieldContext_Query_getQuestion(ctx context.Context, 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserQuestionResponse", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getQuestion_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -3431,7 +3360,7 @@ func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"password", "token"}
+	fieldsInOrder := [...]string{"password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3447,15 +3376,6 @@ func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Contex
 				return it, err
 			}
 			it.Password = data
-		case "token":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
-			data, err := ec.unmarshalNToken2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐToken(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Token = data
 		}
 	}
 
@@ -3469,7 +3389,7 @@ func (ec *executionContext) unmarshalInputGetUserByIdInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"userId", "token"}
+	fieldsInOrder := [...]string{"userId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3485,15 +3405,6 @@ func (ec *executionContext) unmarshalInputGetUserByIdInput(ctx context.Context, 
 				return it, err
 			}
 			it.UserID = data
-		case "token":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
-			data, err := ec.unmarshalNToken2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐToken(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Token = data
 		}
 	}
 
@@ -3507,7 +3418,7 @@ func (ec *executionContext) unmarshalInputGetUserByUsernameInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "token"}
+	fieldsInOrder := [...]string{"username"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3523,15 +3434,6 @@ func (ec *executionContext) unmarshalInputGetUserByUsernameInput(ctx context.Con
 				return it, err
 			}
 			it.Username = data
-		case "token":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
-			data, err := ec.unmarshalNToken2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐToken(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Token = data
 		}
 	}
 
@@ -3626,35 +3528,6 @@ func (ec *executionContext) unmarshalInputSignUpInput(ctx context.Context, obj i
 				return it, err
 			}
 			it.Answer = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputToken(ctx context.Context, obj interface{}) (model.Token, error) {
-	var it model.Token
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"access"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "access":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("access"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Access = data
 		}
 	}
 
@@ -4442,16 +4315,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNToken2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐToken(ctx context.Context, v interface{}) (model.Token, error) {
-	res, err := ec.unmarshalInputToken(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNToken2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐToken(ctx context.Context, v interface{}) (*model.Token, error) {
-	res, err := ec.unmarshalInputToken(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNTokens2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐTokens(ctx context.Context, sel ast.SelectionSet, v *model.Tokens) graphql.Marshaler {

@@ -1,10 +1,5 @@
 # !Input
 
-#! polimorphism no tame ni (Input)
-input Token {
-  access: String!
-}
-
 input SignUpInput {
   username: String!
   password: String!
@@ -19,7 +14,6 @@ input SignInInput {
 
 input ChangePasswordInput {
   password: String!
-  token: Token!
 }
 
 input ChangePasswordByAnswerInput {
@@ -30,12 +24,10 @@ input ChangePasswordByAnswerInput {
 #
 input GetUserByIdInput {
   userId: ID!
-  token: Token!
 }
 
 input GetUserByUsernameInput {
   username: String!
-  token: Token!
 }
 
 
@@ -67,7 +59,7 @@ type Mutation {
   signUp(input: SignUpInput!): UserAuthResponse! # returns tokens and user_id
   signIn(input: SignInInput!): UserAuthResponse!
   # With token
-  signOut(input: Token!): Boolean!
+  signOut: Boolean!
   changePassword(input: ChangePasswordInput!): UserAuthResponse!
   changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse!
 }
@@ -76,5 +68,5 @@ type Query {
   # always with token
   getUserByUsername(input: GetUserByUsernameInput!): UserResponse!
   getUserById(input: GetUserByIdInput!): UserResponse!
-  getQuestion(input: Token!): UserQuestionResponse!
+  getQuestion: UserQuestionResponse!
 }

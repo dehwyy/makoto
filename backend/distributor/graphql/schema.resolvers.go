@@ -22,7 +22,7 @@ func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) 
 }
 
 // SignOut is the resolver for the signOut field.
-func (r *mutationResolver) SignOut(ctx context.Context, input model.Token) (bool, error) {
+func (r *mutationResolver) SignOut(ctx context.Context) (bool, error) {
 	panic(fmt.Errorf("not implemented: SignOut - signOut"))
 }
 
@@ -47,7 +47,7 @@ func (r *queryResolver) GetUserByID(ctx context.Context, input model.GetUserByID
 }
 
 // GetQuestion is the resolver for the getQuestion field.
-func (r *queryResolver) GetQuestion(ctx context.Context, input model.Token) (*model.UserQuestionResponse, error) {
+func (r *queryResolver) GetQuestion(ctx context.Context) (*model.UserQuestionResponse, error) {
 	panic(fmt.Errorf("not implemented: GetQuestion - getQuestion"))
 }
 

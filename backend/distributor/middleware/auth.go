@@ -76,15 +76,16 @@ func (m *middleware) Auth() func(http.Handler) http.Handler {
 			}
 
 			auth_token := r.Header.Get("Authorization")
+			split_token := strings.Split(auth_token, " ")
 
 			// If user doesn't have auth token
-			if auth_token == "" {
+			if auth_token == "" || len(split_token) < 2 {
 				responseWithZeroContext(w, r, next)
 				return
 			}
 
 			// taking only second word cuz token is line "Bearer <token>"
-			auth_token = strings.Split(auth_token, " ")[1]
+			auth_token = split_token[1]
 
 			// Getting AuthService addr
 			authHost, _ := config.GetOptionByKey("docker_services.auth")
@@ -110,7 +111,7 @@ func (m *middleware) Auth() func(http.Handler) http.Handler {
 			}
 
 			ctx = context.WithValue(r.Context(), _CONTEXT_AUTH_KEY, &auth_context_value{
-				IsAuth:       err == nil,
+				IsAuth:       true, // cuz no error occured
 				UserId:       res.UserId,
 				AccessToken:  res.AccessToken,
 				RefreshToken: res.RefreshToken,

@@ -32,6 +32,10 @@ func NewTokenService(jwt jwtHandler, db *gorm.DB, l logger.AppLogger) *TokenServ
 	}
 }
 
+func (t *TokenService) schema() *gorm.DB {
+	return t.db.Model(&models.Token{})
+}
+
 func (t *TokenService) newJwtPayload(username, userId string) jwtPayload {
 	return jwtPayload{
 		Username: username,
@@ -64,7 +68,7 @@ func (t *TokenService) SignTokensAndCreate(username, userId string) (string, str
 	access_token, refresh_token := t.signTokens(payload)
 
 	// saving refresh token to db
-	t.db.Create(&models.Token{
+	t.schema().Create(&models.Token{
 		Token:  refresh_token,
 		UserId: userId,
 	})
@@ -78,7 +82,7 @@ func (t *TokenService) SignTokensAndUpdate(username, userId string) (string, str
 	access_token, refresh_token := t.signTokens(payload)
 
 	// updating refresh token
-	t.db.Model(&models.Token{}).Where("token = ?", refresh_token).Update("token", refresh_token)
+	t.schema().Where("token = ?", refresh_token).Update("token", refresh_token)
 
 	return access_token, refresh_token
 }
@@ -91,4 +95,10 @@ func (t *TokenService) ValidateToken(token string) (string, string, bool) {
 	}
 
 	return claims.UserId, claims.Username, err == nil
+}
+
+func (t *TokenService) RemoveToken(userId string) error {
+	res := t.schema().Delete(&models.Token{}, "user_id = ?", userId)
+
+	return res.Error
 }

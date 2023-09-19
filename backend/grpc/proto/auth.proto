@@ -18,11 +18,9 @@ message UserGetQuestionRequest {
   string user_id = 1;
 }
 
+
 message UserGetRequest {
-  oneof find_by {
-    string user_id = 1;
-    string username = 2;
-  }
+  string user_id = 1;
 }
 
 // MUTATIONS
@@ -40,11 +38,14 @@ message UserSignInRequest {
 
 message UserChangePasswordRequest {
   string old_password = 1;
+  string new_password = 2;
+  string user_id = 4;
 }
 
 message UserSendAnswerAndChangePasswordRequest {
   string answer = 1;
-  string old_password = 2;
+  string new_password = 2;
+  string user_id = 3;
 }
 
 
@@ -82,8 +83,8 @@ service User {
   // With token ( authed )
   // query
   rpc GetQuestion(UserGetQuestionRequest) returns (UserQuestionResponse);
-  rpc GetUser(UserGetRequest) returns (UserDataResponse);
+  rpc GetUserById(UserGetRequest) returns (UserDataResponse);
   // mutation
-  rpc RecoverPasswordByQuestion(UserSendAnswerAndChangePasswordRequest) returns (UserChangePasswordResponse);
+  rpc ChangePasswordByAnswer(UserSendAnswerAndChangePasswordRequest) returns (UserChangePasswordResponse); // answer on <user.question> yeah
   rpc ChangePassword(UserChangePasswordRequest) returns (UserChangePasswordResponse);
 }

@@ -14,7 +14,7 @@ import (
 
 var (
 	authAddr string
-	rpc      = tools.NewGrpcTools()
+	rpc      = tools.NewGrpcTools
 )
 
 func init() {
@@ -32,10 +32,11 @@ func (m *mutResolver) SignUp(ctx context.Context, input model.SignUpInput) (*mod
 	m.log.Debugf("Context value is %v", *v)
 
 	// read desc of func
-	rpc.CreateConnection(authAddr, m.log)
-	defer rpc.Conn.Close()
+	g := rpc()
+	g.CreateConnection(authAddr, m.log)
+	defer g.Conn.Close()
 
-	cl := authGrpc.NewUserClient(rpc.Conn)
+	cl := authGrpc.NewUserClient(g.Conn)
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -64,10 +65,11 @@ func (m *mutResolver) SignUp(ctx context.Context, input model.SignUpInput) (*mod
 
 // no token
 func (m *mutResolver) SignIn(ctx context.Context, input model.SignInInput) (*model.UserAuthResponse, error) {
-	rpc.CreateConnection(authAddr, m.log)
-	defer rpc.Conn.Close()
+	g := rpc()
+	g.CreateConnection(authAddr, m.log)
+	defer g.Conn.Close()
 
-	cl := authGrpc.NewUserClient(rpc.Conn)
+	cl := authGrpc.NewUserClient(g.Conn)
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -92,7 +94,7 @@ func (m *mutResolver) SignIn(ctx context.Context, input model.SignInInput) (*mod
 	}, nil
 }
 
-func (m *mutResolver) SignOut(ctx context.Context, input model.Token) (bool, error) {
+func (m *mutResolver) SignOut(ctx context.Context) (bool, error) {
 	return false, nil
 }
 
@@ -106,14 +108,66 @@ func (m *mutResolver) ChangePasswordByAnswer(ctx context.Context, input model.Ch
 
 // ! Queries
 
+// @see ./auth_f.go
 func (q *queryResolver) GetUserByUsername(ctx context.Context, input model.GetUserByUsernameInput) (*model.UserResponse, error) {
 	return nil, nil
 }
 
+// @see ./auth_f.go
 func (q *queryResolver) GetUserByID(ctx context.Context, input model.GetUserByIDInput) (*model.UserResponse, error) {
-	return nil, nil
+	auth_ctx := middleware.ReadAuthContext(ctx)
+	if !auth_ctx.IsAuth {
+		return nil, fmt.Errorf("404:user is not authenticated")
+	}
+
+	g := rpc()
+	g.CreateConnection(authAddr, nil)
+	defer g.Conn.Close()
+
+	cl := authGrpc.NewUserClient(g.Conn)
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	res, err := cl.GetUserById(ctx, &authGrpc.UserGetRequest{
+		UserId: auth_ctx.UserId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UserResponse{
+		Username: res.Username,
+		Auth:     authf.createAuthResponseByCtx(ctx),
+	}, nil
 }
 
-func (q *queryResolver) GetQuestion(ctx context.Context, input model.Token) (*model.UserQuestionResponse, error) {
-	return nil, nil
+func (q *queryResolver) GetQuestion(ctx context.Context) (*model.UserQuestionResponse, error) {
+	g := rpc()
+	g.CreateConnection(authAddr, q.log)
+	defer g.Conn.Close()
+
+	cl := authGrpc.NewUserClient(g.Conn)
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	auth_ctx := middleware.ReadAuthContext(ctx)
+	if !auth_ctx.IsAuth {
+		return nil, fmt.Errorf("user is not authenticated")
+	}
+
+	payload := &authGrpc.UserGetQuestionRequest{
+		UserId: auth_ctx.UserId,
+	}
+
+	res, err := cl.GetQuestion(ctx, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UserQuestionResponse{
+		Question: res.Question,
+		Auth:     authf.createAuthResponseByCtx(ctx),
+	}, nil
 }
