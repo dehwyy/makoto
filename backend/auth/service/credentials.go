@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"sync"
 
 	"github.com/dehwyy/Makoto/backend/auth/db/models"
@@ -57,10 +58,11 @@ func (s *CredentialsService) CreateUser(payload dto.CreateUser) (userId string, 
 
 	// hashing answer
 	go func() {
-		hashed_answer, err = s.hasher.Hash(payload.Answer)
+		hashed_answer, err = s.hasher.Hash(strings.ToLower(payload.Answer))
 		if err != nil {
 			err_answer = errors.New("error hashing answer")
 		}
+		wg.Done()
 	}()
 
 	wg.Wait()
@@ -87,7 +89,6 @@ func (s *CredentialsService) CreateUser(payload dto.CreateUser) (userId string, 
 		return "", res.Error
 	}
 
-	// TODO: save to db
 	s.l.Infof("Created user: \n\t%v", payload, unique_user_id)
 	s.l.Infof("HashedPassword is: %s", hashed_password)
 	return unique_user_id, nil
@@ -116,7 +117,7 @@ func (s *CredentialsService) ValidateUser(username, password string) (userId str
 	return user.UniqueUserId, nil
 }
 
-func (s *CredentialsService) ValidateUserPasswordById(userId, password string) (err error) {
+func (s *CredentialsService) ValidateUserPassword(userId, password string) (err error) {
 	user := new(struct {
 		Password string
 	})
@@ -128,6 +129,23 @@ func (s *CredentialsService) ValidateUserPasswordById(userId, password string) (
 
 	if !s.hasher.Compare(password, user.Password) {
 		return errors.New("wrong password")
+	}
+
+	return nil
+}
+
+func (s *CredentialsService) ValidateUserAnswer(userId, answer string) (err error) {
+	user := new(struct {
+		Answer string
+	})
+
+	result := s.schema().Where("unique_user_id = ?", userId).Select("answer").Find(user)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if !s.hasher.Compare(strings.ToLower(answer), user.Answer) {
+		return errors.New("wrong answer")
 	}
 
 	return nil
@@ -163,7 +181,20 @@ func (s *CredentialsService) GetUserById(userId string) (user *dto.User, err err
 //! U - update
 
 func (s *CredentialsService) UpdatePassword(userId, new_password string) error {
-	res := s.schema().Where("unique_user_id = ?", userId).Update("password", new_password)
+	hashed_password, err := s.hasher.Hash(new_password)
+	if err != nil {
+		return err
+	}
+
+	res := s.schema().Where("unique_user_id = ?", userId).Update("password", hashed_password)
+
+	return res.Error
+}
+
+//! R - remove
+
+func (s *CredentialsService) RemoveToken(userId string) error {
+	res := s.schema().Delete(&models.Credentials{}, "unique_user_id = ?", userId)
 
 	return res.Error
 }

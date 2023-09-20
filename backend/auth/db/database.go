@@ -42,3 +42,9 @@ func (c *Conn) RunAllMigrations() {
 		c.l.Fatalf("failed to run migrations: %v", err)
 	}
 }
+
+func (c *Conn) Transaction(fn func(tx *gorm.DB) error) error {
+	return c.DB.Transaction(func(tx *gorm.DB) error {
+		return fn(tx)
+	})
+}

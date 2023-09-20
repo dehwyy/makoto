@@ -22,7 +22,7 @@ func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) 
 }
 
 // SignOut is the resolver for the signOut field.
-func (r *mutationResolver) SignOut(ctx context.Context) (bool, error) {
+func (r *mutationResolver) SignOut(ctx context.Context) (*model.Status, error) {
 	panic(fmt.Errorf("not implemented: SignOut - signOut"))
 }
 

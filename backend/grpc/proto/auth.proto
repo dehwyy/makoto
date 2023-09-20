@@ -4,13 +4,6 @@ option go_package = "github.com/dehwyy/Makoto/backend/grpc/authGrpc";
 
 package authGrpc;
 
-// Types
-
-message TypeTokens {
-  string access_token = 1;
-  string refresh_token = 2;
-}
-
 // Requests
 
 // QUERIES
@@ -36,10 +29,14 @@ message UserSignInRequest {
   string password = 2;
 }
 
+message UserSignOutRequest {
+  string user_id = 1;
+}
+
 message UserChangePasswordRequest {
   string old_password = 1;
   string new_password = 2;
-  string user_id = 4;
+  string user_id = 3;
 }
 
 message UserSendAnswerAndChangePasswordRequest {
@@ -72,19 +69,24 @@ message UserDataResponse {
 }
 
 message UserChangePasswordResponse {
+ string access_token = 1;
+ string refresh_token = 2;
 }
+
+message Nil {}
 
 service User {
   // mutation && no token (on each request tokens pair would generate and save to db)
   rpc SignUp(UserSignUpRequest) returns (UserResponse); // done
   rpc SignIn(UserSignInRequest) returns (UserResponse); // done
+  rpc SignOut(UserSignOutRequest) returns (Nil); // done
   rpc ValidateAuth(AccessToken) returns (UserResponse); // done
 
   // With token ( authed )
   // query
-  rpc GetQuestion(UserGetQuestionRequest) returns (UserQuestionResponse);
-  rpc GetUserById(UserGetRequest) returns (UserDataResponse);
+  rpc GetQuestion(UserGetQuestionRequest) returns (UserQuestionResponse); // done
+  rpc GetUserById(UserGetRequest) returns (UserDataResponse); // done
   // mutation
-  rpc ChangePasswordByAnswer(UserSendAnswerAndChangePasswordRequest) returns (UserChangePasswordResponse); // answer on <user.question> yeah
-  rpc ChangePassword(UserChangePasswordRequest) returns (UserChangePasswordResponse);
+  rpc ChangePasswordByAnswer(UserSendAnswerAndChangePasswordRequest) returns (UserChangePasswordResponse); // answer on <user.question> yeah - done
+  rpc ChangePassword(UserChangePasswordRequest) returns (UserChangePasswordResponse); // done
 }

@@ -25,6 +25,7 @@ type UserClient interface {
 	// mutation && no token (on each request tokens pair would generate and save to db)
 	SignUp(ctx context.Context, in *UserSignUpRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	SignIn(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	SignOut(ctx context.Context, in *UserSignOutRequest, opts ...grpc.CallOption) (*Nil, error)
 	ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*UserResponse, error)
 	// With token ( authed )
 	// query
@@ -55,6 +56,15 @@ func (c *userClient) SignUp(ctx context.Context, in *UserSignUpRequest, opts ...
 func (c *userClient) SignIn(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserResponse, error) {
 	out := new(UserResponse)
 	err := c.cc.Invoke(ctx, "/authGrpc.User/SignIn", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) SignOut(ctx context.Context, in *UserSignOutRequest, opts ...grpc.CallOption) (*Nil, error) {
+	out := new(Nil)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/SignOut", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +123,7 @@ type UserServer interface {
 	// mutation && no token (on each request tokens pair would generate and save to db)
 	SignUp(context.Context, *UserSignUpRequest) (*UserResponse, error)
 	SignIn(context.Context, *UserSignInRequest) (*UserResponse, error)
+	SignOut(context.Context, *UserSignOutRequest) (*Nil, error)
 	ValidateAuth(context.Context, *AccessToken) (*UserResponse, error)
 	// With token ( authed )
 	// query
@@ -133,6 +144,9 @@ func (UnimplementedUserServer) SignUp(context.Context, *UserSignUpRequest) (*Use
 }
 func (UnimplementedUserServer) SignIn(context.Context, *UserSignInRequest) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
+}
+func (UnimplementedUserServer) SignOut(context.Context, *UserSignOutRequest) (*Nil, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignOut not implemented")
 }
 func (UnimplementedUserServer) ValidateAuth(context.Context, *AccessToken) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateAuth not implemented")
@@ -194,6 +208,24 @@ func _User_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServer).SignIn(ctx, req.(*UserSignInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_SignOut_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSignOutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).SignOut(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/SignOut",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).SignOut(ctx, req.(*UserSignOutRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -302,6 +334,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SignIn",
 			Handler:    _User_SignIn_Handler,
+		},
+		{
+			MethodName: "SignOut",
+			Handler:    _User_SignOut_Handler,
 		},
 		{
 			MethodName: "ValidateAuth",

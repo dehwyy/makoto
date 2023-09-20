@@ -10,3 +10,9 @@ type CreateUser struct {
 	Question string
 	Answer   string
 }
+
+type UpdatePassword struct {
+	UserId       string
+	NewPassword  string
+	ValidateFunc func() error
+}

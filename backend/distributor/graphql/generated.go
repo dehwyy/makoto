@@ -58,6 +58,10 @@ type ComplexityRoot struct {
 		GetUserByUsername func(childComplexity int, input model.GetUserByUsernameInput) int
 	}
 
+	Status struct {
+		IsOk func(childComplexity int) int
+	}
+
 	Tokens struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
@@ -82,7 +86,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	SignUp(ctx context.Context, input model.SignUpInput) (*model.UserAuthResponse, error)
 	SignIn(ctx context.Context, input model.SignInInput) (*model.UserAuthResponse, error)
-	SignOut(ctx context.Context) (bool, error)
+	SignOut(ctx context.Context) (*model.Status, error)
 	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (*model.UserAuthResponse, error)
 	ChangePasswordByAnswer(ctx context.Context, input model.ChangePasswordByAnswerInput) (*model.UserAuthResponse, error)
 }
@@ -192,6 +196,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetUserByUsername(childComplexity, args["input"].(model.GetUserByUsernameInput)), true
+
+	case "Status.is_ok":
+		if e.complexity.Status.IsOk == nil {
+			break
+		}
+
+		return e.complexity.Status.IsOk(childComplexity), true
 
 	case "Tokens.access_token":
 		if e.complexity.Tokens.AccessToken == nil {
@@ -375,11 +386,12 @@ input SignInInput {
 }
 
 input ChangePasswordInput {
-  password: String!
+  old_password: String!
+  new_password: String!
 }
 
 input ChangePasswordByAnswerInput {
-  change: ChangePasswordInput!
+  new_password: String!
   answer: String!
 }
 
@@ -415,22 +427,26 @@ type UserQuestionResponse {
   question: String!
 }
 
+type Status {
+  is_ok: Boolean!
+}
+
 # !Mutations
 type Mutation {
   # No token required
-  signUp(input: SignUpInput!): UserAuthResponse! # returns tokens and user_id
-  signIn(input: SignInInput!): UserAuthResponse!
+  signUp(input: SignUpInput!): UserAuthResponse! # returns tokens and user_id - done
+  signIn(input: SignInInput!): UserAuthResponse! # done
   # With token
-  signOut: Boolean!
-  changePassword(input: ChangePasswordInput!): UserAuthResponse!
-  changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse!
+  signOut: Status!
+  changePassword(input: ChangePasswordInput!): UserAuthResponse! # done
+  changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse! # done
 }
 
 type Query {
   # always with token
-  getUserByUsername(input: GetUserByUsernameInput!): UserResponse!
-  getUserById(input: GetUserByIdInput!): UserResponse!
-  getQuestion: UserQuestionResponse!
+  getUserByUsername(input: GetUserByUsernameInput!): UserResponse! # ??
+  getUserById(input: GetUserByIdInput!): UserResponse! # done
+  getQuestion: UserQuestionResponse! # done
 }
 `, BuiltIn: false},
 }
@@ -731,9 +747,9 @@ func (ec *executionContext) _Mutation_signOut(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*model.Status)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_signOut(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -743,7 +759,11 @@ func (ec *executionContext) fieldContext_Mutation_signOut(ctx context.Context, f
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			switch field.Name {
+			case "is_ok":
+				return ec.fieldContext_Status_is_ok(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Status", field.Name)
 		},
 	}
 	return fc, nil
@@ -1167,6 +1187,50 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Status_is_ok(ctx context.Context, field graphql.CollectedField, obj *model.Status) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Status_is_ok(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsOk, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Status_is_ok(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Status",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3322,22 +3386,22 @@ func (ec *executionContext) unmarshalInputChangePasswordByAnswerInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"change", "answer"}
+	fieldsInOrder := [...]string{"new_password", "answer"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "change":
+		case "new_password":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("change"))
-			data, err := ec.unmarshalNChangePasswordInput2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐChangePasswordInput(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("new_password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Change = data
+			it.NewPassword = data
 		case "answer":
 			var err error
 
@@ -3360,22 +3424,31 @@ func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"password"}
+	fieldsInOrder := [...]string{"old_password", "new_password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "password":
+		case "old_password":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("old_password"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Password = data
+			it.OldPassword = data
+		case "new_password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("new_password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NewPassword = data
 		}
 	}
 
@@ -3712,6 +3785,45 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var statusImplementors = []string{"Status"}
+
+func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, obj *model.Status) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, statusImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Status")
+		case "is_ok":
+			out.Values[i] = ec._Status_is_ok(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4262,11 +4374,6 @@ func (ec *executionContext) unmarshalNChangePasswordInput2githubᚗcomᚋdehwyy�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNChangePasswordInput2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐChangePasswordInput(ctx context.Context, v interface{}) (*model.ChangePasswordInput, error) {
-	res, err := ec.unmarshalInputChangePasswordInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNGetUserByIdInput2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐGetUserByIDInput(ctx context.Context, v interface{}) (model.GetUserByIDInput, error) {
 	res, err := ec.unmarshalInputGetUserByIdInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4300,6 +4407,20 @@ func (ec *executionContext) unmarshalNSignInInput2githubᚗcomᚋdehwyyᚋMakoto
 func (ec *executionContext) unmarshalNSignUpInput2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐSignUpInput(ctx context.Context, v interface{}) (model.SignUpInput, error) {
 	res, err := ec.unmarshalInputSignUpInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNStatus2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐStatus(ctx context.Context, sel ast.SelectionSet, v model.Status) graphql.Marshaler {
+	return ec._Status(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStatus2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐStatus(ctx context.Context, sel ast.SelectionSet, v *model.Status) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Status(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

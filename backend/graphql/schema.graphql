@@ -13,11 +13,12 @@ input SignInInput {
 }
 
 input ChangePasswordInput {
-  password: String!
+  old_password: String!
+  new_password: String!
 }
 
 input ChangePasswordByAnswerInput {
-  change: ChangePasswordInput!
+  new_password: String!
   answer: String!
 }
 
@@ -53,20 +54,25 @@ type UserQuestionResponse {
   question: String!
 }
 
+type Status {
+  is_ok: Boolean!
+}
+
 # !Mutations
 type Mutation {
   # No token required
-  signUp(input: SignUpInput!): UserAuthResponse! # returns tokens and user_id
-  signIn(input: SignInInput!): UserAuthResponse!
+  signUp(input: SignUpInput!): UserAuthResponse! # returns tokens and user_id - works
+  signIn(input: SignInInput!): UserAuthResponse! # works
+
   # With token
-  signOut: Boolean!
-  changePassword(input: ChangePasswordInput!): UserAuthResponse!
-  changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse!
+  signOut: Status!
+  changePassword(input: ChangePasswordInput!): UserAuthResponse! #works
+  changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse! # works
 }
 
 type Query {
   # always with token
-  getUserByUsername(input: GetUserByUsernameInput!): UserResponse!
-  getUserById(input: GetUserByIdInput!): UserResponse!
-  getQuestion: UserQuestionResponse!
+  getUserByUsername(input: GetUserByUsernameInput!): UserResponse! # ??
+  getUserById(input: GetUserByIdInput!): UserResponse! # works
+  getQuestion: UserQuestionResponse! # done
 }

@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	authAddr string
-	rpc      = tools.NewGrpcTools
+	authAddr            string
+	rpc                 = tools.NewGrpcTools
+	auth_cancel_timeout = 5 * time.Second
 )
 
 func init() {
@@ -38,7 +39,7 @@ func (m *mutResolver) SignUp(ctx context.Context, input model.SignUpInput) (*mod
 
 	cl := authGrpc.NewUserClient(g.Conn)
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	payload := &authGrpc.UserSignUpRequest{
@@ -94,26 +95,99 @@ func (m *mutResolver) SignIn(ctx context.Context, input model.SignInInput) (*mod
 	}, nil
 }
 
-func (m *mutResolver) SignOut(ctx context.Context) (bool, error) {
-	return false, nil
+func (m *mutResolver) SignOut(ctx context.Context) (*model.Status, error) {
+	g := rpc()
+	g.CreateConnection(authAddr, m.log)
+	defer g.Conn.Close()
+
+	cl := authGrpc.NewUserClient(g.Conn)
+
+	ctx, cancel := context.WithTimeout(ctx, auth_cancel_timeout)
+	defer cancel()
+
+	userId := middleware.ReadAuthContext(ctx).UserId
+
+	// this function literally returns Nil xd ( so just ignore 1st value as it would be empty empty), but error anyway could appear
+	_, err := cl.SignOut(ctx, &authGrpc.UserSignOutRequest{
+		UserId: userId,
+	})
+
+	if err != nil {
+		// by default the value "isOk" should be false. Isn't it?)
+		return new(model.Status), err
+	}
+
+	return &model.Status{
+		IsOk: true,
+	}, nil
 }
 
 func (m *mutResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (*model.UserAuthResponse, error) {
-	return nil, nil
+	g := rpc()
+	g.CreateConnection(authAddr, m.log)
+	defer g.Conn.Close()
+
+	cl := authGrpc.NewUserClient(g.Conn)
+
+	ctx, cancel := context.WithTimeout(ctx, auth_cancel_timeout)
+	defer cancel()
+
+	userId := middleware.ReadAuthContext(ctx).UserId
+
+	res, err := cl.ChangePassword(ctx, &authGrpc.UserChangePasswordRequest{
+		UserId:      userId,
+		OldPassword: input.OldPassword,
+		NewPassword: input.NewPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UserAuthResponse{
+		UserID: userId,
+		Tokens: &model.Tokens{
+			AccessToken:  res.AccessToken,
+			RefreshToken: res.RefreshToken,
+		},
+	}, nil
 }
 
 func (m *mutResolver) ChangePasswordByAnswer(ctx context.Context, input model.ChangePasswordByAnswerInput) (*model.UserAuthResponse, error) {
-	return nil, nil
+	g := rpc()
+	g.CreateConnection(authAddr, m.log)
+	defer g.Conn.Close()
+
+	cl := authGrpc.NewUserClient(g.Conn)
+
+	ctx, cancel := context.WithTimeout(ctx, auth_cancel_timeout)
+	defer cancel()
+
+	userId := middleware.ReadAuthContext(ctx).UserId
+
+	res, err := cl.ChangePasswordByAnswer(ctx, &authGrpc.UserSendAnswerAndChangePasswordRequest{
+		UserId:      userId,
+		Answer:      input.Answer,
+		NewPassword: input.NewPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UserAuthResponse{
+		UserID: userId,
+		Tokens: &model.Tokens{
+			AccessToken:  res.AccessToken,
+			RefreshToken: res.RefreshToken,
+		},
+	}, nil
 }
 
 // ! Queries
 
-// @see ./auth_f.go
 func (q *queryResolver) GetUserByUsername(ctx context.Context, input model.GetUserByUsernameInput) (*model.UserResponse, error) {
 	return nil, nil
 }
 
-// @see ./auth_f.go
 func (q *queryResolver) GetUserByID(ctx context.Context, input model.GetUserByIDInput) (*model.UserResponse, error) {
 	auth_ctx := middleware.ReadAuthContext(ctx)
 	if !auth_ctx.IsAuth {

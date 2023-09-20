@@ -36,6 +36,15 @@ func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.
 	}, nil
 }
 
+func (s *server) SignOut(ctx context.Context, in *auth.UserSignOutRequest) (*auth.Nil, error) {
+	err := s.credentials_service.RemoveToken(in.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth.Nil{}, nil
+}
+
 func (s *server) SignIn(ctx context.Context, in *auth.UserSignInRequest) (*auth.UserResponse, error) {
 	userId, err := s.credentials_service.ValidateUser(in.Username, in.Password)
 

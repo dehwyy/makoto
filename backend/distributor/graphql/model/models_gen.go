@@ -3,12 +3,13 @@
 package model
 
 type ChangePasswordByAnswerInput struct {
-	Change *ChangePasswordInput `json:"change"`
-	Answer string               `json:"answer"`
+	NewPassword string `json:"new_password"`
+	Answer      string `json:"answer"`
 }
 
 type ChangePasswordInput struct {
-	Password string `json:"password"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }
 
 type GetUserByIDInput struct {
@@ -29,6 +30,10 @@ type SignUpInput struct {
 	Password string `json:"password"`
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
+}
+
+type Status struct {
+	IsOk bool `json:"is_ok"`
 }
 
 type Tokens struct {

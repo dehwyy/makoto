@@ -50,13 +50,11 @@ func (t *TokenService) signTokens(payload jwtPayload) (string, string) {
 	if err != nil {
 		t.l.Errorf("Error creating refresh token: %v", err)
 	}
-	t.l.Infof("Generated refresh token: %v", refresh_token)
 
 	access_token, err := t.jwt.NewAccessToken(payload)
 	if err != nil {
 		t.l.Errorf("Error creating access token: %v", err)
 	}
-	t.l.Infof("Generated access token: %v", access_token)
 
 	return access_token, refresh_token
 }
@@ -76,6 +74,7 @@ func (t *TokenService) SignTokensAndCreate(username, userId string) (string, str
 	return access_token, refresh_token
 }
 
+// returns access_token | refresh_token
 func (t *TokenService) SignTokensAndUpdate(username, userId string) (string, string) {
 	payload := t.newJwtPayload(username, userId)
 
