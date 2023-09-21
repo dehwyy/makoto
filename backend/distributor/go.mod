@@ -9,6 +9,7 @@ require (
 	github.com/dehwyy/Makoto/backend/grpc v0.0.0-20230823231942-a77cbbbe49b6
 	github.com/dehwyy/logd v0.1.0-alpha
 	github.com/go-chi/chi/v5 v5.0.10
+	github.com/rs/cors v1.10.0
 	github.com/spf13/viper v1.16.0
 	github.com/vektah/gqlparser/v2 v2.5.8
 	google.golang.org/grpc v1.57.0

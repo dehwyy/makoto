@@ -9,6 +9,7 @@ import (
 	"github.com/dehwyy/Makoto/backend/distributor/logger"
 	"github.com/dehwyy/Makoto/backend/distributor/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/cors"
 )
 
 type handler struct {
@@ -22,6 +23,10 @@ func New(port string, l logger.AppLogger) *handler {
 	// Add middleware
 	m := middleware.New(l)
 	router.Use(m.Auth())
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler)
 
 	// Initialize routes for GraphQL
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
