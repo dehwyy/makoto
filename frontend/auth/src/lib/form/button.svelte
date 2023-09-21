@@ -1,4 +1,8 @@
-<button class="fancy px-3 py-1 outline-none select-none w-full">
+<script lang="ts">
+	export let onClick = () => {}
+</script>
+
+<button on:click={onClick} class="fancy px-3 py-1 outline-none select-none w-full">
 	<span class="top-key" />
 	<p class="font-ContentT font-semibold text-white text-center text-xl">
 		<slot />

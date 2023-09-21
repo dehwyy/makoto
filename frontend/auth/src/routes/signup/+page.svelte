@@ -10,9 +10,12 @@
 	import type { Snapshot } from './$types'
 
 	let isMounted = false
+
 	let username: string = ''
 	let password: string = ''
 	let repeatedPassword: string = ''
+	let question: string = ''
+	let answer: string = ''
 
 	onMount(() => {
 		isMounted = true
@@ -27,10 +30,30 @@
 			username = value.username
 		}
 	}
+
+	const submit = async () => {
+		console.log('HELLO!')
+
+		const res = await fetch('/api/sign-up', {
+			method: 'POST',
+			body: JSON.stringify({
+				username,
+				password,
+				question,
+				answer
+			})
+		})
+
+		const userId = await res.json()
+		console.log(userId)
+		if (false) {
+			window.location.href = 'http://localhost:3000'
+		}
+	}
 </script>
 
 {#if isMounted}
-	<main class="h-full w-full grid place-items-center overflow-hidden">
+	<main class="h-full w-full grid py-5 place-items-center overflow-x-hidden">
 		<div
 			class="w-5/6 md:w-2/3 lg:w-1/3 max-w-[400px] mx-auto"
 			transition:fade={{ duration: 1500, delay: 100 }}>
@@ -47,16 +70,21 @@
 						bind:value={repeatedPassword}
 						isPasswordConstType={true}
 						fieldName="confirm password" />
+					<Input bind:value={question} fieldName="control question" />
+					<Input bind:value={answer} fieldName="answer on question" />
 				</div>
 				<div class="mt-10 w-full">
-					<Button>Log In</Button>
+					<Button onClick={submit}>Sign Up</Button>
 				</div>
 				<div class="w-full flex justify-center gap-x-1 mt-2">
 					<p class="text-Content text-[#818181]">Already has account?</p>
 					<LinkWrapper><a href="/" class="font-ContentT text-secondary">Sign in</a></LinkWrapper>
 				</div>
-				<div class="divider font-ContentT">OR</div>
-				<Icon />
+				<!-- hidden, while Google Auth is not providede -->
+				<div class="hidden">
+					<div class="divider font-ContentT">OR</div>
+					<Icon />
+				</div>
 			</FormWindow>
 		</div>
 	</main>
