@@ -27,6 +27,23 @@
 	onMount(() => {
 		isMounted = true
 	})
+
+	const submit = async () => {
+		const res = await fetch('/api/sign-in', {
+			method: 'POST',
+			body: JSON.stringify({
+				username,
+				password
+			})
+		})
+
+		await res.json()
+		const isRedirect = false
+
+		if (isRedirect) {
+			window.location.href = 'http://localhost:3000'
+		}
+	}
 </script>
 
 {#if isMounted}
@@ -45,7 +62,7 @@
 					<Input bind:value={password} ableToChangeVisibility={true} fieldName="password" />
 				</div>
 				<div class="mt-10 w-full">
-					<Button>Log In</Button>
+					<Button onClick={submit}>Log In</Button>
 				</div>
 				<div class="w-full flex justify-center gap-x-1 mt-2">
 					<p class="font-ContentT text-[#818181]">No account yet?</p>

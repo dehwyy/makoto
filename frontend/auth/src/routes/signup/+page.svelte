@@ -32,8 +32,6 @@
 	}
 
 	const submit = async () => {
-		console.log('HELLO!')
-
 		const res = await fetch('/api/sign-up', {
 			method: 'POST',
 			body: JSON.stringify({
@@ -44,9 +42,10 @@
 			})
 		})
 
-		const userId = await res.json()
-		console.log(userId)
-		if (false) {
+		await res.json()
+		const isRedirect = false
+
+		if (isRedirect) {
 			window.location.href = 'http://localhost:3000'
 		}
 	}
