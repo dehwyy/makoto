@@ -10,6 +10,7 @@ const config: Config = {
         Jua: ['var(--font-jua)'],
         Content: ['var(--font-content)'],
         Kanji: ['var(--font-kanji)'],
+        Pixel: ['var(--font-pixel)'],
       },
     },
   },
