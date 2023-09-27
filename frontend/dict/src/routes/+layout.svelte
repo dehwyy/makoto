@@ -1,5 +1,5 @@
 <script lang="ts">
-	import HoshiNoSora from './../lib/components/hoshi-no-sora.svelte'
+	import StarsBackground from '$lib/components/stars-background.svelte'
 
 	// fonts and tailwind
 	import '../app.css'
@@ -7,10 +7,12 @@
 	import '@fontsource/klee-one'
 	import '@fontsource/jua'
 	import '@fontsource-variable/shantell-sans'
+	import Header from '$lib/components/header.svelte'
 </script>
 
 <svelte:document style="background-color: red;" />
 
-<HoshiNoSora>
+<StarsBackground>
+	<Header />
 	<slot />
-</HoshiNoSora>
+</StarsBackground>

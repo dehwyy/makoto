@@ -1,12 +1,17 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition'
+
 	export let word: string
 	export let translate: string
 	export let extra = ''
+
+	export let onCloseButtonClick = () => {}
 
 	// $: isOpen = false
 </script>
 
 <div
+	transition:fade={{ duration: 500, delay: 100 }}
 	aria-hidden="true"
 	class={`flex flex-col select-none items-center bg-base-200 w-full px-5 py-2 rounded-xl border-2 border-base-100 overflow-hidden`}>
 	<div
@@ -24,6 +29,8 @@
 		<!-- close button -->
 		<div>
 			<span
+				on:click={onCloseButtonClick}
+				aria-hidden="true"
 				class="cursor-pointer hover:text-red-500 transition-all font-ContentT select-none p-2 mr-[-0.5rem]"
 				>X</span>
 		</div>

@@ -1,9 +1,9 @@
-<div class="absolute">
+<div class="absolute top-0 bottom-0">
 	<div id="stars" />
 	<div id="stars2" />
 	<div id="stars3" />
 </div>
-<div class="w-full max-h-screen min-h-screen h-full absolute left-0 right-0 top-0 z-10">
+<div class="w-full h-full absolute overflow-hidden left-0 right-0 top-0 z-10">
 	<slot />
 </div>
 
