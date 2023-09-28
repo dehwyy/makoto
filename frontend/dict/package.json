@@ -37,6 +37,9 @@
 		"@fontsource-variable/comfortaa": "^5.0.12",
 		"@fontsource-variable/shantell-sans": "^5.0.13",
 		"@fontsource/jua": "^5.0.11",
-		"@fontsource/klee-one": "^5.0.7"
+		"@fontsource/klee-one": "^5.0.7",
+		"graphql": "^16.8.1",
+		"houdini": "^1.2.14",
+		"houdini-svelte": "^1.2.14"
 	}
 }
