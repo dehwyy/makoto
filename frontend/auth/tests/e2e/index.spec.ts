@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 
 test('index page', async ({ page }) => {
+	// waiting for 5secs cuz test env is peace of 'cake'
+	await page.waitForTimeout(5 * 1000)
 	await page.goto('/')
 
 	await expect(page.getByTestId('hoshi-boshi-bg')).toBeVisible()

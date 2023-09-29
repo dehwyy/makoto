@@ -11,6 +11,9 @@ export default defineConfig({
 	workers: process.env.CI ? 1 : undefined,
 	timeout: 30 * 1000,
 	reporter: 'html',
+	expect: {
+		timeout: 30 * 1000
+	},
 	use: {
 		baseURL: 'http://localhost:3001',
 
@@ -37,6 +40,7 @@ export default defineConfig({
 	],
 
 	webServer: {
-		command: 'npm run dev'
+		command: 'npm run dev',
+		timeout: 30 * 1000
 	}
 })

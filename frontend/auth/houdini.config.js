@@ -3,6 +3,7 @@ const config = {
 	watchSchema: {
 		url: 'http://localhost:4000/query'
 	},
+
 	plugins: {
 		'houdini-svelte': {}
 	}
