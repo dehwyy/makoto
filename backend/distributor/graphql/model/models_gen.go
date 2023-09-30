@@ -12,12 +12,22 @@ type ChangePasswordInput struct {
 	NewPassword string `json:"new_password"`
 }
 
+type EditWordInput struct {
+	WordID string `json:"wordId"`
+	Word   *Word  `json:"word"`
+}
+
 type GetUserByIDInput struct {
 	UserID string `json:"userId"`
 }
 
 type GetUserByUsernameInput struct {
 	Username string `json:"username"`
+}
+
+type GetWordsResponse struct {
+	Words  []*WordWithID `json:"words"`
+	Tokens *Tokens       `json:"tokens,omitempty"`
 }
 
 type SignInInput struct {
@@ -34,6 +44,11 @@ type SignUpInput struct {
 
 type Status struct {
 	IsOk bool `json:"is_ok"`
+}
+
+type Tag struct {
+	TagID string `json:"tagId"`
+	Text  string `json:"text"`
 }
 
 type Tokens struct {
@@ -54,4 +69,19 @@ type UserQuestionResponse struct {
 type UserResponse struct {
 	Auth     *UserAuthResponse `json:"auth"`
 	Username string            `json:"username"`
+}
+
+type Word struct {
+	Word  string   `json:"word"`
+	Value string   `json:"value"`
+	Extra string   `json:"extra"`
+	Tags  []string `json:"tags"`
+}
+
+type WordWithID struct {
+	UserID string `json:"userId"`
+	Word   string `json:"word"`
+	Value  string `json:"value"`
+	Extra  string `json:"extra"`
+	Tags   []*Tag `json:"tags"`
 }

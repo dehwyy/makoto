@@ -1,0 +1,53 @@
+type Tag {
+  tagId: ID!
+  text: String!
+}
+
+input Word {
+  word: String!
+  value: String!
+  extra: String!
+  tags: [String!]!
+}
+
+type WordWithId {
+  userId: ID!
+  word: String!
+  value: String!
+  extra: String!
+  tags: [Tag!]!
+}
+
+# ! GetWords
+
+type GetWordsResponse {
+  words: [WordWithId!]!
+  tokens: Tokens
+}
+
+#                       //
+
+# ! CreateWord
+
+#            //
+
+# ! RemoveWord
+
+#            //
+
+# ! EditWord
+
+input EditWordInput {
+  wordId: ID!
+  word: Word!
+}
+
+# type Query {
+#   getWords(userId: ID): GetWordsResponse! # IF `userId` is not provided -> would be taken from `tokens`
+# }
+
+# type Mutation {
+#   createWord(word: Word!): Tokens
+#   RemoveWord(wordId: ID!): Tokens
+#   EditWord(input: EditWordInput!): Tokens
+# }

@@ -68,6 +68,11 @@ type Mutation {
   signOut: Status!
   changePassword(input: ChangePasswordInput!): UserAuthResponse! #works
   changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse! # works
+
+  # ! dict
+  createWord(word: Word!): Tokens
+  RemoveWord(wordId: ID!): Tokens
+  EditWord(input: EditWordInput): Tokens
 }
 
 type Query {
@@ -75,4 +80,7 @@ type Query {
   getUserByUsername(input: GetUserByUsernameInput!): UserResponse! # ??
   getUserById(input: GetUserByIdInput!): UserResponse! # works
   getQuestion: UserQuestionResponse! # done
+
+  # ! dict
+  getWords(userId: ID): GetWordsResponse!
 }

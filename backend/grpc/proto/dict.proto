@@ -27,14 +27,14 @@ message UserId {
 }
 
 message WordId {
-  string word_id = 1;
+  uint32 word_id = 1;
 }
 
 // Responses
 
 message WordResponse {
-  string id = 1;
-
+  uint32 id = 1;
+  Word word = 2;
 }
 
 message Words {

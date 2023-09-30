@@ -36,6 +36,21 @@ func (r *mutationResolver) ChangePasswordByAnswer(ctx context.Context, input mod
 	panic(fmt.Errorf("not implemented: ChangePasswordByAnswer - changePasswordByAnswer"))
 }
 
+// CreateWord is the resolver for the createWord field.
+func (r *mutationResolver) CreateWord(ctx context.Context, word model.Word) (*model.Tokens, error) {
+	panic(fmt.Errorf("not implemented: CreateWord - createWord"))
+}
+
+// RemoveWord is the resolver for the RemoveWord field.
+func (r *mutationResolver) RemoveWord(ctx context.Context, wordID string) (*model.Tokens, error) {
+	panic(fmt.Errorf("not implemented: RemoveWord - RemoveWord"))
+}
+
+// EditWord is the resolver for the EditWord field.
+func (r *mutationResolver) EditWord(ctx context.Context, input *model.EditWordInput) (*model.Tokens, error) {
+	panic(fmt.Errorf("not implemented: EditWord - EditWord"))
+}
+
 // GetUserByUsername is the resolver for the getUserByUsername field.
 func (r *queryResolver) GetUserByUsername(ctx context.Context, input model.GetUserByUsernameInput) (*model.UserResponse, error) {
 	panic(fmt.Errorf("not implemented: GetUserByUsername - getUserByUsername"))
@@ -49,6 +64,11 @@ func (r *queryResolver) GetUserByID(ctx context.Context, input model.GetUserByID
 // GetQuestion is the resolver for the getQuestion field.
 func (r *queryResolver) GetQuestion(ctx context.Context) (*model.UserQuestionResponse, error) {
 	panic(fmt.Errorf("not implemented: GetQuestion - getQuestion"))
+}
+
+// GetWords is the resolver for the getWords field.
+func (r *queryResolver) GetWords(ctx context.Context, userID *string) (*model.GetWordsResponse, error) {
+	panic(fmt.Errorf("not implemented: GetWords - getWords"))
 }
 
 // Mutation returns MutationResolver implementation.
