@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option go_package = "github.com/dehwyy/Makoto/backend/grpc/dictGrpc";
+
+// Inputs
+
+message Word {
+  string word = 2;
+  string value = 3;
+  string extra = 4;
+  repeated string tags = 5;
+}
+
+message CreateWord {
+  string user_id = 1;
+  Word word = 2;
+}
+
+message UpdateWord {
+  WordId id = 1;
+  Word word = 2;
+}
+
+
+message UserId {
+  string user_id = 1;
+}
+
+message WordId {
+  string word_id = 1;
+}
+
+// Responses
+
+message WordResponse {
+  string id = 1;
+
+}
+
+message Words {
+  repeated WordResponse words = 1;
+}
+
+
+message Status {
+  bool state = 1;
+}
+
+service Dict {
+  rpc GetWords(UserId) returns (Words);
+  rpc CreateNewWord(CreateWord) returns (Status);
+  rpc RemoveWord(WordId) returns (Status);
+  rpc EditWord(UpdateWord) returns (Status);
+}

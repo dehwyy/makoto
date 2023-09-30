@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  dict:
+    build:
+      context: ../
+      dockerfile: ./dict/Dockerfile
+    ports:
+      - 4002:4002
+    container_name: dict
+    depends_on:
+      - db
+    networks:
+      - services
+      - makoto_dict_db
+
+  db:
+    restart: always
+    image: postgres:latest
+    container_name: dict_postgres_db
+    volumes:
+      - ./.database/postgresql:/var/lib/postgresql/makoto/dict
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+      - POSTGRES_USER=makoto
+    ports:
+      - 5433:5433
+    networks:
+      - makoto_dict_db
+
+networks:
+  services:
+    external: true
+    name: makoto_micro
+  makoto_dict_db:
+    name: makoto_dict_db

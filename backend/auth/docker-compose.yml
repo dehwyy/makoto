@@ -22,7 +22,6 @@ services:
       - ./.database/postgresql:/var/lib/postgresql/makoto/auth
     environment:
       - POSTGRES_PASSWORD=qwerty
-      - POSTGRES_USER=makoto
     ports:
       - 5432:5432
     networks:
