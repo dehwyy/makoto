@@ -34,32 +34,76 @@ func (w *WordsService) GetWords(userId string) ([]*word_model, error) {
 
 func (w *WordsService) CreateWord(userId, key, value, extra string, tags []*tag_model) error {
 
-	res := w.db.Create(&word_model{
+	new_word := &word_model{
 		UserId: userId,
 		Word:   key,
 		Value:  value,
 		Extra:  extra,
-		Tags:   tags,
+	}
+
+	// Create `Word` and add to it `Tags`
+	// ? Transaction
+	err := w.db.Transaction(func(tx *gorm.DB) error {
+		create_word := w.db.Create(new_word)
+
+		if create_word.Error != nil {
+			return create_word.Error
+		}
+
+		add_tags_err := w.db.Model(new_word).Association("Tags").Append(tags)
+
+		return add_tags_err
 	})
 
-	return res.Error
+	return err
 }
 
-func (w *WordsService) RemoveWord(wordId uint) error {
+func (w *WordsService) RemoveWord(wordId uint32) error {
 
-	res := w.schema().Delete(&word_model{}, "id = ?", wordId)
+	// Removing data from `Word` and its tags
+	// ? Transaction
+	err := w.db.Transaction(func(tx *gorm.DB) error {
 
-	return res.Error
+		err := w.db.Model(&word_model{
+			Id: wordId,
+		}).Association("Tags").Clear()
+
+		if err != nil {
+			return err
+		}
+
+		res := w.schema().Delete(&word_model{}, "id = ?", wordId)
+
+		return res.Error
+	})
+
+	return err
 }
 
-func (w *WordsService) EditWord(wordId uint, new_key, new_value, new_extra string, tags []*tag_model) error {
+func (w *WordsService) EditWord(wordId uint32, new_key, new_value, new_extra string, tags []*tag_model) error {
 
-	res := w.schema().Where("id = ?", wordId).Updates(&word_model{
+	payload := &word_model{
 		Word:  new_key,
 		Value: new_value,
 		Extra: new_extra,
-		Tags:  tags,
+	}
+
+	// Update `Word` and change `Tags`
+	// ? Transaction
+	err := w.db.Transaction(func(tx *gorm.DB) error {
+
+		update_word := w.schema().Where("id = ?", wordId).Updates(payload)
+
+		if update_word.Error != nil {
+			return update_word.Error
+		}
+
+		err := w.db.Model(&word_model{
+			Id: wordId,
+		}).Association("Tags").Replace(tags)
+
+		return err
 	})
 
-	return res.Error
+	return err
 }

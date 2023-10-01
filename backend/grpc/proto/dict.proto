@@ -4,6 +4,11 @@ option go_package = "github.com/dehwyy/Makoto/backend/grpc/dictGrpc";
 
 // Inputs
 
+message Tag {
+  uint32 tag_id = 1;
+  string text = 2;
+}
+
 message Word {
   string word = 2;
   string value = 3;
@@ -34,7 +39,10 @@ message WordId {
 
 message WordResponse {
   uint32 id = 1;
-  Word word = 2;
+  string word = 2;
+  string value = 3;
+  string extra = 4;
+  repeated Tag tags = 5;
 }
 
 message Words {

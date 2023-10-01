@@ -12,19 +12,20 @@ func CastWordsToGrpcOutput(words []*models.Word) []*rpc.WordResponse {
 	for _, word := range words {
 
 		// pipe tags
-		var word_tags []string
+		var word_tags []*rpc.Tag
 		for _, tag := range word.Tags {
-			word_tags = append(word_tags, tag.Text)
+			word_tags = append(word_tags, &rpc.Tag{
+				TagId: tag.Id,
+				Text:  tag.Text,
+			})
 		}
 
 		res = append(res, &rpc.WordResponse{
-			Id: uint32(word.Id),
-			Word: &rpc.Word{
-				Word:  word.Word,
-				Value: word.Value,
-				Extra: word.Extra,
-				Tags:  word_tags,
-			},
+			Id:    uint32(word.Id),
+			Word:  word.Word,
+			Value: word.Value,
+			Extra: word.Extra,
+			Tags:  word_tags,
 		})
 	}
 

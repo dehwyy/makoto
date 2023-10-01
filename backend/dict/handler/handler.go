@@ -34,7 +34,7 @@ func (s *server) CreateNewWord(ctx context.Context, in *rpc.CreateWord) (*rpc.St
 
 func (s *server) RemoveWord(ctx context.Context, in *rpc.WordId) (*rpc.Status, error) {
 
-	err := s.words_service.RemoveWord(uint(in.WordId))
+	err := s.words_service.RemoveWord(in.WordId)
 
 	return &rpc.Status{
 		State: err == nil,
@@ -46,7 +46,7 @@ func (s *server) EditWord(ctx context.Context, in *rpc.UpdateWord) (*rpc.Status,
 	// getting tags from Array<string>
 	tags := s.tags_service.TagsFromStringArray(in.Word.Tags)
 
-	err := s.words_service.EditWord(uint(in.Id.WordId), in.Word.Word, in.Word.Value, in.Word.Extra, tags)
+	err := s.words_service.EditWord(in.Id.WordId, in.Word.Word, in.Word.Value, in.Word.Extra, tags)
 
 	return &rpc.Status{
 		State: err == nil,

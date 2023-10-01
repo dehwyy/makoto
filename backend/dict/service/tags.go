@@ -27,6 +27,7 @@ func (t *TagsService) GetTagOrCreate(text string) *tag_model {
 	// trying to get `tag` from DB
 	// if it doesn't exist -> error would appear -> new `tag` record would be created
 	tag, err := t.GetTag(text)
+
 	if err != nil {
 		tag = t.CreateTag(text)
 	}
@@ -39,7 +40,7 @@ func (t *TagsService) GetTag(text string) (*tag_model, error) {
 	// struct to store value
 	var tag *tag_model
 
-	res := t.db.Model(&tag_model{}).Where("text = ?", text).First(tag)
+	res := t.db.Model(&tag_model{}).Where("text = ?", text).First(&tag)
 
 	// if I'm not mistaking, res.Error would occur only when the `tag` wasn't found
 	return tag, res.Error

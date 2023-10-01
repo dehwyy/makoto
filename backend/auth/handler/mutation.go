@@ -12,6 +12,7 @@ import (
 
 func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.UserResponse, error) {
 	// Creating user payload
+
 	user_payload := dto.CreateUser{
 		Username: in.Username,
 		Password: in.Password,

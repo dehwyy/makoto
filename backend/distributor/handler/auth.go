@@ -28,10 +28,6 @@ func init() {
 
 // no token
 func (m *mutResolver) SignUp(ctx context.Context, input model.SignUpInput) (*model.UserAuthResponse, error) {
-	// TODO: shouldn't be used in /auth microservice
-	v := middleware.ReadAuthContext(ctx)
-	m.log.Debugf("Context value is %v", *v)
-
 	// read desc of func
 	g := rpc()
 	g.CreateConnection(authAddr, m.log)
@@ -79,6 +75,8 @@ func (m *mutResolver) SignIn(ctx context.Context, input model.SignInInput) (*mod
 		Username: input.Username,
 		Password: input.Password,
 	}
+
+	m.log.Infof("SignIn: %v", authAddr)
 
 	res, err := cl.SignIn(ctx, payload)
 	if err != nil {
