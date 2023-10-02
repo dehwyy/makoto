@@ -99,9 +99,9 @@ type ComplexityRoot struct {
 	WordWithId struct {
 		Extra  func(childComplexity int) int
 		Tags   func(childComplexity int) int
-		UserID func(childComplexity int) int
 		Value  func(childComplexity int) int
 		Word   func(childComplexity int) int
+		WordID func(childComplexity int) int
 	}
 }
 
@@ -376,13 +376,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.WordWithId.Tags(childComplexity), true
 
-	case "WordWithId.userId":
-		if e.complexity.WordWithId.UserID == nil {
-			break
-		}
-
-		return e.complexity.WordWithId.UserID(childComplexity), true
-
 	case "WordWithId.value":
 		if e.complexity.WordWithId.Value == nil {
 			break
@@ -396,6 +389,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.WordWithId.Word(childComplexity), true
+
+	case "WordWithId.wordId":
+		if e.complexity.WordWithId.WordID == nil {
+			break
+		}
+
+		return e.complexity.WordWithId.WordID(childComplexity), true
 
 	}
 	return 0, false
@@ -523,7 +523,7 @@ input Word {
 }
 
 type WordWithId {
-  userId: ID!
+  wordId: ID!
   word: String!
   value: String!
   extra: String!
@@ -900,8 +900,8 @@ func (ec *executionContext) fieldContext_GetWordsResponse_words(ctx context.Cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "userId":
-				return ec.fieldContext_WordWithId_userId(ctx, field)
+			case "wordId":
+				return ec.fieldContext_WordWithId_wordId(ctx, field)
 			case "word":
 				return ec.fieldContext_WordWithId_word(ctx, field)
 			case "value":
@@ -2294,8 +2294,8 @@ func (ec *executionContext) fieldContext_UserResponse_username(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _WordWithId_userId(ctx context.Context, field graphql.CollectedField, obj *model.WordWithID) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_WordWithId_userId(ctx, field)
+func (ec *executionContext) _WordWithId_wordId(ctx context.Context, field graphql.CollectedField, obj *model.WordWithID) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WordWithId_wordId(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2308,7 +2308,7 @@ func (ec *executionContext) _WordWithId_userId(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UserID, nil
+		return obj.WordID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2325,7 +2325,7 @@ func (ec *executionContext) _WordWithId_userId(ctx context.Context, field graphq
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_WordWithId_userId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_WordWithId_wordId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "WordWithId",
 		Field:      field,
@@ -5161,8 +5161,8 @@ func (ec *executionContext) _WordWithId(ctx context.Context, sel ast.SelectionSe
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("WordWithId")
-		case "userId":
-			out.Values[i] = ec._WordWithId_userId(ctx, field, obj)
+		case "wordId":
+			out.Values[i] = ec._WordWithId_wordId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

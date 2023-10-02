@@ -28,7 +28,7 @@ func CastWordsGrpcToGraphQL(words []*dictGrpc.WordResponse) []*model.WordWithID 
 		}
 
 		res = append(res, &model.WordWithID{
-			UserID: Uint32ToString(word.Id),
+			WordID: Uint32ToString(word.Id),
 			Word:   word.Word,
 			Value:  word.Value,
 			Extra:  word.Extra,

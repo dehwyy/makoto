@@ -79,7 +79,7 @@ type Word struct {
 }
 
 type WordWithID struct {
-	UserID string `json:"userId"`
+	WordID string `json:"wordId"`
 	Word   string `json:"word"`
 	Value  string `json:"value"`
 	Extra  string `json:"extra"`
