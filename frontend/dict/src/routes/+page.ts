@@ -1,8 +1,7 @@
 import { graphql, load_GetWords } from '$houdini'
-import { SetTokens } from '$lib/api/set-tokens'
 import type { PageLoad } from './$types'
 
-export const _houdini_load = graphql(`
+graphql(`
 	query GetWords {
 		getWords {
 			words {

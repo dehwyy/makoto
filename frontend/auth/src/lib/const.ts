@@ -4,8 +4,3 @@ export enum Tokens {
 }
 
 export const USER_ID = 'user_id'
-
-export enum ContextKeys {
-	_NOT_ZERO, // reserved value for 0 as it is the default Number val
-	isAuthed
-}

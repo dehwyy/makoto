@@ -1,4 +1,5 @@
 import { graphql } from '$houdini'
+import { setAuthCookies } from '$lib/api/set-cookies'
 import type { RequestHandler } from './$types'
 
 export const POST: RequestHandler = async event => {
@@ -21,8 +22,13 @@ export const POST: RequestHandler = async event => {
 	if (!res.data) return new Response(JSON.stringify(res.errors), { status: 400 })
 
 	const { tokens, userId } = res.data.signIn
-	cookies.set('auth-token', tokens.access_token, { httpOnly: true, path: '/' })
-	cookies.set('refresh-token', tokens.refresh_token, { httpOnly: true, path: '/' })
+
+	setAuthCookies({
+		access_token: tokens.access_token,
+		refresh_token: tokens.refresh_token,
+		user_id: userId,
+		cookies
+	})
 
 	return new Response(JSON.stringify(userId), { status: 200 })
 }

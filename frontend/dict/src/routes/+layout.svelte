@@ -8,11 +8,14 @@
 	import '@fontsource/jua'
 	import '@fontsource-variable/shantell-sans'
 	import Header from '$lib/components/header.svelte'
+	import type { LayoutData } from './$types'
+
+	export let data: LayoutData
+
+	$: ({ getUsetById } = data)
 </script>
 
-<svelte:document style="background-color: red;" />
-
 <StarsBackground>
-	<Header />
+	<Header username={$getUsetById.data?.getUserById.username} />
 	<slot />
 </StarsBackground>

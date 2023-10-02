@@ -5,8 +5,8 @@
 	import Word from '$lib/components/word.svelte'
 	import SearchPanel from '$lib/components/index/search-panel.svelte'
 
-	import { FilteredItems, RemoveItemById, SetItems } from './store'
-	import { onMount } from 'svelte'
+	import { FilteredItems, RemoveItemById, SetItems } from './items-store'
+	import { getContext, onMount, setContext } from 'svelte'
 
 	let isMounted = false
 
@@ -30,10 +30,13 @@
 
 	// Loading words
 	import type { PageData } from './$houdini'
+	import { isAuthed } from './user-store'
 	export let data: PageData
 
 	$: ({ GetWords } = data)
 	$: SetItems($GetWords.data?.getWords.words || [])
+
+	$: isAuthed.set(!!$GetWords.data?.getWords.tokens?.access_token)
 </script>
 
 {#if isMounted}
@@ -41,7 +44,6 @@
 		<!-- search bar -->
 		<div transition:fade={{ duration: 300, delay: 0 }} class="w-1/2 mx-auto">
 			<SearchPanel />
-			{$GetWords.data?.getWords.tokens?.access_token ? 'Authed' : 'Unauthorized'}
 		</div>
 
 		<!-- add new word button and modal-->

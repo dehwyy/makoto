@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { scale, fade } from 'svelte/transition'
-	import { AddItem } from '../../../routes/store'
+	import { AddItem } from '../../../routes/items-store'
 	import Button from '../button.svelte'
 	import Input from '../input.svelte'
 	import Modal from '../modal.svelte'
