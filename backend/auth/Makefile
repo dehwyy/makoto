@@ -12,3 +12,11 @@ docker-clear:
 
 docker-up: docker-clear
 	docker-compose up --build
+
+test:
+	make _tools
+
+# folder tests
+
+_tools:
+	cd tools && go test -cover -v
