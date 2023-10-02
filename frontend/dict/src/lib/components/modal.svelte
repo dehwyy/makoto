@@ -9,11 +9,11 @@
 	<section
 		on:mousedown={close}
 		aria-hidden="true"
-		class="bg-[rgba(0,0,0,0.7)] z-10 fixed grid place-items-center top-0 left-0 right-0 bottom-0">
+		class="bg-[rgba(0,0,0,0.7)] z-10 fixed grid place-items-center top-0 left-0 right-0 bottom-0 overflow-y-scroll overflow-x-hidden p-2">
 		<div
 			aria-hidden="true"
 			on:mousedown={e => e.stopPropagation()}
-			class="w-[400px] bg-base-300 gradient-border border-base-100 rounded-2xl relative">
+			class="max-w-[90vw] w-[400px] bg-base-300 gradient-border border-base-100 rounded-2xl relative">
 			<slot />
 			<div>
 				<span

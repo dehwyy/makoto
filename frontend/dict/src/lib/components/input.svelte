@@ -1,7 +1,7 @@
 <script lang="ts">
 	// const information
 	export let placeholder = ''
-
+	export let autofocus = false
 	// value
 	export let value = ''
 
@@ -13,8 +13,10 @@
 </script>
 
 <div class="form__group field w-full relative select-none">
+	<!-- svelte-ignore a11y-autofocus -->
 	<input
 		{value}
+		{autofocus}
 		on:input={handleInput}
 		class="form__field w-full font-Content font-[700]"
 		autocomplete="off"

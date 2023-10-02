@@ -5,23 +5,44 @@
 	import Word from '$lib/components/word.svelte'
 	import SearchPanel from '$lib/components/index/search-panel.svelte'
 
-	import { FilteredItems, RemoveItemById, ItemsStore } from './store'
+	import { FilteredItems, RemoveItemById, SetItems } from './store'
 	import { onMount } from 'svelte'
 
 	let isMounted = false
 
 	onMount(() => {
 		isMounted = true
-		ItemsStore.set([{ id: 1, word: '星々', translate: 'stars', extra: 'some extra' }])
 	})
+
+	const removeWord = async (wordId: string) => {
+		RemoveItemById(wordId)
+
+		const response = await fetch('/api/remove-word', {
+			method: 'POST',
+			body: JSON.stringify({
+				wordId
+			})
+		})
+
+		const isError = response.statusText.startsWith('4')
+		isError && console.log('Error occured', response.statusText)
+	}
+
+	// Loading words
+	import type { PageData } from './$houdini'
+	export let data: PageData
+
+	$: ({ GetWords } = data)
+	$: SetItems($GetWords.data?.getWords.words || [])
 </script>
 
 {#if isMounted}
 	<main class="py-20 w-[70%] mx-auto flex flex-col gap-y-24 items-center">
 		<!-- search bar -->
-		<section transition:fade={{ duration: 300, delay: 0 }} class="w-1/2 mx-auto">
+		<div transition:fade={{ duration: 300, delay: 0 }} class="w-1/2 mx-auto">
 			<SearchPanel />
-		</section>
+			{$GetWords.data?.getWords.tokens?.access_token ? 'Authed' : 'Unauthorized'}
+		</div>
 
 		<!-- add new word button and modal-->
 		<section
@@ -37,9 +58,9 @@
 			<div class="w-full flex flex-col gap-y-5">
 				{#each $FilteredItems as item}
 					<Word
-						onCloseButtonClick={() => RemoveItemById(item.id)}
+						onCloseButtonClick={() => removeWord(item.wordId)}
 						word={item.word}
-						translate={item.translate}
+						translate={item.value}
 						extra={item.extra} />
 				{/each}
 			</div>

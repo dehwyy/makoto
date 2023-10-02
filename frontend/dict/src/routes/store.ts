@@ -1,18 +1,26 @@
 import { derived, writable } from 'svelte/store'
 
 interface Item {
-	id: number
+	wordId: string
 	word: string
-	translate: string
-	extra?: string
+	value: string
+	extra: string
+	tags: {
+		tagId: string
+		text: string
+	}[]
 }
+const ItemsStore = writable<Item[]>([])
 
-export const ItemsStore = writable<Item[]>([])
-export const AddItem = (item: Item) => {
-	ItemsStore.update(items => [...items, item])
+export const SetItems = (items: Item[]) => {
+	items.reverse()
+	ItemsStore.set(items)
 }
-export const RemoveItemById = (id: number) => {
-	ItemsStore.update(items => items.filter(item => item.id !== id))
+export const AddItem = (item: Item) => {
+	ItemsStore.update(items => [item, ...items])
+}
+export const RemoveItemById = (id: string) => {
+	ItemsStore.update(items => items.filter(item => item.wordId !== id))
 }
 
 export const FilterStore = writable('')
@@ -22,13 +30,13 @@ export const FilteredItems = derived([ItemsStore, FilterStore], ([items, filter]
 		const keyWord = new RegExp(
 			filter
 				.split('')
-				.map(w => w + '[a-z\\s]*')
+				.map(w => w + '[a-zа-я\\s]*')
 				.join(''),
 			'ig'
 		)
 
 		const wordMatch = item.word.match(keyWord)
-		const translateMatch = item.translate.match(keyWord)
+		const translateMatch = item.value.match(keyWord)
 		const extraMatch = item.extra?.match(keyWord)
 
 		return wordMatch || translateMatch || extraMatch

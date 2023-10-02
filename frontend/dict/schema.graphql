@@ -13,6 +13,11 @@ input ChangePasswordInput {
   old_password: String!
 }
 
+input EditWordInput {
+  word: Word!
+  wordId: ID!
+}
+
 input GetUserByIdInput {
   userId: ID!
 }
@@ -21,9 +26,17 @@ input GetUserByUsernameInput {
   username: String!
 }
 
+type GetWordsResponse {
+  tokens: Tokens
+  words: [WordWithId!]!
+}
+
 type Mutation {
+  EditWord(input: EditWordInput): Tokens
+  RemoveWord(wordId: ID!): Tokens
   changePassword(input: ChangePasswordInput!): UserAuthResponse!
   changePasswordByAnswer(input: ChangePasswordByAnswerInput!): UserAuthResponse!
+  createWord(word: Word!): Tokens
   signIn(input: SignInInput!): UserAuthResponse!
   signOut: Status!
   signUp(input: SignUpInput!): UserAuthResponse!
@@ -33,6 +46,7 @@ type Query {
   getQuestion: UserQuestionResponse!
   getUserById(input: GetUserByIdInput!): UserResponse!
   getUserByUsername(input: GetUserByUsernameInput!): UserResponse!
+  getWords(userId: ID): GetWordsResponse!
 }
 
 input SignInInput {
@@ -49,6 +63,11 @@ input SignUpInput {
 
 type Status {
   is_ok: Boolean!
+}
+
+type Tag {
+  tagId: ID!
+  text: String!
 }
 
 type Tokens {
@@ -69,4 +88,19 @@ type UserQuestionResponse {
 type UserResponse {
   auth: UserAuthResponse!
   username: String!
+}
+
+input Word {
+  extra: String!
+  tags: [String!]!
+  value: String!
+  word: String!
+}
+
+type WordWithId {
+  extra: String!
+  tags: [Tag!]!
+  value: String!
+  word: String!
+  wordId: ID!
 }
