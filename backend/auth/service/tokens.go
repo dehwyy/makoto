@@ -91,6 +91,7 @@ func (t *TokenService) ValidateToken(token string) (string, string, bool) {
 	claims, err := t.jwt.ValidateJwtToken(token)
 	if err != nil {
 		t.l.Errorf("Error validating token: %v", err)
+		return "", "", false
 	}
 
 	return claims.UserId, claims.Username, err == nil
