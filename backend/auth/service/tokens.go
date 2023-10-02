@@ -81,7 +81,7 @@ func (t *TokenService) SignTokensAndUpdate(username, userId string) (string, str
 	access_token, refresh_token := t.signTokens(payload)
 
 	// updating refresh token
-	t.schema().Where("token = ?", refresh_token).Update("token", refresh_token)
+	t.schema().Where("user_id = ?", userId).Update("token", refresh_token)
 
 	return access_token, refresh_token
 }
