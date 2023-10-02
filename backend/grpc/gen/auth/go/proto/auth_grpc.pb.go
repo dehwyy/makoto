@@ -27,6 +27,7 @@ type UserClient interface {
 	SignIn(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	SignOut(ctx context.Context, in *UserSignOutRequest, opts ...grpc.CallOption) (*Nil, error)
 	ValidateAuth(ctx context.Context, in *AccessToken, opts ...grpc.CallOption) (*UserResponse, error)
+	RecreateTokensByRefreshToken(ctx context.Context, in *RefreshToken, opts ...grpc.CallOption) (*UserResponse, error)
 	// With token ( authed )
 	// query
 	GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error)
@@ -80,6 +81,15 @@ func (c *userClient) ValidateAuth(ctx context.Context, in *AccessToken, opts ...
 	return out, nil
 }
 
+func (c *userClient) RecreateTokensByRefreshToken(ctx context.Context, in *RefreshToken, opts ...grpc.CallOption) (*UserResponse, error) {
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, "/authGrpc.User/RecreateTokensByRefreshToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userClient) GetQuestion(ctx context.Context, in *UserGetQuestionRequest, opts ...grpc.CallOption) (*UserQuestionResponse, error) {
 	out := new(UserQuestionResponse)
 	err := c.cc.Invoke(ctx, "/authGrpc.User/GetQuestion", in, out, opts...)
@@ -125,6 +135,7 @@ type UserServer interface {
 	SignIn(context.Context, *UserSignInRequest) (*UserResponse, error)
 	SignOut(context.Context, *UserSignOutRequest) (*Nil, error)
 	ValidateAuth(context.Context, *AccessToken) (*UserResponse, error)
+	RecreateTokensByRefreshToken(context.Context, *RefreshToken) (*UserResponse, error)
 	// With token ( authed )
 	// query
 	GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error)
@@ -150,6 +161,9 @@ func (UnimplementedUserServer) SignOut(context.Context, *UserSignOutRequest) (*N
 }
 func (UnimplementedUserServer) ValidateAuth(context.Context, *AccessToken) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateAuth not implemented")
+}
+func (UnimplementedUserServer) RecreateTokensByRefreshToken(context.Context, *RefreshToken) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecreateTokensByRefreshToken not implemented")
 }
 func (UnimplementedUserServer) GetQuestion(context.Context, *UserGetQuestionRequest) (*UserQuestionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetQuestion not implemented")
@@ -248,6 +262,24 @@ func _User_ValidateAuth_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_RecreateTokensByRefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefreshToken)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).RecreateTokensByRefreshToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authGrpc.User/RecreateTokensByRefreshToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).RecreateTokensByRefreshToken(ctx, req.(*RefreshToken))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _User_GetQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UserGetQuestionRequest)
 	if err := dec(in); err != nil {
@@ -342,6 +374,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ValidateAuth",
 			Handler:    _User_ValidateAuth_Handler,
+		},
+		{
+			MethodName: "RecreateTokensByRefreshToken",
+			Handler:    _User_RecreateTokensByRefreshToken_Handler,
 		},
 		{
 			MethodName: "GetQuestion",

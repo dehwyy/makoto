@@ -50,9 +50,13 @@ message AccessToken {
   string access_token = 1;
 }
 
+message RefreshToken {
+  string refresh_token = 2;
+}
+
 // responses
 
-// Only no token required (no auth required) request OR ValidateAuth
+// Only no token required (no auth required) request OR ValidateAuth ( RecreateTokens includes )
 message UserResponse {
   string user_id = 1;
   string access_token = 2;
@@ -81,6 +85,7 @@ service User {
   rpc SignIn(UserSignInRequest) returns (UserResponse); // done
   rpc SignOut(UserSignOutRequest) returns (Nil); // done
   rpc ValidateAuth(AccessToken) returns (UserResponse); // done
+  rpc RecreateTokensByRefreshToken(RefreshToken) returns (UserResponse);
 
   // With token ( authed )
   // query

@@ -86,8 +86,7 @@ func (t *TokenService) SignTokensAndUpdate(username, userId string) (string, str
 	return access_token, refresh_token
 }
 
-// returns UserId | Username | isValid
-func (t *TokenService) ValidateToken(token string) (string, string, bool) {
+func (t *TokenService) ValidateToken(token string) (user_id string, username string, isValid bool) {
 	claims, err := t.jwt.ValidateJwtToken(token)
 	if err != nil {
 		t.l.Errorf("Error validating token: %v", err)
@@ -95,6 +94,25 @@ func (t *TokenService) ValidateToken(token string) (string, string, bool) {
 	}
 
 	return claims.UserId, claims.Username, err == nil
+}
+
+func (t *TokenService) ValidateRefreshToken(token string) (user_id string, username string, isValid bool) {
+	user_id, username, isValid = t.ValidateToken(token)
+
+	if !isValid {
+		return "", "", false
+	}
+
+	var found_token *models.Token
+
+	t.db.Model(&models.Token{}).Where("token = ?", token).First(&found_token)
+
+	t.l.Debugf("Found token: %v", *found_token)
+
+	// ID would be 0 if record wasn't found
+	isValid = found_token.ID != 0
+
+	return user_id, username, isValid
 }
 
 func (t *TokenService) RemoveToken(userId string) error {

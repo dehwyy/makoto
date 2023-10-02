@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// TODO: refactor response errors
+
 func (s *server) SignUp(ctx context.Context, in *auth.UserSignUpRequest) (*auth.UserResponse, error) {
 	// Creating user payload
 
@@ -70,6 +72,8 @@ func (s *server) ValidateAuth(ctx context.Context, in *auth.AccessToken) (*auth.
 	// Validate access_token token sign and encrypt method
 	userId, username, isValid := s.token_service.ValidateToken(in.AccessToken)
 
+	s.log.Debugf("Validating token: %v", isValid)
+
 	if !isValid {
 		return nil, status.Errorf(codes.Unauthenticated, "Invalid access token")
 	}
@@ -80,5 +84,25 @@ func (s *server) ValidateAuth(ctx context.Context, in *auth.AccessToken) (*auth.
 		UserId:       userId,
 		RefreshToken: refresh_token,
 		AccessToken:  acccess_token,
+	}, nil
+}
+
+func (s *server) RecreateTokensByRefreshToken(ctx context.Context, in *auth.RefreshToken) (*auth.UserResponse, error) {
+	user_id, username, isValid := s.token_service.ValidateRefreshToken(in.RefreshToken)
+
+	s.log.Debugf("Validating token: %v", isValid)
+
+	if !isValid {
+		return nil, status.Errorf(codes.Unauthenticated, "Invalid or expired refresh token")
+	}
+
+	s.log.Infof("Recreated tokens for user: %v", username)
+
+	access_token, refresh_token := s.token_service.SignTokensAndUpdate(username, user_id)
+
+	return &auth.UserResponse{
+		UserId:       user_id,
+		RefreshToken: refresh_token,
+		AccessToken:  access_token,
 	}, nil
 }

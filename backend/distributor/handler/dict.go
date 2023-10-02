@@ -28,7 +28,9 @@ func init() {
 
 func (q *queryResolver) GetWords(ctx context.Context, userId *string) (*model.GetWordsResponse, error) {
 	v := middleware.ReadAuthContext(ctx)
+
 	if !v.IsAuth {
+		q.log.Errorf("not authenticated %v", *v)
 		return nil, nil
 	}
 

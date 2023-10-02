@@ -61,11 +61,26 @@ func checkEndpoint(bodyIO io.ReadCloser) (originBody []byte, isOK bool) {
 	return rawBody, !_NO_AUTH_ENDPOINTS[op.OperationName]
 }
 
+func getTokenFromHeader(token string) (string, error) {
+	split_token := strings.Split(token, " ")
+
+	// If user doesn't have token in provided Header[key]
+	if token == "" || len(split_token) < 2 {
+		return "", fmt.Errorf("invalid token: %s", token)
+	}
+
+	// taking only second word cuz token is line "Bearer <token>"
+	token = split_token[1]
+
+	return token, nil
+}
+
 func (m *middleware) Auth() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			originBody, isOk := checkEndpoint(r.Body)
+
 			// actually, we are resetting body to its original state
 			r.Body = io.NopCloser(bytes.NewBuffer(originBody))
 
@@ -75,17 +90,13 @@ func (m *middleware) Auth() func(http.Handler) http.Handler {
 				return
 			}
 
-			auth_token := r.Header.Get("Authorization")
-			split_token := strings.Split(auth_token, " ")
+			auth_token, err := getTokenFromHeader(r.Header.Get("Authorization"))
 
-			// If user doesn't have auth token
-			if auth_token == "" || len(split_token) < 2 {
+			// error would appear if header (or potentially token) is not valid
+			if err != nil || auth_token == "" {
 				responseWithZeroContext(w, r, next)
 				return
 			}
-
-			// taking only second word cuz token is line "Bearer <token>"
-			auth_token = split_token[1]
 
 			// Getting AuthService addr
 			authHost, _ := config.GetOptionByKey("docker_services.auth")
@@ -105,6 +116,41 @@ func (m *middleware) Auth() func(http.Handler) http.Handler {
 			res, err := cl.ValidateAuth(ctx, &authGrpc.AccessToken{
 				AccessToken: auth_token,
 			})
+
+			// ! if no error occured => next handler
+			if err == nil {
+				ctx = context.WithValue(r.Context(), _CONTEXT_AUTH_KEY, &auth_context_value{
+					IsAuth:       true, // cuz no error occured
+					UserId:       res.UserId,
+					AccessToken:  res.AccessToken,
+					RefreshToken: res.RefreshToken,
+				})
+
+				// and call the next with our new context
+				r = r.WithContext(ctx)
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// ! If AccessToken is not valid (expired), error would appear => App will try to recreate Tokens using RefreshToken
+
+			refresh_token, err := getTokenFromHeader(r.Header.Get("RefreshToken"))
+			fmt.Println("REFRESH", refresh_token, err)
+
+			// if err is not nil => RefreshToken is not valid (it either doesn't exist or malformed)
+			if err != nil || refresh_token == "" {
+				responseWithZeroContext(w, r, next)
+				return
+			}
+
+			ctx, cancel = context.WithTimeout(r.Context(), 5*time.Second)
+			defer cancel()
+
+			res, err = cl.RecreateTokensByRefreshToken(ctx, &authGrpc.RefreshToken{
+				RefreshToken: refresh_token,
+			})
+
+			// if something went wrong OR refreshToken is not valid
 			if err != nil {
 				responseWithZeroContext(w, r, next)
 				return
