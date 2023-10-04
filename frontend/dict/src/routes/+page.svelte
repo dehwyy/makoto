@@ -6,7 +6,11 @@
 	import SearchPanel from '$lib/components/index/search-panel.svelte'
 
 	import { FilteredItems, RemoveItemById, SetItems } from './items-store'
-	import { getContext, onMount, setContext } from 'svelte'
+	import { onMount } from 'svelte'
+
+	import type { PageData } from './$houdini'
+	import { isAuthed } from './user-store'
+	export let data: PageData
 
 	let isMounted = false
 
@@ -28,21 +32,18 @@
 		isError && console.log('Error occured', response.statusText)
 	}
 
-	// Loading words
-	import type { PageData } from './$houdini'
-	import { isAuthed } from './user-store'
-	export let data: PageData
-
+	// getting words for common request on load
 	$: ({ GetWords } = data)
+	// setting words to store if exist
 	$: SetItems($GetWords.data?.getWords.words || [])
-
+	// setting isAuthed according to response
 	$: isAuthed.set(!!$GetWords.data?.getWords.tokens?.access_token)
 </script>
 
 {#if isMounted}
 	<main class="py-20 w-[70%] mx-auto flex flex-col gap-y-24 items-center">
 		<!-- search bar -->
-		<div transition:fade={{ duration: 300, delay: 0 }} class="w-1/2 mx-auto">
+		<div transition:fade={{ duration: 300, delay: 0 }} class="w-1/2 mx-auto font-Content">
 			<SearchPanel />
 		</div>
 

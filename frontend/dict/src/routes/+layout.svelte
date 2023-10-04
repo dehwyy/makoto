@@ -1,5 +1,5 @@
 <script lang="ts">
-	import StarsBackground from '$lib/components/stars-background.svelte'
+	import { StarsBackground } from 'makoto-ui-svelte'
 
 	// fonts and tailwind
 	import '../app.css'

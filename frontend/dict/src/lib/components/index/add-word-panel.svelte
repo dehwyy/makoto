@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { scale, fade } from 'svelte/transition'
 	import { AddItem } from '../../../routes/items-store'
-	import Button from '../button.svelte'
-	import Input from '../input.svelte'
-	import Modal from '../modal.svelte'
+	import { Input, Button, Modal } from 'makoto-ui-svelte'
+	import Placeholder from '$lib/components/placeholder.svelte'
 
 	let word = ''
 	let value = ''
@@ -52,14 +51,20 @@
 	}
 </script>
 
-<Modal isOpen={isEdit} close={() => (isEdit = !isEdit)}>
-	<div class="p-10 flex flex-col gap-y-7 w-full">
+<Modal base_width={400} isOpen={isEdit} close={() => (isEdit = !isEdit)}>
+	<div class="p-10 flex flex-col gap-y-7 w-full font-Content">
 		<p class="text-2xl text-center font-Content text-white">
 			New <span class="underline">Word</span>
 		</p>
-		<Input bind:value={word} placeholder="word" />
-		<Input bind:value placeholder="value" />
-		<Input bind:value={extra} placeholder="extra" />
+		<Input bind:value={word} placeholder="word">
+			<Placeholder placeholder="word" />
+		</Input>
+		<Input bind:value placeholder="value">
+			<Placeholder placeholder="value" />
+		</Input>
+		<Input bind:value={extra} placeholder="extra">
+			<Placeholder placeholder="extra" />
+		</Input>
 		<div class="flex flex-wrap gap-x-2 gap-y-2">
 			{#each tags as tag}
 				<div
@@ -83,8 +88,10 @@
 			{#if isInAddingTagsMode}
 				<div
 					transition:fade={{ duration: 300, delay: 0 }}
-					class="absolute z-30 right-10 left-10 bottom-28 flex gap-x-5 text-md">
-					<Input autofocus={true} bind:value={time_tag} />
+					class="absolute z-30 right-10 left-10 bottom-28 flex gap-x-5 text-md font-[600]">
+					<Input autofocus={true} bind:value={time_tag} placeholder="tag">
+						<Placeholder placeholder="tag" />
+					</Input>
 					<div
 						on:click={saveTag}
 						aria-hidden="true"
@@ -95,12 +102,12 @@
 				</div>
 			{/if}
 		</div>
-		<div class="w-full mt-16">
+		<div class="w-full mt-16 font-ContentT text-xl">
 			<Button onClick={addWord}>Add</Button>
 		</div>
 	</div>
 </Modal>
-<div class="w-[40%]">
+<div class="w-full md:w-[40%]">
 	<Button onClick={() => (isEdit = !isEdit)}>
-		<span class="text-xl">Add new word</span></Button>
+		<span class="text-lg font-ContentT font-[600]">Add new word</span></Button>
 </div>

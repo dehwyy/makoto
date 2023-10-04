@@ -20,6 +20,8 @@
         "@sveltejs/kit": "^1.20.4",
         "autoprefixer": "^10.4.16",
         "daisyui": "^3.8.0",
+        "houdini": "^1.2.14",
+        "houdini-svelte": "^1.2.14",
         "postcss": "^8.4.30",
         "prettier": "^2.8.0",
         "prettier-plugin-svelte": "^2.10.1",
@@ -30,9 +32,7 @@
         "tslib": "^2.4.1",
         "typescript": "^5.0.0",
         "vite": "^4.4.2",
-        "vitest": "^0.32.2",
-        "houdini": "^1.2.14",
-        "houdini-svelte": "^1.2.14"
+        "vitest": "^0.32.2"
     },
     "type": "module",
     "dependencies": {

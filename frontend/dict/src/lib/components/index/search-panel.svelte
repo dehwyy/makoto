@@ -1,9 +1,13 @@
 <script lang="ts">
-	import Input from '$lib/components/input.svelte'
+	import { Input } from 'makoto-ui-svelte'
 	import { FilterStore } from '../../../routes/items-store'
+	import Placeholder from '$lib/components/placeholder.svelte'
 
+	const placeholder = 'Enter word to find...'
 	let query = ''
 	$: FilterStore.set(query)
 </script>
 
-<Input bind:value={query} placeholder="Enter word to find..." />
+<Input bind:value={query} {placeholder}>
+	<Placeholder {placeholder} />
+</Input>
