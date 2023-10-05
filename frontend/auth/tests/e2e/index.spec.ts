@@ -5,7 +5,6 @@ test('index page', async ({ page }) => {
 	await page.waitForTimeout(5 * 1000)
 	await page.goto('/')
 
-	await expect(page.getByTestId('hoshi-boshi-bg')).toBeVisible()
 	await expect(page.getByTestId('form')).toBeVisible()
 
 	// heading

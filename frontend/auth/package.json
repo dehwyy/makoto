@@ -46,6 +46,7 @@
 		"@fontsource-variable/comfortaa": "^5.0.8",
 		"@fontsource-variable/shantell-sans": "^5.0.9",
 		"@fontsource/jua": "^5.0.7",
-		"@fontsource/klee-one": "^5.0.7"
+		"@fontsource/klee-one": "^5.0.7",
+		"makoto-ui-svelte": "^0.0.4"
 	}
 }

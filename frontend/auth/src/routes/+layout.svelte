@@ -5,9 +5,9 @@
 	import '@fontsource/jua'
 	import '@fontsource-variable/shantell-sans'
 
-	import HoshiBoshi from '$lib/form/hoshi-boshi.svelte'
+	import { StarsBackground } from 'makoto-ui-svelte'
 </script>
 
-<HoshiBoshi>
+<StarsBackground>
 	<slot />
-</HoshiBoshi>
+</StarsBackground>
