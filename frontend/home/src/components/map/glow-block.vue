@@ -2,7 +2,7 @@
   <div data-cy="glow-block" class="flex justify-center">
     <div class="card relative">
       <div
-        class="face p-5 rounded-2xl border-2 min-h-[100px] min-w-[150px] transition-all duration-500 flex justify-center items-center z-[1] relative bg-base-300">
+        class="face p-5 rounded-2xl min-h-[100px] min-w-[150px] transition-all duration-500 flex justify-center items-center z-[1] relative bg-base-300">
         <h2 class="font-ContentT text-3xl font-[700] text-white">
           <slot name="title" />
         </h2>
@@ -10,7 +10,7 @@
       <div class="pt-[1rem]">
         <div class="content border-2 rounded-2xl transition-all duration-[400ms] bg-base-300 absolute top-0 left-0 right-0">
           <div class="px-5">
-            <p class="font-Content text-sm font-[600] text-white text-center">
+            <p class="font-ContentT text-sm font-[600] text-white text-center">
               <slot name="content" />
             </p>
           </div>

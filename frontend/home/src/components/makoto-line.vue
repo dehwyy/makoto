@@ -42,7 +42,7 @@
 <style>
   .line {
     position: absolute;
-    background-color: #151617;
+    background-color: black;
     transform-origin: 0% 50%;
   }
 

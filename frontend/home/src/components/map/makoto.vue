@@ -49,7 +49,7 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      color: #151617;
+      color: black;
       -webkit-text-stroke: 2px transparent;
       background-clip: text;
       background-image: linear-gradient(to right, #00a2ff, #ff00d2);

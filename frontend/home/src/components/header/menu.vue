@@ -1,6 +1,7 @@
 <script lang="ts" setup>
   import { StateKeys } from '~/constant/state-keys'
-  import { servicesUrl as s } from '../../../../.config/services-url'
+  import { StarsBackground } from 'makoto-ui-vue'
+  import { servicesUrl as s } from '~/constant/service-url'
 
   const isOpen = useState(StateKeys.menu.isOpen, () => false)
   const isAuth = ref(false)
@@ -16,6 +17,8 @@
       { href: s.logout, label: 'logout' },
       { href: s.games, label: 'games' },
       { href: s.codespace, label: 'codespace' },
+      { href: s.dict, label: 'dict' },
+      { href: s.map, label: 'map' },
     ].filter(x => {
       // if label is not "user" or "logout" return Val
       if (!['user', 'logout'].includes(x.label)) return x
@@ -31,38 +34,42 @@
   <div data-cy="menu" class="opacity-100 transition-all delay-300 duration-500 absolute">
     <header-icon-menu-close />
     <div :class="[isOpen ? 'bg-base-300' : '', ' wrapper']">
-      <div class="logo flex flex-col gap-y-5">
-        <nuxt-link href="/">
-          <header-logo />
-        </nuxt-link>
-        <header-locale-changer />
-      </div>
-      <div class="border-t-4 min-h-0 border-primary h-full flex items-center justify-center overflow-y-scroll overflow-x-hidden content-wrapper">
-        <div class="pt-10 ml-10 lg:ml-0 lg:w-min lg:h-min grid lg:grid-flow-col lg:grid-rows-2 lg:grid-cols-none lg:gap-0 gap-y-6 grid-cols-2 low">
-          <div v-for="hex in Hexagons" class="hexagon-item">
-            <div v-for="_ in 2" class="hex-item">
-              <div v-for="__ in 3"></div>
-            </div>
-            <a :href="hex.href">
-              <p class="hex-content pb-10">
-                <span class="flex items-center h-full justify-center svg-wrapper">
-                  <svgo-welcome v-if="hex.label === 'home'" />
-                  <svgo-chat v-else-if="hex.label === 'chat'" />
-                  <svgo-games v-else-if="hex.label === 'games'" />
-                  <svgo-codespace v-else-if="hex.label === 'codespace'" />
-                  <svgo-logout v-else-if="hex.label === 'logout' && !isAuth" />
-                  <svgo-user v-else />
-                </span>
+      <stars-background>
+        <div class="logo flex flex-col gap-y-5">
+          <nuxt-link href="/">
+            <header-logo />
+          </nuxt-link>
+          <header-locale-changer />
+        </div>
+        <div class="min-h-0 h-full flex items-center justify-center overflow-y-scroll overflow-x-hidden content-wrapper">
+          <div class="pt-10 ml-10 lg:ml-0 lg:w-min lg:h-min grid lg:grid-flow-col lg:grid-rows-2 lg:grid-cols-none lg:gap-0 gap-y-6 grid-cols-2 low">
+            <div v-for="hex in Hexagons" class="hexagon-item">
+              <div v-for="_ in 2" class="hex-item">
+                <div v-for="__ in 3"></div>
+              </div>
+              <a :href="hex.href">
+                <p class="hex-content pb-10">
+                  <span class="flex items-center h-full justify-center svg-wrapper">
+                    <svgo-welcome v-if="hex.label === 'home'" />
+                    <svgo-chat v-else-if="hex.label === 'chat'" />
+                    <svgo-games v-else-if="hex.label === 'games'" />
+                    <svgo-codespace v-else-if="hex.label === 'codespace'" />
+                    <svgo-logout v-else-if="hex.label === 'logout' && !isAuth" />
+                    <svgo-dict v-else-if="hex.label === 'dict'" />
+                    <svgo-map v-else-if="hex.label === 'map'" />
+                    <svgo-user v-else />
+                  </span>
 
-                <span class="hex-content-inner font-ContentT font-[600] text-xl title pt-14">{{ t(hex.label) }}</span>
-                <svg viewBox="0 0 174 200" height="200" width="174" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M87 0L174 50L174 150L87 200L0 150L0 50Z" fill="#1d232a"></path>
-                </svg>
-              </p>
-            </a>
+                  <span class="hex-content-inner font-ContentT font-[600] text-xl title pt-14">{{ t(hex.label) }}</span>
+                  <svg viewBox="0 0 174 200" height="200" width="174" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M87 0L174 50L174 150L87 200L0 150L0 50Z" fill="black"></path>
+                  </svg>
+                </p>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      </stars-background>
     </div>
   </div>
 </template>
@@ -75,7 +82,9 @@
     "login": "Login",
     "logout": "Logout",
     "games": "Games",
-    "codespace": "CodeSpace"
+    "codespace": "CodeSpace",
+    "dict": "Dictionary",
+    "map": "Roadmap"
   },
   "ru": {
     "home": "Главная",
@@ -84,7 +93,9 @@
     "login": "Войти",
     "logout": "Выйти",
     "games": "Игры",
-    "codespace": "CodeSpace"
+    "codespace": "CodeSpace",
+    "dict": "Словарик",
+    "map": "Карта"
   }
 }
 </i18n>
@@ -159,7 +170,7 @@
   }
   .hexagon-item:hover .hex-item div::before,
   .hexagon-item:hover .hex-item div::after {
-    background-color: #4629f2;
+    background-color: white;
   }
 
   .hex-item {
@@ -188,7 +199,7 @@
   }
   .hex-item div::before,
   .hex-item div::after {
-    background-color: #1e2530;
+    background-color: #1d232a;
     content: '';
     position: absolute;
     width: 100%;
@@ -229,11 +240,6 @@
     transform: translate(-50%, -50%);
   }
 
-  .hexagon-item:hover .svg-wrapper > svg {
-    fill: #4629f2;
-    stroke: #4629f2;
-    transition: 0.6s;
-  }
   .svg-wrapper > svg {
     stroke-width: 0;
     width: 60px;

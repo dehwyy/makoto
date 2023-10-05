@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import { StarsBackground } from 'makoto-ui-vue'
-  const content = computed(() => ['code', 'games', 'user'])
+  const content = computed(() => ['code', 'games', 'user', 'dict', 'chat'])
 
   const { t } = useI18n({
     useScope: 'local',
@@ -34,6 +34,14 @@
     "user": {
       "title": "User",
       "content": "Admin"
+    },
+    "dict": {
+      "title": "Dictionary",
+      "content": "Key-word pairs"
+    },
+    "chat": {
+      "title": "Chat",
+      "content": "Makoto Community"
     }
   },
   "ru": {
@@ -48,6 +56,14 @@
     "user": {
       "title": "Юзер",
       "content": "Админ"
+    },
+    "dict": {
+      "title": "Словарик",
+      "content": "Пары ключ-значение"
+    },
+    "chat": {
+      "title": "Чат",
+      "content": "Комьюнити Макото"
     }
   }
 }
