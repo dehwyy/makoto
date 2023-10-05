@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   devServer: {
     port: 3000,
   },
+
   googleFonts: {
     preload: true,
     subsets: ['cyrillic', 'latin'],
@@ -24,5 +25,15 @@ export default defineNuxtConfig({
     defaultLocale: 'en',
   },
   srcDir: 'src',
-  css: ['~/assets/global.scss'],
+  css: ['~/assets/global.scss', 'makoto-ui-vue/css'],
+  vite: {
+    ssr: {
+      noExternal: [/\.css$/],
+    },
+    server: {
+      fs: {
+        strict: false,
+      },
+    },
+  },
 })

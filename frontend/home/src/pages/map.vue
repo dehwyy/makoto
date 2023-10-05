@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+  import { StarsBackground } from 'makoto-ui-vue'
   const content = computed(() => ['code', 'games', 'user'])
 
   const { t } = useI18n({
@@ -7,7 +8,7 @@
 </script>
 
 <template>
-  <hoshi-no-sora>
+  <stars-background>
     <header-makoto />
     <map-makoto />
     <map-block-with-line v-for="s in content">
@@ -16,7 +17,7 @@
         <template #content> {{ t(s + '.content') }} </template>
       </map-glow-block>
     </map-block-with-line>
-  </hoshi-no-sora>
+  </stars-background>
 </template>
 
 <i18n lang="json" scoped>
@@ -51,3 +52,9 @@
   }
 }
 </i18n>
+
+<style>
+  .stars__content {
+    overflow: hidden !important;
+  }
+</style>

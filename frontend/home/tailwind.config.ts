@@ -33,7 +33,7 @@ export default <Partial<Config>>{
           accent: '#1D082C',
           neutral: '#3e3f40',
           'base-100': '#1d232a',
-          'base-300': '#151617',
+          'base-300': '#000000',
           info: '#8e97fd',
           success: '#36d399',
           warning: '#fbbd23',

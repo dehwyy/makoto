@@ -1,8 +1,9 @@
-html {
+body {
   overflow: hidden;
   scroll-behavior: smooth;
   color: white;
   @apply font-Content;
+  background-color: black;
 }
 
 ::-webkit-scrollbar {

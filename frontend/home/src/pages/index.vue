@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { Button as ButtonMakoto } from 'makoto-ui-vue'
+
   const { t } = useI18n({
     useScope: 'local',
   })
@@ -16,15 +18,12 @@
           <h2 data-cy="subheading" class="font-[600] text-4xl md:text-5xl lg:text-[3.2rem] font-ContentT">{{ t('subheading') }}</h2>
         </x-translate>
 
-        <nav class="mt-5">
+        <nav class="mt-5 w-[75%]">
           <nuxt-link href="/map">
-            <x-translate direction="right" :delay="750">
-              <button
-                data-cy="button"
-                class="cut btn-primary font-[600] font-ContentT relative rounded-full text-2xl md:text-3xl lg:text-4xl py-3 px-6 transition-all">
-                <span class="cut-top">{{ t('button') }}</span>
-                <span class="cut-bottom">{{ t('button') }}</span>
-              </button>
+            <x-translate class="font-[600] font-ContentT text-2xl" direction="right" :delay="750">
+              <button-makoto :on-click="() => {}">
+                <span>{{ t('button') }}</span>
+              </button-makoto>
             </x-translate>
           </nuxt-link>
         </nav>
@@ -54,8 +53,8 @@
 
 <style lang="scss">
   .main {
-    background: url('/static/images/background.jpg') no-repeat;
-    background-position: right 10%;
+    background: url('/static/images/gradient-black.svg') no-repeat;
+    background-position: 100% 0%;
     display: flex;
     flex: 1;
     height: 100vh;
