@@ -9,3 +9,7 @@ export enum ContextKeys {
 	_NOT_ZERO, // reserved value for 0 as it is the default Number val
 	isAuthed
 }
+
+export const SERVICES = {
+	AUTH: 'http://localhost:3001'
+} as const

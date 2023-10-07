@@ -18,6 +18,11 @@ input EditWordInput {
   wordId: ID!
 }
 
+type GetTagsResponse {
+  tags: [Tag!]!
+  tokens: Tokens
+}
+
 input GetUserByIdInput {
   userId: ID!
 }
@@ -44,6 +49,7 @@ type Mutation {
 
 type Query {
   getQuestion: UserQuestionResponse!
+  getTags: GetTagsResponse!
   getUserById(input: GetUserByIdInput!): UserResponse!
   getUserByUsername(input: GetUserByUsernameInput!): UserResponse!
   getWords(userId: ID): GetWordsResponse!

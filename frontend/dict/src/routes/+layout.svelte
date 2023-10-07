@@ -1,21 +1,27 @@
 <script lang="ts">
-	import { StarsBackground } from 'makoto-ui-svelte'
-
 	// fonts and tailwind
 	import '../app.css'
 	import '@fontsource-variable/comfortaa'
 	import '@fontsource/klee-one'
 	import '@fontsource/jua'
 	import '@fontsource-variable/shantell-sans'
+	// components
 	import Header from '$lib/components/header.svelte'
-	import type { LayoutData } from './$types'
+	import { StarsBackground } from 'makoto-ui-svelte'
+	// stores
+	import { AuthUsername } from '$lib/stores/user-store'
 
+	// fetch current user via auth token if exists
+	import type { LayoutData } from './$types'
+	import { SetTags } from '$lib/stores/items-store'
 	export let data: LayoutData
 
-	$: ({ getUsetById } = data)
+	$: ({ getUsetById, getTags } = data)
+	$: AuthUsername.set($getUsetById.data?.getUserById.username ?? '')
+	$: SetTags($getTags.data?.getTags.tags! ?? [])
 </script>
 
 <StarsBackground>
-	<Header username={$getUsetById.data?.getUserById.username} />
+	<Header />
 	<slot />
 </StarsBackground>

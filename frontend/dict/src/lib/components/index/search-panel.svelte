@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Input } from 'makoto-ui-svelte'
-	import { FilterStore } from '../../../routes/items-store'
+	import { FilterStore } from '$lib/stores/items-store'
 	import Placeholder from '$lib/components/placeholder.svelte'
 
 	const placeholder = 'Enter word to find...'
