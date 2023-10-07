@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 
 option go_package = "github.com/dehwyy/Makoto/backend/grpc/dictGrpc";
 
@@ -45,6 +46,10 @@ message WordResponse {
   repeated Tag tags = 5;
 }
 
+message TagsResponse {
+  repeated Tag tags = 1;
+}
+
 message Words {
   repeated WordResponse words = 1;
 }
@@ -56,6 +61,7 @@ message Status {
 
 service Dict {
   rpc GetWords(UserId) returns (Words);
+  rpc GetTags(google.protobuf.Empty) returns (TagsResponse);
   rpc CreateNewWord(CreateWord) returns (Status);
   rpc RemoveWord(WordId) returns (Status);
   rpc EditWord(UpdateWord) returns (Status);

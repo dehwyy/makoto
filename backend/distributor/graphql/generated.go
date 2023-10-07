@@ -44,6 +44,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	GetTagsResponse struct {
+		Tags   func(childComplexity int) int
+		Tokens func(childComplexity int) int
+	}
+
 	GetWordsResponse struct {
 		Tokens func(childComplexity int) int
 		Words  func(childComplexity int) int
@@ -62,6 +67,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetQuestion       func(childComplexity int) int
+		GetTags           func(childComplexity int) int
 		GetUserByID       func(childComplexity int, input model.GetUserByIDInput) int
 		GetUserByUsername func(childComplexity int, input model.GetUserByUsernameInput) int
 		GetWords          func(childComplexity int, userID *string) int
@@ -119,6 +125,7 @@ type QueryResolver interface {
 	GetUserByUsername(ctx context.Context, input model.GetUserByUsernameInput) (*model.UserResponse, error)
 	GetUserByID(ctx context.Context, input model.GetUserByIDInput) (*model.UserResponse, error)
 	GetQuestion(ctx context.Context) (*model.UserQuestionResponse, error)
+	GetTags(ctx context.Context) (*model.GetTagsResponse, error)
 	GetWords(ctx context.Context, userID *string) (*model.GetWordsResponse, error)
 }
 
@@ -136,6 +143,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "GetTagsResponse.tags":
+		if e.complexity.GetTagsResponse.Tags == nil {
+			break
+		}
+
+		return e.complexity.GetTagsResponse.Tags(childComplexity), true
+
+	case "GetTagsResponse.tokens":
+		if e.complexity.GetTagsResponse.Tokens == nil {
+			break
+		}
+
+		return e.complexity.GetTagsResponse.Tokens(childComplexity), true
 
 	case "GetWordsResponse.tokens":
 		if e.complexity.GetWordsResponse.Tokens == nil {
@@ -248,6 +269,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetQuestion(childComplexity), true
+
+	case "Query.getTags":
+		if e.complexity.Query.GetTags == nil {
+			break
+		}
+
+		return e.complexity.Query.GetTags(childComplexity), true
 
 	case "Query.getUserById":
 		if e.complexity.Query.GetUserByID == nil {
@@ -537,6 +565,11 @@ type GetWordsResponse {
   tokens: Tokens
 }
 
+type GetTagsResponse {
+  tags: [Tag!]!
+  tokens: Tokens
+}
+
 #                       //
 
 # ! CreateWord
@@ -556,7 +589,8 @@ input EditWordInput {
 
 # type Query {
 #   getWords(userId: ID): GetWordsResponse! # IF ` + "`" + `userId` + "`" + ` is not provided -> would be taken from ` + "`" + `tokens` + "`" + `
-# }
+#   getTags(): GetTagsResponse!
+#}
 
 # type Mutation {
 #   createWord(word: Word!): Tokens
@@ -648,6 +682,7 @@ type Query {
   getQuestion: UserQuestionResponse! # done
 
   # ! dict
+  getTags: GetTagsResponse!
   getWords(userId: ID): GetWordsResponse!
 }
 `, BuiltIn: false},
@@ -860,6 +895,103 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _GetTagsResponse_tags(ctx context.Context, field graphql.CollectedField, obj *model.GetTagsResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GetTagsResponse_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Tag)
+	fc.Result = res
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GetTagsResponse_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GetTagsResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "tagId":
+				return ec.fieldContext_Tag_tagId(ctx, field)
+			case "text":
+				return ec.fieldContext_Tag_text(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GetTagsResponse_tokens(ctx context.Context, field graphql.CollectedField, obj *model.GetTagsResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GetTagsResponse_tokens(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tokens, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Tokens)
+	fc.Result = res
+	return ec.marshalOTokens2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐTokens(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GetTagsResponse_tokens(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GetTagsResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "access_token":
+				return ec.fieldContext_Tokens_access_token(ctx, field)
+			case "refresh_token":
+				return ec.fieldContext_Tokens_refresh_token(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tokens", field.Name)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _GetWordsResponse_words(ctx context.Context, field graphql.CollectedField, obj *model.GetWordsResponse) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GetWordsResponse_words(ctx, field)
@@ -1597,6 +1729,56 @@ func (ec *executionContext) fieldContext_Query_getQuestion(ctx context.Context, 
 				return ec.fieldContext_UserQuestionResponse_question(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserQuestionResponse", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getTags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTags(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.GetTagsResponse)
+	fc.Result = res
+	return ec.marshalNGetTagsResponse2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐGetTagsResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "tags":
+				return ec.fieldContext_GetTagsResponse_tags(ctx, field)
+			case "tokens":
+				return ec.fieldContext_GetTagsResponse_tokens(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type GetTagsResponse", field.Name)
 		},
 	}
 	return fc, nil
@@ -4623,6 +4805,47 @@ func (ec *executionContext) unmarshalInputWord(ctx context.Context, obj interfac
 
 // region    **************************** object.gotpl ****************************
 
+var getTagsResponseImplementors = []string{"GetTagsResponse"}
+
+func (ec *executionContext) _GetTagsResponse(ctx context.Context, sel ast.SelectionSet, obj *model.GetTagsResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, getTagsResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GetTagsResponse")
+		case "tags":
+			out.Values[i] = ec._GetTagsResponse_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tokens":
+			out.Values[i] = ec._GetTagsResponse_tokens(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var getWordsResponseImplementors = []string{"GetWordsResponse"}
 
 func (ec *executionContext) _GetWordsResponse(ctx context.Context, sel ast.SelectionSet, obj *model.GetWordsResponse) graphql.Marshaler {
@@ -4826,6 +5049,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getQuestion(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getTags":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTags(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -5558,6 +5803,20 @@ func (ec *executionContext) unmarshalNChangePasswordByAnswerInput2githubᚗcom�
 func (ec *executionContext) unmarshalNChangePasswordInput2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐChangePasswordInput(ctx context.Context, v interface{}) (model.ChangePasswordInput, error) {
 	res, err := ec.unmarshalInputChangePasswordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGetTagsResponse2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐGetTagsResponse(ctx context.Context, sel ast.SelectionSet, v model.GetTagsResponse) graphql.Marshaler {
+	return ec._GetTagsResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGetTagsResponse2ᚖgithubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐGetTagsResponse(ctx context.Context, sel ast.SelectionSet, v *model.GetTagsResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._GetTagsResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNGetUserByIdInput2githubᚗcomᚋdehwyyᚋMakotoᚋbackendᚋdistributorᚋgraphqlᚋmodelᚐGetUserByIDInput(ctx context.Context, v interface{}) (model.GetUserByIDInput, error) {

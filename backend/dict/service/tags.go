@@ -35,6 +35,14 @@ func (t *TagsService) GetTagOrCreate(text string) *tag_model {
 	return tag
 }
 
+func (t *TagsService) GetAllTags() []tag_model {
+	var tags []tag_model
+
+	t.db.Model(&tag_model{}).Find(&tags)
+
+	return tags
+}
+
 func (t *TagsService) GetTag(text string) (*tag_model, error) {
 
 	// struct to store value

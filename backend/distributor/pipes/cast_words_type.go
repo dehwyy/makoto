@@ -18,14 +18,7 @@ func CastWordsGrpcToGraphQL(words []*dictGrpc.WordResponse) []*model.WordWithID 
 	// pipe each Word
 	for _, word := range words {
 
-		// pipe tags
-		var word_tags []*model.Tag
-		for _, tag := range word.Tags {
-			word_tags = append(word_tags, &model.Tag{
-				TagID: Uint32ToString(tag.TagId),
-				Text:  tag.Text,
-			})
-		}
+		word_tags := CastTagsGrpcToGraphQL(word.Tags)
 
 		res = append(res, &model.WordWithID{
 			WordID: Uint32ToString(word.Id),

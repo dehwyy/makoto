@@ -25,6 +25,11 @@ type GetWordsResponse {
   tokens: Tokens
 }
 
+type GetTagsResponse {
+  tags: [Tag!]!
+  tokens: Tokens
+}
+
 #                       //
 
 # ! CreateWord
@@ -44,7 +49,8 @@ input EditWordInput {
 
 # type Query {
 #   getWords(userId: ID): GetWordsResponse! # IF `userId` is not provided -> would be taken from `tokens`
-# }
+#   getTags(): GetTagsResponse!
+#}
 
 # type Mutation {
 #   createWord(word: Word!): Tokens

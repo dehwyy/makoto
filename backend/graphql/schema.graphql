@@ -82,5 +82,6 @@ type Query {
   getQuestion: UserQuestionResponse! # done
 
   # ! dict
+  getTags: GetTagsResponse!
   getWords(userId: ID): GetWordsResponse!
 }

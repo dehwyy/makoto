@@ -11,6 +11,7 @@ import (
 	"github.com/dehwyy/Makoto/backend/distributor/middleware"
 	"github.com/dehwyy/Makoto/backend/distributor/pipes"
 	dictGrpc "github.com/dehwyy/Makoto/backend/grpc/gen/dict/go/proto"
+	"github.com/golang/protobuf/ptypes/empty"
 )
 
 var (
@@ -60,6 +61,38 @@ func (q *queryResolver) GetWords(ctx context.Context, userId *string) (*model.Ge
 
 	return &model.GetWordsResponse{
 		Words: casted_words,
+		Tokens: &model.Tokens{
+			AccessToken:  v.AccessToken,
+			RefreshToken: v.RefreshToken,
+		},
+	}, nil
+}
+
+func (q *queryResolver) GetTags(ctx context.Context) (*model.GetTagsResponse, error) {
+	v := middleware.ReadAuthContext(ctx)
+
+	if !v.IsAuth {
+		q.log.Errorf("not authenticated %v", *v)
+		return nil, nil
+	}
+
+	g := rpc()
+	g.CreateConnection(dict_addr, q.log)
+	defer g.Conn.Close()
+
+	client := dictGrpc.NewDictClient(g.Conn)
+
+	ctx, cancel := context.WithTimeout(ctx, dict_cancel_timeout)
+	defer cancel()
+
+	res, err := client.GetTags(ctx, &empty.Empty{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.GetTagsResponse{
+		Tags: pipes.CastTagsGrpcToGraphQL(res.Tags),
 		Tokens: &model.Tokens{
 			AccessToken:  v.AccessToken,
 			RefreshToken: v.RefreshToken,

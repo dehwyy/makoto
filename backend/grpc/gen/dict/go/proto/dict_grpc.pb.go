@@ -8,6 +8,7 @@ package dictGrpc
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -23,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DictClient interface {
 	GetWords(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*Words, error)
+	GetTags(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*TagsResponse, error)
 	CreateNewWord(ctx context.Context, in *CreateWord, opts ...grpc.CallOption) (*Status, error)
 	RemoveWord(ctx context.Context, in *WordId, opts ...grpc.CallOption) (*Status, error)
 	EditWord(ctx context.Context, in *UpdateWord, opts ...grpc.CallOption) (*Status, error)
@@ -39,6 +41,15 @@ func NewDictClient(cc grpc.ClientConnInterface) DictClient {
 func (c *dictClient) GetWords(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*Words, error) {
 	out := new(Words)
 	err := c.cc.Invoke(ctx, "/Dict/GetWords", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dictClient) GetTags(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*TagsResponse, error) {
+	out := new(TagsResponse)
+	err := c.cc.Invoke(ctx, "/Dict/GetTags", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +88,7 @@ func (c *dictClient) EditWord(ctx context.Context, in *UpdateWord, opts ...grpc.
 // for forward compatibility
 type DictServer interface {
 	GetWords(context.Context, *UserId) (*Words, error)
+	GetTags(context.Context, *empty.Empty) (*TagsResponse, error)
 	CreateNewWord(context.Context, *CreateWord) (*Status, error)
 	RemoveWord(context.Context, *WordId) (*Status, error)
 	EditWord(context.Context, *UpdateWord) (*Status, error)
@@ -89,6 +101,9 @@ type UnimplementedDictServer struct {
 
 func (UnimplementedDictServer) GetWords(context.Context, *UserId) (*Words, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWords not implemented")
+}
+func (UnimplementedDictServer) GetTags(context.Context, *empty.Empty) (*TagsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTags not implemented")
 }
 func (UnimplementedDictServer) CreateNewWord(context.Context, *CreateWord) (*Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewWord not implemented")
@@ -126,6 +141,24 @@ func _Dict_GetWords_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DictServer).GetWords(ctx, req.(*UserId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dict_GetTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DictServer).GetTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Dict/GetTags",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DictServer).GetTags(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -194,6 +227,10 @@ var Dict_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWords",
 			Handler:    _Dict_GetWords_Handler,
+		},
+		{
+			MethodName: "GetTags",
+			Handler:    _Dict_GetTags_Handler,
 		},
 		{
 			MethodName: "CreateNewWord",

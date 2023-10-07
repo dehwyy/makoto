@@ -7,6 +7,7 @@ go 1.20
 require (
 	github.com/dehwyy/Makoto/backend/grpc v0.0.0-20230823231942-a77cbbbe49b6
 	github.com/dehwyy/logd v0.1.0-alpha
+	github.com/golang/protobuf v1.5.3
 	github.com/spf13/viper v1.16.0
 	google.golang.org/grpc v1.58.2
 	gorm.io/driver/postgres v1.5.2
@@ -16,7 +17,6 @@ require (
 require (
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

@@ -66,6 +66,11 @@ func (r *queryResolver) GetQuestion(ctx context.Context) (*model.UserQuestionRes
 	panic(fmt.Errorf("not implemented: GetQuestion - getQuestion"))
 }
 
+// GetTags is the resolver for the getTags field.
+func (r *queryResolver) GetTags(ctx context.Context) (*model.GetTagsResponse, error) {
+	panic(fmt.Errorf("not implemented: GetTags - getTags"))
+}
+
 // GetWords is the resolver for the getWords field.
 func (r *queryResolver) GetWords(ctx context.Context, userID *string) (*model.GetWordsResponse, error) {
 	panic(fmt.Errorf("not implemented: GetWords - getWords"))

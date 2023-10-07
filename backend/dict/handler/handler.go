@@ -5,6 +5,7 @@ import (
 
 	rpc "github.com/dehwyy/Makoto/backend/grpc/gen/dict/go/proto"
 	"github.com/dehwyy/makoto/backend/dict/pipes"
+	"github.com/golang/protobuf/ptypes/empty"
 )
 
 func (s *server) GetWords(ctx context.Context, in *rpc.UserId) (*rpc.Words, error) {
@@ -17,6 +18,14 @@ func (s *server) GetWords(ctx context.Context, in *rpc.UserId) (*rpc.Words, erro
 
 	return &rpc.Words{
 		Words: casted_words,
+	}, nil
+}
+
+func (s *server) GetTags(context.Context, *empty.Empty) (*rpc.TagsResponse, error) {
+	tags := s.tags_service.GetAllTags()
+
+	return &rpc.TagsResponse{
+		Tags: pipes.CastTagsToGrpcOutput(tags),
 	}, nil
 }
 

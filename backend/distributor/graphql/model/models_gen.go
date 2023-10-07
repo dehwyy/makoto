@@ -17,6 +17,11 @@ type EditWordInput struct {
 	Word   *Word  `json:"word"`
 }
 
+type GetTagsResponse struct {
+	Tags   []*Tag  `json:"tags"`
+	Tokens *Tokens `json:"tokens,omitempty"`
+}
+
 type GetUserByIDInput struct {
 	UserID string `json:"userId"`
 }

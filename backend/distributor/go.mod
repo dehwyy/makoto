@@ -9,6 +9,7 @@ require (
 	github.com/dehwyy/Makoto/backend/grpc v0.0.0-20230823231942-a77cbbbe49b6
 	github.com/dehwyy/logd v0.1.0-alpha
 	github.com/go-chi/chi/v5 v5.0.10
+	github.com/golang/protobuf v1.5.3
 	github.com/rs/cors v1.10.0
 	github.com/spf13/viper v1.16.0
 	github.com/vektah/gqlparser/v2 v2.5.8
@@ -20,7 +21,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
