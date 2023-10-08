@@ -1,17 +1,7 @@
-# Makoto - microservice-based fullstack App
+# makoto/v2
 
-## Backend Technologies:
-- Go
-- GRPC
-- Graphql
+## techonologies:
+- ProtocolBuffers (twirp / grpc)
+- OAuth2
+- GORM
 - Docker
-- Postgres
-- GORM (ORM for go)
-
-## Frontend Technologies:
-- SvelteKit
-- Nuxt
-- Tailwind
-- Playwright/Cypress/Vitest
-- (GraphQL)
-- [MakotoUI](https://github.com/dehwyy/makoto-ui) - same owner's package for reusable components (Vue, Svelte)]
