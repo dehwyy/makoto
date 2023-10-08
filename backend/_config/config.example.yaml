@@ -1,8 +1,0 @@
-# <INT> means that the value could be parsed but looks like "3333" (be in quotes)
-# <STR> means that it would should string
-server: # these are ports
-  distributor: <INT>
-  auth: <INT>
-docker_services: #services names, I guess should not be changed
-  distributor: "distributor"
-  auth: "auth"

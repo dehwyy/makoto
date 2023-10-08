@@ -1,8 +1,0 @@
-{
-  "arrowParens": "avoid",
-  "semi": false,
-  "singleQuote": true,
-  "bracketSameLine": true,
-  "vueIndentScriptAndStyle": true,
-  "printWidth": 150
-}
