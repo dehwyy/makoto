@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package auth;
+option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/auth";
+
+service Auth {
+  rpc SignIn(SignInRequest) returns (AuthResponse);
+}
+
+message SignInRequest {
+  // Credentials: if User.Provider == local (db) @see /libs/models/user_data.go
+  message UserCredentials {
+    oneof unique_identifier {
+      string email = 101;
+      string username = 102;
+    }
+    string password = 103;
+  }
+  // OAuth: input either Token or Code (which would get token itself)
+  message UserOAuth2 {
+    oneof token_or_code {
+      string token = 201;
+      string code = 202;
+    }
+  }
+  UserOAuth2 token = 1;
+  UserCredentials credentials = 2; // should be provided if SignIn not via OAuth2
+}
+
+message AuthResponse {
+  string username = 1;
+}

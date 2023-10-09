@@ -5,6 +5,7 @@ go 1.21.2
 replace (
 	github.com/dehwyy/makoto/config => ../../config
 	github.com/dehwyy/makoto/libs/logger => ../../libs/logger
+	github.com/dehwyy/makoto/libs/grpc => ../../libs/grpc
 )
 
 require (
@@ -19,6 +20,7 @@ require (
 	cloud.google.com/go/compute v1.23.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/BurntSushi/toml v1.3.2 // indirect
+	github.com/go-chi/chi/v5 v5.0.10 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/ilyakaznacheev/cleanenv v1.5.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

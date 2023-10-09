@@ -5,4 +5,5 @@ use (
   ./apps/auth
   ./libs/logger
   ./libs/models
+  ./libs/grpc
 )
