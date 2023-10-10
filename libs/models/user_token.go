@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserToken struct {
@@ -11,4 +13,5 @@ type UserToken struct {
 	RefreshToken string    `gorm:"not null"`
 	Expiry       time.Time `gorm:"not null"`
 	// @see https://pkg.go.dev/golang.org/x/oauth2#Token
+	UserId uuid.UUID
 }

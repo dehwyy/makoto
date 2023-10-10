@@ -14,7 +14,7 @@ type oauth2_provider struct {
 
 // Summary Config
 
-type config struct {
+type Config struct {
 	// Ports
 	Ports struct {
 		Gateway string `yaml:"gateway" env-default:"5000"`
@@ -33,8 +33,8 @@ type config struct {
 }
 
 // should end with "/"
-func New(path_to_root string) config {
-	var cfg config
+func New(path_to_root string) Config {
+	var cfg Config
 	cleanenv.ReadConfig(createPath(path_to_root), &cfg)
 	return cfg
 }

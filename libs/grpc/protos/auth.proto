@@ -23,8 +23,11 @@ message SignInRequest {
       string code = 202;
     }
   }
-  UserOAuth2 token = 1;
-  UserCredentials credentials = 2; // should be provided if SignIn not via OAuth2
+
+  oneof auth_method {
+    UserCredentials credentials = 1; // should be provided if SignIn not via OAuth2
+    UserOAuth2 oauth2 = 2;
+  }
 }
 
 message AuthResponse {

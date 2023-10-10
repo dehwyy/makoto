@@ -8,6 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type TokenRepositoryReadonly interface {
+	GetToken(access_token string) (*models.UserToken, error)
+}
+
 type TokenRepository struct {
 	db *gorm.DB
 	l  logger.Logger
@@ -20,10 +24,29 @@ func NewTokenRepository(db *gorm.DB, l logger.Logger) *TokenRepository {
 	}
 }
 
-func (t *TokenRepository) GetToken(access_token string) (*models.UserToken, *uuid.UUID) {
-	return nil, nil
+func (t *TokenRepository) GetToken(access_token string) (*models.UserToken, error) {
+	var token models.UserToken
+
+	res := t.db.Model(&models.UserToken{}).Where("access_token = ?", access_token).First(&token)
+
+	return &token, res.Error
 }
 
-func (t *TokenRepository) SaveToken(userId uuid.UUID, token *oauth2.Token) error {
-	return nil
+func (t *TokenRepository) UpdateToken(userId uuid.UUID, token *oauth2.Token) error {
+	return t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Updates(&models.UserToken{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry,
+		TokenType:    token.TokenType,
+	}).Error
+}
+
+func (t *TokenRepository) CreateToken(userId uuid.UUID, token *oauth2.Token) error {
+	return t.db.Model(&models.UserToken{}).Create(&models.UserToken{
+		UserId:       userId,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry,
+		TokenType:    token.TokenType,
+	}).Error
 }

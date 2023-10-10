@@ -1,0 +1,17 @@
+{
+  "name": "@makoto/config",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "prebuild": "rm -rf ./dist",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "yaml": "^2.3.2"
+  },
+  "devDependencies": {
+    "bun-plugin-dts": "^0.2.1"
+  }
+}

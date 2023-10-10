@@ -1,1 +1,0 @@
-## Twirp's AuthService implementation
