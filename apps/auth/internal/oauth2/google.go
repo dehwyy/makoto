@@ -74,17 +74,6 @@ func (g *Google) GetToken(access_token, code string) (*oauth2lib.Token, *uuid.UU
 		return nil, nil, Redirect // no reason to provide 2nd arg - user_id
 	}
 
-	// // TODO: I guess new_token.AccessToken would be different from token_from_db.AccessToken as It's a new token xd
-	// if new_token.AccessToken == token_from_db.AccessToken {
-	// 	return new_token, Success
-	// }
-
-	// err = g.token_repository.SaveToken(*userId, new_token)
-	// if err != nil {
-	// 	g.l.Errorf("token save: %v", err)
-	// 	return nil, InternalError
-	// }
-
 	return new_token, &token_from_db.UserId, Success
 }
 
@@ -101,10 +90,12 @@ func (g *Google) DoRequest(endpoint GoogleEndpoint, token *oauth2lib.Token) (*ht
 func (g *Google) createTokenByCode(code string) *oauth2lib.Token {
 	ctx := context.Background()
 
-	token, err := g.config.Exchange(ctx, code)
+	token, err := g.config.Exchange(ctx, code, oauth2lib.AccessTypeOffline)
 	if err != nil {
 		g.l.Errorf("token exchange: %v", err)
 	}
+
+	g.l.Debugf("TOKEN EXCHANGE: %v", token)
 
 	return token
 }

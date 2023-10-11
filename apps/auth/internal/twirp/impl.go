@@ -2,6 +2,7 @@ package twirp
 
 import (
 	"context"
+	"strings"
 
 	"github.com/dehwyy/makoto/apps/auth/internal/oauth2"
 	"github.com/dehwyy/makoto/apps/auth/internal/pipes"
@@ -49,8 +50,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		// go through oauth2 flow
 
 		// found_user_id is userId which was found by access_token in db, would be nil if not exists
-		token, found_user_id, status := s.oauth2_google.GetToken(oauth2_input.GetToken(), oauth2_input.GetCode())
-
+		token, found_user_id, status := s.oauth2_google.GetToken(s.parseBearerToken(oauth2_input.GetToken()), oauth2_input.GetCode())
 		switch status {
 		case oauth2.Redirect:
 			return nil, tw.NewError(tw.Unauthenticated, "provide google credentials")
@@ -130,4 +130,17 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 	}
 
 	return nil, nil
+}
+
+func (s *Server) parseBearerToken(bearer_token string) (token string) {
+	if bearer_token == "" {
+		return
+	}
+
+	token = strings.Split(bearer_token, " ")[1]
+	if len(token) < 1 {
+		return
+	}
+
+	return token
 }
