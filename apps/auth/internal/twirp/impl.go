@@ -46,9 +46,9 @@ func NewTwirpServer(db *gorm.DB, config config.Config, l logger.Logger) auth.Twi
 
 func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
 
+	// OAuth2 SignIn flow
 	if oauth2_input := req.GetOauth2(); oauth2_input != nil {
-		// go through oauth2 flow
-
+		// TODO: write helper func which would return OAuth2Interface with func like `GetTokens`, `DoRequest`
 		// found_user_id is userId which was found by access_token in db, would be nil if not exists
 		token, found_user_id, status := s.oauth2_google.GetToken(s.parseBearerToken(oauth2_input.GetToken()), oauth2_input.GetCode())
 		switch status {
@@ -128,6 +128,8 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			Username: GoogleResponse.Name,
 		}, nil
 	}
+
+	// By credentials
 
 	return nil, nil
 }

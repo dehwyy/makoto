@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"github.com/dehwyy/makoto/libs/database/models"
 	"github.com/dehwyy/makoto/libs/logger"
-	"github.com/dehwyy/makoto/libs/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

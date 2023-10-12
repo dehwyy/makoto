@@ -3,9 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/dehwyy/makoto/apps/auth/internal/db"
 	"github.com/dehwyy/makoto/apps/auth/internal/twirp"
 	"github.com/dehwyy/makoto/config"
+	"github.com/dehwyy/makoto/libs/database"
 	"github.com/dehwyy/makoto/libs/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -17,7 +17,7 @@ var (
 )
 
 func main() {
-	db := db.New(cfg.Databases.Auth, l)
+	db := database.New(cfg.Databases.Auth, l)
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{

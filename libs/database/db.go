@@ -1,10 +1,10 @@
-package db
+package database
 
 import (
 	"time"
 
+	"github.com/dehwyy/makoto/libs/database/models"
 	"github.com/dehwyy/makoto/libs/logger"
-	"github.com/dehwyy/makoto/libs/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

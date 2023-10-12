@@ -3,7 +3,8 @@ go 1.21.2
 use (
   ./config
   ./apps/auth
+  ./apps/hashmap
   ./libs/logger
-  ./libs/models
+  ./libs/database
   ./libs/grpc
 )

@@ -1,7 +1,7 @@
 package pipes
 
 import (
-	"github.com/dehwyy/makoto/libs/models"
+	"github.com/dehwyy/makoto/libs/database/models"
 	"golang.org/x/oauth2"
 )
 
