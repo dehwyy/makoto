@@ -1,0 +1,12 @@
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+node_modules
+.idea
+.vscode
+.env
+.env.*
+!.env.example

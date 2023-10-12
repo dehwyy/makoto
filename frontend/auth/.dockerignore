@@ -1,0 +1,17 @@
+.vscode
+.github
+.svelte-kit
+node_modules
+playwright-report
+tests
+.dockerignore
+.env
+.eslintignore
+.eslintrc.cjs
+.gitignore
+.npmrc
+.prettierignore
+.prettierrc
+playwright.config.tests
+README.md
+Dockerfile
