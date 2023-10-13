@@ -31,6 +31,8 @@ func main() {
 
 	twirp := twirp.NewTwirpServer(db, cfg, l)
 
+	l.Infof("Server started, %v", cfg.Ports.Auth)
+
 	r.Mount(twirp.PathPrefix(), twirp)
 	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+cfg.Ports.Auth, twirp))
 }

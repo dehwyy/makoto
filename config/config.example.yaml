@@ -2,6 +2,7 @@ ports:
   gateway: <string>
   auth: <string>
 frontend_ports:
+  home: <string>
   auth: <string>
 databases:
   auth: <postgres dsn>

@@ -28,7 +28,7 @@ type Server struct {
 }
 
 func NewTwirpServer(db *gorm.DB, config config.Config, l logger.Logger) auth.TwirpServer {
-	token_repo := repository.NewTokenRepository(db, l)
+	token_repo := repository.NewTokenRepository(db, l, config.JwtSecret)
 	user_repo := repository.NewUserRepository(db, l)
 
 	return auth.NewAuthServer(&Server{
@@ -44,7 +44,46 @@ func NewTwirpServer(db *gorm.DB, config config.Config, l logger.Logger) auth.Twi
 	})
 }
 
+func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.AuthResponse, error) {
+	s.l.Debugf("%v", req)
+	user_uuid := uuid.New()
+
+	if err := s.user_repository.CreateUser(repository.CreateUserPayload{
+		ID:       user_uuid,
+		Id:       user_uuid.String(),
+		Email:    req.Email,
+		Username: req.Username,
+		Picture:  "",
+		Password: req.Password,
+		Provider: repository.ProviderLocal,
+	}); err != nil {
+		s.l.Errorf("create user: %v", err)
+		return nil, err
+	}
+
+	// actually create
+	token, err := s.token_repository.CreateOrUpdateToken(user_uuid, req.Username)
+
+	if err != nil {
+		s.l.Errorf("create token: %v", err)
+		return nil, err
+	}
+
+	tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token)
+
+	return &auth.AuthResponse{
+		Username: req.Username,
+	}, nil
+}
+
 func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
+	// TODO: by Authorization header ( bearer token )
+
+	headers, _ := tw.HTTPRequestHeaders(ctx)
+	token := headers.Get("Authorization")
+	// if token != "" {
+	// 	return nil, nil
+	// }
 
 	// OAuth2 SignIn flow
 	if oauth2_input := req.GetOauth2(); oauth2_input != nil {
@@ -71,7 +110,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			Picture string `json:"picture"`
 			// email:dehwyy@gmail.com
 			// given_name:dehwyy
-			// id: 103623406957472659691
+			// id: 103623406957472659690
 			// name:dehwyy
 			// picture: `https://lh3.googleusercontent.com/a/ACg8ocLE4oqn1c6KC1jgzJB3vL3hhJBDEKxINbHfQmG34Ubrozk=s96-c`
 		}
@@ -91,9 +130,9 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 				ID:       user_uuid,
 				Id:       GoogleResponse.Id,
 				Email:    GoogleResponse.Email,
-				Name:     GoogleResponse.Name,
-				Picture:  GoogleResponse.Picture,
-				Provider: "google",
+				Username: GoogleResponse.Name,
+				Picture:  strings.Split(GoogleResponse.Picture, "=")[0], // it would remove fixed size of image in this case `s96-c`
+				Provider: repository.ProviderGoogle,
 				Password: "", // no password actually
 			}
 
@@ -103,7 +142,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 				return nil, err
 			}
 
-			err = s.token_repository.CreateToken(user_uuid, token)
+			err = s.token_repository.CreateTokenByOAuth2Token(user_uuid, token)
 			if err != nil {
 				s.l.Errorf("create token: %v", err)
 				return nil, err
@@ -116,7 +155,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			}, err
 		}
 
-		err = s.token_repository.UpdateToken(*found_user_id, token)
+		err = s.token_repository.UpdateTokenByOAuth2Token(*found_user_id, token)
 		if err != nil {
 			s.l.Errorf("save token: %v", err)
 			return nil, err
@@ -129,9 +168,36 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		}, nil
 	}
 
-	// By credentials
+	// ! By credentials
+	credentials := req.GetCredentials()
+	// either username or email should be provided
+	username := credentials.GetUsername()
+	email := credentials.GetEmail()
+	//
+	password := credentials.GetPassword()
 
-	return nil, nil
+	userId, err := s.user_repository.ValidateUser(repository.ValidateUserPayload{
+		Username: username,
+		Email:    email,
+		Password: password,
+	})
+
+	// TODO: handle error properly
+	if err != nil {
+		return nil, nil
+	}
+
+	// would update it
+	token, err = s.token_repository.CreateOrUpdateToken(*userId, token)
+	if err != nil {
+		return nil, err
+	}
+
+	tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token)
+
+	return &auth.AuthResponse{
+		Username: username,
+	}, nil
 }
 
 func (s *Server) parseBearerToken(bearer_token string) (token string) {

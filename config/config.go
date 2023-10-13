@@ -30,6 +30,9 @@ type Config struct {
 	Oauth2 struct {
 		Google oauth2_provider `yaml:"google"`
 	} `yaml:"oauth2"`
+
+	// Jwt
+	JwtSecret string `yaml:"jwt_secret" env-default:"secret"`
 }
 
 // should end with "/"

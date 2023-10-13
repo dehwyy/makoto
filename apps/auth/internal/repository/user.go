@@ -1,10 +1,23 @@
 package repository
 
 import (
+	"errors"
+
+	"github.com/dehwyy/makoto/apps/auth/internal/utils"
 	"github.com/dehwyy/makoto/libs/database/models"
 	"github.com/dehwyy/makoto/libs/logger"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+)
+
+const (
+	ProviderGoogle models.AuthProvider = models.ProviderGoogle
+	ProviderLocal                      = models.ProviderLocal
+)
+
+var (
+	USER_NOT_FOUND      = errors.New("User not found")
+	USER_WRONG_PASSWORD = errors.New("Wrong password")
 )
 
 type CreateUserPayload struct {
@@ -12,17 +25,24 @@ type CreateUserPayload struct {
 	ID       uuid.UUID
 	Id       string
 	Email    string
-	Name     string
+	Username string
 	Picture  string
 	Password string
 
 	// UserSpecification
-	Provider string
+	Provider models.AuthProvider
+}
+
+type ValidateUserPayload struct {
+	Username string
+	Email    string
+	Password string
 }
 
 type UserRepository struct {
-	db *gorm.DB
-	l  logger.Logger
+	db     *gorm.DB
+	hasher utils.Hasher
+	l      logger.Logger
 }
 
 func NewUserRepository(db *gorm.DB, l logger.Logger) *UserRepository {
@@ -34,15 +54,45 @@ func NewUserRepository(db *gorm.DB, l logger.Logger) *UserRepository {
 }
 
 func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {
+	hashed_password, err := u.hasher.Hash(user_payload.Password)
+	if err != nil {
+		return err
+	}
+
 	return u.db.Model(&models.UserData{}).Create(&models.UserData{
 		ID:         user_payload.ID,
-		Username:   user_payload.Name,
+		Username:   user_payload.Username,
 		Email:      user_payload.Email,
 		CustomId:   user_payload.Id,
 		Picture:    user_payload.Picture,
 		Provider:   user_payload.Provider,
 		Role:       "user",
 		ProviderId: user_payload.Id,
-		Password:   user_payload.Password,
+		Password:   hashed_password,
 	}).Error
+}
+
+func (u *UserRepository) ValidateUser(user_payload ValidateUserPayload) (id *uuid.UUID, err error) {
+	var user_data models.UserData
+
+	u.l.Debugf("user_payload %v", user_payload)
+
+	if user_payload.Email != "" {
+		u.db.Model(&models.UserData{}).Where("email = ?", user_payload.Email).First(&user_data)
+	} else {
+		u.db.Model(&models.UserData{}).Where("username = ?", user_payload.Username).First(&user_data)
+	}
+
+	// if username is equal to "" => user wasn't found as "" is a default string's value
+	if user_data.Username == "" {
+		return nil, USER_NOT_FOUND
+	}
+
+	is_valid := u.hasher.Compare(user_payload.Password, user_data.Password)
+	if !is_valid {
+		return nil, USER_WRONG_PASSWORD
+	}
+
+	return &user_data.ID, nil
+
 }

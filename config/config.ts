@@ -8,6 +8,7 @@ interface Config {
   }
   frontend_ports: {
     auth: string
+    home: string
   }
   oauth2: {
     google: {

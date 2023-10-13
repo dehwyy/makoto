@@ -16,8 +16,10 @@ require (
 	github.com/dehwyy/makoto/libs/logger v0.0.0-20231012081555-72f2af8b2218
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/cors v1.2.1
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.1
 	github.com/twitchtv/twirp v8.1.3+incompatible
+	golang.org/x/crypto v0.9.0
 	golang.org/x/oauth2 v0.13.0
 	gorm.io/gorm v1.25.5
 )
@@ -37,7 +39,6 @@ require (
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect

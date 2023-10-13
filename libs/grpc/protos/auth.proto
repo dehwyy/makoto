@@ -4,7 +4,14 @@ package auth;
 option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/auth";
 
 service Auth {
+  rpc SignUp(SignUpRequest) returns (AuthResponse);
   rpc SignIn(SignInRequest) returns (AuthResponse);
+}
+
+message SignUpRequest {
+  string username = 1;
+  string password = 2;
+  string email = 3;
 }
 
 message SignInRequest {
@@ -18,6 +25,7 @@ message SignInRequest {
   }
   // OAuth: input either Token or Code (which would get token itself)
   message UserOAuth2 {
+    string provider = 200;
     oneof token_or_code {
       string token = 201;
       string code = 202;
