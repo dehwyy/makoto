@@ -14,10 +14,6 @@
       ]
     }
   },
-  "scripts": {
-    "gen-auth": "protoc --ts_out ./generated/auth --ts_opt=generate_dependencies,eslint_disable --proto_path ./protos auth.proto",
-    "auth": "gen-auth tsc"
-  },
   "dependencies": {
     "@protobuf-ts/plugin": "^2.9.1"
   }

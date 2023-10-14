@@ -20,12 +20,12 @@ fn main() {
         fs::create_dir_all(PATH_GENERATED.to_owned() + "/" + filename).unwrap();
 
         let go_args = format!(
-            "--go_out=./generated/{0} --twirp_out=./generated/{0} --go_opt=paths=source_relative --twirp_opt=paths=source_relative --proto_path=./protos {1}",
+            "--go_out=./generated/{0} --experimental_allow_proto3_optional --twirp_out=./generated/{0} --go_opt=paths=source_relative --twirp_opt=paths=source_relative --proto_path=./protos {1}",
             filename, filename_with_ext
         );
 
         let ts_args = format!(
-            "--ts_out=./generated/{0} --ts_opt=generate_dependencies,eslint_disable --proto_path ./protos {1}",
+            "--ts_out=./generated/{0} --experimental_allow_proto3_optional --ts_opt=generate_dependencies,eslint_disable --proto_path ./protos {1}",
             filename, filename_with_ext
         );
 
