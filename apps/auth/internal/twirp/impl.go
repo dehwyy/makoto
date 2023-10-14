@@ -6,14 +6,15 @@ import (
 	"strings"
 
 	"github.com/dehwyy/makoto/apps/auth/internal/oauth2"
-	"github.com/dehwyy/makoto/apps/auth/internal/pipes"
 	"github.com/dehwyy/makoto/apps/auth/internal/repository"
 	"github.com/dehwyy/makoto/config"
+	"github.com/dehwyy/makoto/libs/database/models"
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/logger"
 	"github.com/dehwyy/makoto/libs/middleware"
 	"github.com/google/uuid"
 	tw "github.com/twitchtv/twirp"
+	oauth2lib "golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +24,7 @@ type Server struct {
 	user_repository  *repository.UserRepository
 
 	// oauth
-	oauth2_google *oauth2.Google
+	oauth2 *oauth2.OAuth2
 
 	//
 	l logger.Logger
@@ -39,7 +40,7 @@ func NewTwirpServer(db *gorm.DB, config config.Config, l logger.Logger) auth.Twi
 		user_repository:  user_repo,
 
 		// oauth
-		oauth2_google: oauth2.NewGoogleOAuth2(config.Oauth2.Google.Id, config.Oauth2.Google.Secret, config.Oauth2.Google.RedirectURL, token_repo, l),
+		oauth2: oauth2.NewOAuth2(token_repo, config, l),
 
 		// logger
 		l: l,
@@ -79,24 +80,29 @@ func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.Aut
 func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
 
 	token := s.parseBearerToken(middleware.WithAuthorizationMiddlewareRead(ctx))
-
+	var found_token *models.UserToken
+	var found_user *models.UserData
 	// ! `if authorization header exists -> try to auth via token
 	s.l.Debugf("req %v", req)
 	if req.GetEmpty() != nil {
-		s.l.Debugf("HERE")
+		s.l.Debugf("empty with token value: %v", token)
 		// try to find this token in db
-		found_token, err := s.token_repository.GetToken(token)
+		token_db, err := s.token_repository.GetToken(token)
 		if err != nil {
 			s.l.Errorf("get token: %v", err)
 			return nil, tw.PermissionDenied.Error(err.Error())
 		}
 
 		user, err := s.user_repository.GetUserById(repository.GetUserPayload{
-			Id: &found_token.UserId,
+			Id: &token_db.UserId,
 		})
+		if err != nil {
+			s.l.Errorf("get user: %v", err)
+			return nil, tw.PermissionDenied.Error(err.Error())
+		}
 
 		if user.Provider == repository.ProviderLocal {
-			if s.token_repository.ValidateToken(found_token.AccessToken) != nil {
+			if s.token_repository.ValidateToken(token_db.AccessToken) != nil {
 				return nil, tw.Unauthenticated.Error("token expired")
 			}
 
@@ -107,54 +113,49 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 
 			s.l.Infof("User found by Authorization header: %v", *user)
 
-			s.setAuthorizationHeader(ctx, found_token.AccessToken)
+			s.setAuthorizationHeader(ctx, token_db.AccessToken)
 
 			return &auth.AuthResponse{
 				Username: user.Username,
 			}, nil
 		}
 
-		token = found_token.AccessToken
+		found_user = user
+		found_token = token_db
 	}
 
 	// OAuth2 SignIn flow
-	if oauth2_input := req.GetOauth2(); oauth2_input != nil || token != "" {
-		// TODO: write helper func which would return OAuth2Interface with func like `GetTokens`, `DoRequest`
-		// found_user_id is userId which was found by access_token in db, would be nil if not exists
+	if oauth2_input := req.GetOauth2(); oauth2_input != nil || found_user != nil {
 		s.l.Debugf("token %s", token)
-		token, status := s.oauth2_google.GetToken(token, oauth2_input.GetCode())
+
+		// is it ok? xd
+		var oauth2_inst oauth2.OAuth2Provider
+		var token_db *oauth2lib.Token
+		var status oauth2.TokenStatus
+
+		// direct request
+		if oauth2_input != nil {
+			oauth2_inst = s.oauth2.GetProviderInstance(oauth2_input.Provider)
+			token_db, status = oauth2_inst.GetToken(token, oauth2_input.GetCode())
+
+		} else { // only token request (it proceeds here from above (scope `if request is Empty`))
+			oauth2_inst = s.oauth2.GetProviderInstance(string(found_user.Provider))
+			token_db, status = oauth2_inst.GetToken(found_token.AccessToken, "")
+		}
 
 		switch status {
 		case oauth2.Redirect:
-			return nil, tw.NewError(tw.Unauthenticated, "provide google credentials")
+			return nil, tw.NewError(tw.Unauthenticated, "provide provider credentials")
 		case oauth2.InternalError:
 			return nil, tw.NewError(tw.Internal, "internal error")
 		}
 
-		res, err := s.oauth2_google.DoRequest(oauth2.GoogleProfile, token)
+		response, err := oauth2_inst.GetOAuth2UserByToken(token_db)
 		if err != nil {
-			s.l.Errorf("request: %v", err)
-			return nil, err
+			return nil, tw.InternalErrorf("internal error %v", err.Error())
 		}
 
-		var GoogleResponse struct {
-			Id      string `json:"id"`
-			Email   string `json:"email"`
-			Name    string `json:"name"`
-			Picture string `json:"picture"`
-			// email:dehwyy@gmail.com
-			// given_name:dehwyy
-			// id: 103623406957472659690
-			// name:dehwyy
-			// picture: `https://lh3.googleusercontent.com/a/ACg8ocLE4oqn1c6KC1jgzJB3vL3hhJBDEKxINbHfQmG34Ubrozk=s96-c`
-		}
-
-		if err := pipes.Body2Struct(res.Body, &GoogleResponse); err != nil {
-			s.l.Errorf("pipes res.body %v", err)
-			return nil, err
-		}
-
-		found_user, err := s.user_repository.GetUserByProviderId(GoogleResponse.Id)
+		found_user, err := s.user_repository.GetUserByProviderId(response.Id)
 
 		//  if no user was found => create new user + new token in db => return
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -164,11 +165,11 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			// creating payload from response and other data
 			createUserPayload := repository.CreateUserPayload{
 				ID:       user_uuid,
-				Id:       GoogleResponse.Id,
-				Email:    GoogleResponse.Email,
-				Username: GoogleResponse.Name,
-				Picture:  strings.Split(GoogleResponse.Picture, "=")[0], // it would remove fixed size of image in this case `s96-c`
-				Provider: repository.ProviderGoogle,
+				Id:       response.Id,
+				Email:    response.Email,
+				Username: response.Username,
+				Picture:  response.Picture, // it would remove fixed size of image in this case `s96-c`
+				Provider: models.AuthProvider(oauth2_inst.GetProviderName()),
 				Password: "", // no password actually
 			}
 
@@ -178,30 +179,30 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 				return nil, err
 			}
 
-			err = s.token_repository.CreateTokenByOAuth2Token(user_uuid, token)
+			err = s.token_repository.CreateTokenByOAuth2Token(user_uuid, token_db)
 			if err != nil {
 				s.l.Errorf("create token: %v", err)
 				return nil, err
 			}
 
 			// Set header
-			tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token.AccessToken)
+			tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token_db.AccessToken)
 			return &auth.AuthResponse{
-				Username: GoogleResponse.Name,
+				Username: response.Username,
 			}, err
 		}
 
 		// else if user was found => update token in db
-		err = s.token_repository.UpdateTokenByOAuth2Token(found_user.ID, token)
+		err = s.token_repository.UpdateTokenByOAuth2Token(found_user.ID, token_db)
 		if err != nil {
 			s.l.Errorf("save token: %v", err)
 			return nil, err
 		}
 
 		// set header
-		tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token.AccessToken)
+		tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token_db.AccessToken)
 		return &auth.AuthResponse{
-			Username: GoogleResponse.Name,
+			Username: response.Username,
 		}, nil
 	}
 
@@ -213,7 +214,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		Username: credentials.GetUsername(),
 		Email:    credentials.GetEmail(),
 		// always
-		Password: credentials.Password,
+		Password: credentials.GetPassword(),
 	})
 
 	if errors.Is(err, repository.USER_NOT_FOUND) {
