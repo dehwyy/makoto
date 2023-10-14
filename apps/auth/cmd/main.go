@@ -7,6 +7,7 @@ import (
 	"github.com/dehwyy/makoto/config"
 	"github.com/dehwyy/makoto/libs/database"
 	"github.com/dehwyy/makoto/libs/logger"
+	"github.com/dehwyy/makoto/libs/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
@@ -30,9 +31,8 @@ func main() {
 	}))
 
 	twirp := twirp.NewTwirpServer(db, cfg, l)
+	r.Mount(twirp.PathPrefix(), middleware.WithAuthorizationMiddleware(twirp))
 
-	l.Infof("Server started, %v", cfg.Ports.Auth)
-
-	r.Mount(twirp.PathPrefix(), twirp)
-	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+cfg.Ports.Auth, twirp))
+	l.Infof("Server started on port %v", cfg.Ports.Auth)
+	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+cfg.Ports.Auth, r))
 }

@@ -37,16 +37,8 @@ func (t *TokenRepository) GetToken(access_token string) (*models.UserToken, erro
 	return &token, res.Error
 }
 
-func (t *TokenRepository) UpdateTokenByOAuth2Token(userId uuid.UUID, token *oauth2.Token) error {
-	return t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Updates(&models.UserToken{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		Expiry:       token.Expiry,
-		TokenType:    token.TokenType,
-	}).Error
-}
-
-func (t *TokenRepository) CreateOrUpdateToken(userId uuid.UUID, username string) (token string, err error) {
+// ! if authorization method is credentials
+func (t *TokenRepository) CreateToken(userId uuid.UUID, username string) (token string, err error) {
 	jwtPayload := utils.JwtPayload{
 		Username: username,
 		UserId:   userId.String(),
@@ -59,20 +51,6 @@ func (t *TokenRepository) CreateOrUpdateToken(userId uuid.UUID, username string)
 		return "", errors.New("failed to create token")
 	}
 
-	// clarify whehter certain token is already linked with user (via user_id)
-	// if it is => update instead of creata
-	var user_token models.UserToken
-
-	t.db.Model(&user_token).Where("user_id = ?", userId).First(&user_token)
-	if user_token.AccessToken != "" {
-		return token, t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Updates(&models.UserToken{
-			AccessToken:  token,
-			RefreshToken: refresh_token,
-			Expiry:       exp,
-		}).Error
-	}
-
-	// simply create
 	return token, t.db.Model(&models.UserToken{}).Create(&models.UserToken{
 		UserId:       userId,
 		AccessToken:  token,
@@ -82,7 +60,37 @@ func (t *TokenRepository) CreateOrUpdateToken(userId uuid.UUID, username string)
 	}).Error
 }
 
-// if authorization method is OAuth2
+func (t *TokenRepository) UpdateToken(userId uuid.UUID, username string) (token string, err error) {
+	token, exp, err := t.jwt.NewAccessToken(utils.JwtPayload{
+		Username: username,
+		UserId:   userId.String(),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Updates(&models.UserToken{
+		AccessToken: token,
+		Expiry:      exp,
+	}).Error
+}
+
+func (t *TokenRepository) ValidateToken(token string) error {
+	_, err := t.jwt.ValidateJwtToken(token)
+	return err
+}
+
+// ! if authorization method is OAuth2
+func (t *TokenRepository) UpdateTokenByOAuth2Token(userId uuid.UUID, token *oauth2.Token) error {
+	return t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Updates(&models.UserToken{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry,
+		TokenType:    token.TokenType,
+	}).Error
+}
+
 func (t *TokenRepository) CreateTokenByOAuth2Token(userId uuid.UUID, token *oauth2.Token) error {
 	return t.db.Model(&models.UserToken{}).Create(&models.UserToken{
 		UserId:       userId,

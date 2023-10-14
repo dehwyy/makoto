@@ -13,8 +13,9 @@ export class RpcInterceptors {
 					options.meta = {}
 				}
 				if (header_value) {
-					options.meta['Authorization'] = header_value
+					options.meta['Authorization'] = 'Bearer ' + header_value
 				}
+
 				return next(method, input, options)
 			}
 		}

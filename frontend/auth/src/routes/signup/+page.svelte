@@ -4,12 +4,12 @@
 	import GoogleIcon from '$lib/components/icons/google.svelte'
 	import type { Snapshot } from './$types'
 	import Input from '$lib/components/input.svelte'
+	import { SignUpFetch } from '$lib/api/typed-fetch'
 
 	let username: string = ''
+	let email: string = ''
 	let password: string = ''
 	let repeatedPassword: string = ''
-	let question: string = ''
-	let answer: string = ''
 
 	type SnapshotT = Record<'username', string>
 	export const snapshot: Snapshot<SnapshotT> = {
@@ -19,6 +19,16 @@
 		restore: value => {
 			username = value.username
 		}
+	}
+
+	const SignUp = async () => {
+		const response = await SignUpFetch({
+			email,
+			password,
+			username
+		})
+
+		console.log(response.status)
 	}
 </script>
 
@@ -31,13 +41,12 @@
 
 		<div class="w-full flex flex-col gap-y-3 font-Content">
 			<Input bind:value={username} placeholder="username" />
+			<Input bind:value={email} placeholder="email" />
 			<Input ableToChangeVisibility={true} bind:value={password} placeholder="password" />
 			<Input isPasswordType={true} bind:value={repeatedPassword} placeholder="confirm password" />
-			<Input bind:value={question} placeholder="control question" />
-			<Input bind:value={answer} placeholder="answer on question" />
 		</div>
 		<div class="mt-10 w-full font-ContentT font-[600] text-lg">
-			<Button onClick={() => {}}>Sign Up</Button>
+			<Button onClick={SignUp}>Sign Up</Button>
 		</div>
 		<div class="w-full flex justify-center gap-x-1 mt-2">
 			<p class="text-Content text-[#818181]">Already has account?</p>

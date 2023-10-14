@@ -20,6 +20,11 @@ var (
 	USER_WRONG_PASSWORD = errors.New("Wrong password")
 )
 
+type GetUserPayload struct {
+	Id       *uuid.UUID
+	CustomId string
+}
+
 type CreateUserPayload struct {
 	// UserData
 	ID       uuid.UUID
@@ -51,6 +56,18 @@ func NewUserRepository(db *gorm.DB, l logger.Logger) *UserRepository {
 		db: db,
 		l:  l,
 	}
+}
+
+func (u *UserRepository) GetUserById(user_payload GetUserPayload) (user *models.UserData, erorr error) {
+	if user_payload.Id != nil {
+		return user, u.db.Model(&models.UserData{}).Where("id = ?", *user_payload.Id).First(&user).Error
+	}
+
+	return user, u.db.Model(&models.UserData{}).Where("custom_id = ?", user_payload.CustomId).First(&user).Error
+}
+
+func (u *UserRepository) GetUserByProviderId(provider_id string) (user *models.UserData, erorr error) {
+	return user, u.db.Model(&models.UserData{}).Where("provider_id = ?", provider_id).First(&user).Error
 }
 
 func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {

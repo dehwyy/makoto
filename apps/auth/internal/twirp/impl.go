@@ -2,6 +2,7 @@ package twirp
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/dehwyy/makoto/apps/auth/internal/oauth2"
@@ -10,6 +11,7 @@ import (
 	"github.com/dehwyy/makoto/config"
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/logger"
+	"github.com/dehwyy/makoto/libs/middleware"
 	"github.com/google/uuid"
 	tw "github.com/twitchtv/twirp"
 	"gorm.io/gorm"
@@ -44,8 +46,8 @@ func NewTwirpServer(db *gorm.DB, config config.Config, l logger.Logger) auth.Twi
 	})
 }
 
+// Only for credentials
 func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.AuthResponse, error) {
-	s.l.Debugf("%v", req)
 	user_uuid := uuid.New()
 
 	if err := s.user_repository.CreateUser(repository.CreateUserPayload{
@@ -58,18 +60,16 @@ func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.Aut
 		Provider: repository.ProviderLocal,
 	}); err != nil {
 		s.l.Errorf("create user: %v", err)
-		return nil, err
+		return nil, tw.InternalError(err.Error())
 	}
 
-	// actually create
-	token, err := s.token_repository.CreateOrUpdateToken(user_uuid, req.Username)
-
+	token, err := s.token_repository.CreateToken(user_uuid, req.Username)
 	if err != nil {
 		s.l.Errorf("create token: %v", err)
-		return nil, err
+		return nil, tw.InternalError(err.Error())
 	}
 
-	tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token)
+	s.setAuthorizationHeader(ctx, token)
 
 	return &auth.AuthResponse{
 		Username: req.Username,
@@ -77,19 +77,53 @@ func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.Aut
 }
 
 func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
-	// TODO: by Authorization header ( bearer token )
 
-	headers, _ := tw.HTTPRequestHeaders(ctx)
-	token := headers.Get("Authorization")
-	// if token != "" {
-	// 	return nil, nil
-	// }
+	token := s.parseBearerToken(middleware.WithAuthorizationMiddlewareRead(ctx))
+
+	// ! `if authorization header exists -> try to auth via token
+	s.l.Debugf("req %v", req)
+	if req.GetEmpty() != nil {
+		s.l.Debugf("HERE")
+		// try to find this token in db
+		found_token, err := s.token_repository.GetToken(token)
+		if err != nil {
+			s.l.Errorf("get token: %v", err)
+			return nil, tw.PermissionDenied.Error(err.Error())
+		}
+
+		user, err := s.user_repository.GetUserById(repository.GetUserPayload{
+			Id: &found_token.UserId,
+		})
+
+		if user.Provider == repository.ProviderLocal {
+			if s.token_repository.ValidateToken(found_token.AccessToken) != nil {
+				return nil, tw.Unauthenticated.Error("token expired")
+			}
+
+			// actually error should not appear heere
+			if err != nil {
+				return nil, tw.InternalError(err.Error())
+			}
+
+			s.l.Infof("User found by Authorization header: %v", *user)
+
+			s.setAuthorizationHeader(ctx, found_token.AccessToken)
+
+			return &auth.AuthResponse{
+				Username: user.Username,
+			}, nil
+		}
+
+		token = found_token.AccessToken
+	}
 
 	// OAuth2 SignIn flow
-	if oauth2_input := req.GetOauth2(); oauth2_input != nil {
+	if oauth2_input := req.GetOauth2(); oauth2_input != nil || token != "" {
 		// TODO: write helper func which would return OAuth2Interface with func like `GetTokens`, `DoRequest`
 		// found_user_id is userId which was found by access_token in db, would be nil if not exists
-		token, found_user_id, status := s.oauth2_google.GetToken(s.parseBearerToken(oauth2_input.GetToken()), oauth2_input.GetCode())
+		s.l.Debugf("token %s", token)
+		token, status := s.oauth2_google.GetToken(token, oauth2_input.GetCode())
+
 		switch status {
 		case oauth2.Redirect:
 			return nil, tw.NewError(tw.Unauthenticated, "provide google credentials")
@@ -120,8 +154,10 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			return nil, err
 		}
 
-		// if token == nil => no user was found => create new user + new token in db
-		if found_user_id == nil {
+		found_user, err := s.user_repository.GetUserByProviderId(GoogleResponse.Id)
+
+		//  if no user was found => create new user + new token in db => return
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// generate new uuid for user
 			user_uuid := uuid.New()
 
@@ -155,7 +191,8 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			}, err
 		}
 
-		err = s.token_repository.UpdateTokenByOAuth2Token(*found_user_id, token)
+		// else if user was found => update token in db
+		err = s.token_repository.UpdateTokenByOAuth2Token(found_user.ID, token)
 		if err != nil {
 			s.l.Errorf("save token: %v", err)
 			return nil, err
@@ -170,38 +207,39 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 
 	// ! By credentials
 	credentials := req.GetCredentials()
-	// either username or email should be provided
-	username := credentials.GetUsername()
-	email := credentials.GetEmail()
-	//
-	password := credentials.GetPassword()
 
 	userId, err := s.user_repository.ValidateUser(repository.ValidateUserPayload{
-		Username: username,
-		Email:    email,
-		Password: password,
+		// ? either Username or Email would/should be provided
+		Username: credentials.GetUsername(),
+		Email:    credentials.GetEmail(),
+		// always
+		Password: credentials.Password,
 	})
 
-	// TODO: handle error properly
+	if errors.Is(err, repository.USER_NOT_FOUND) {
+		return nil, tw.NewError(tw.Unauthenticated, "user with provided credentials wasn't found")
+
+	} else if errors.Is(err, repository.USER_WRONG_PASSWORD) {
+		return nil, tw.NewError(tw.Unauthenticated, "wrong password")
+
+	} // would not return unnamed error => no simple check for nil
+
+	token, err = s.token_repository.UpdateToken(*userId, token)
 	if err != nil {
-		return nil, nil
+		return nil, tw.InternalError(err.Error())
 	}
 
-	// would update it
-	token, err = s.token_repository.CreateOrUpdateToken(*userId, token)
-	if err != nil {
-		return nil, err
-	}
-
-	tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token)
+	// settings http authorization header
+	s.setAuthorizationHeader(ctx, token)
 
 	return &auth.AuthResponse{
-		Username: username,
+		Username: credentials.GetUsername(),
 	}, nil
 }
 
 func (s *Server) parseBearerToken(bearer_token string) (token string) {
-	if bearer_token == "" {
+	split_token := strings.Split(bearer_token, " ")
+	if len(split_token) < 2 {
 		return
 	}
 
@@ -211,4 +249,8 @@ func (s *Server) parseBearerToken(bearer_token string) (token string) {
 	}
 
 	return token
+}
+
+func (s *Server) setAuthorizationHeader(ctx context.Context, token string) {
+	tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token)
 }

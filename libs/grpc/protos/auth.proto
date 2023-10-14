@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 
 package auth;
 option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/auth";
@@ -23,18 +24,17 @@ message SignInRequest {
     }
     string password = 103;
   }
-  // OAuth: input either Token or Code (which would get token itself)
+  //
   message UserOAuth2 {
     string provider = 200;
-    oneof token_or_code {
-      string token = 201;
-      string code = 202;
-    }
+    optional string code = 201; // could be provided on direct authorization
   }
+
 
   oneof auth_method {
     UserCredentials credentials = 1; // should be provided if SignIn not via OAuth2
     UserOAuth2 oauth2 = 2;
+    google.protobuf.Empty empty = 3; // via AuthoizationHeader
   }
 }
 

@@ -5,6 +5,7 @@
 	import GoogleIcon from '$lib/components/icons/google.svelte'
 	import Underscore from '$lib/components/link.svelte'
 	import Input from '$lib/components/input.svelte'
+	import { SignInFetch } from '$lib/api/typed-fetch'
 
 	let username: string = ''
 	let password: string = ''
@@ -17,6 +18,11 @@
 		restore: value => {
 			username = value.username
 		}
+	}
+
+	const SignIn = async () => {
+		const response = await SignInFetch({ password, username })
+		console.log(response.status)
 	}
 </script>
 
@@ -32,7 +38,7 @@
 			<Input bind:value={password} placeholder="password" />
 		</div>
 		<div class="mt-10 w-full font-ContentT font-[600] text-lg">
-			<Button onClick={() => {}}>Log In</Button>
+			<Button onClick={SignIn}>Log In</Button>
 		</div>
 		<div class="w-full flex justify-center gap-x-1 mt-2">
 			<p class="font-ContentT text-[#818181]">No account yet?</p>

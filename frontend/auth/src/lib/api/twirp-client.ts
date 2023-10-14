@@ -3,7 +3,8 @@ import { AuthClient as GeneratedAuthClient } from '$rpc/generated/auth/auth.clie
 import { CONFIG } from '$lib/const'
 
 const transport = new TwirpFetchTransport({
-	baseUrl: `http://localhost:${CONFIG.ports.auth}/twirp`
+	baseUrl: `http://localhost:${CONFIG.ports.auth}/twirp`,
+	interceptors: [{}]
 })
 
 const AuthClient = new GeneratedAuthClient(transport)

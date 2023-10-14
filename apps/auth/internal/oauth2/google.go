@@ -8,7 +8,6 @@ import (
 	"github.com/dehwyy/makoto/apps/auth/internal/pipes"
 	"github.com/dehwyy/makoto/apps/auth/internal/repository"
 	"github.com/dehwyy/makoto/libs/logger"
-	"github.com/google/uuid"
 	oauth2lib "golang.org/x/oauth2"
 	oauth2google "golang.org/x/oauth2/google"
 )
@@ -47,34 +46,34 @@ func NewGoogleOAuth2(clientId, secret, redirectURL string, token_repository repo
 	}
 }
 
-func (g *Google) GetToken(access_token, code string) (*oauth2lib.Token, *uuid.UUID, TokenStatus) {
+func (g *Google) GetToken(access_token, code string) (*oauth2lib.Token, TokenStatus) {
 	ctx := context.Background()
 
 	if access_token == "" {
 		token := g.createTokenByCode(code)
-		return token, nil, Success
+		return token, Success
 	}
 
 	token_from_db, err := g.token_repository.GetToken(access_token)
 	if err != nil {
 		g.l.Errorf("token get: %v", err)
-		return nil, nil, InternalError
+		return nil, InternalError
 	}
 
 	oauth2_token := pipes.ToOAuth2TokenFromDbModel(token_from_db)
 
 	// clarify whether Token is not expired
 	if token_from_db.Expiry.After(time.Now()) {
-		return oauth2_token, &token_from_db.UserId, Success
+		return oauth2_token, Success
 	}
 
 	new_token, err := g.config.TokenSource(ctx, oauth2_token).Token() // renew token OR
 	if err != nil {
 		g.l.Errorf("token renew: %v", err)
-		return nil, nil, Redirect // no reason to provide 2nd arg - user_id
+		return nil, Redirect // no reason to provide 2nd arg - user_id
 	}
 
-	return new_token, &token_from_db.UserId, Success
+	return new_token, Success
 }
 
 func (g *Google) DoRequest(endpoint GoogleEndpoint, token *oauth2lib.Token) (*http.Response, error) {
