@@ -39,5 +39,6 @@ message SignInRequest {
 }
 
 message AuthResponse {
-  string username = 1;
+  string userId = 1;
+  string username = 2;
 }

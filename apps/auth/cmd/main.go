@@ -31,7 +31,7 @@ func main() {
 	}))
 
 	twirp := twirp.NewTwirpServer(db, cfg, l)
-	r.Mount(twirp.PathPrefix(), middleware.WithAuthorizationMiddleware(twirp))
+	r.Mount(twirp.PathPrefix(), middleware.WithAuthorizationHeaderMiddleware(twirp))
 
 	l.Infof("Server started on port %v", cfg.Ports.Auth)
 	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+cfg.Ports.Auth, r))

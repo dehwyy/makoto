@@ -74,12 +74,13 @@ func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.Aut
 
 	return &auth.AuthResponse{
 		Username: req.Username,
+		UserId:   user_uuid.String(),
 	}, nil
 }
 
 func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
 
-	token := s.parseBearerToken(middleware.WithAuthorizationMiddlewareRead(ctx))
+	token := s.parseBearerToken(middleware.WithAuthorizationHeaderMiddlewareRead(ctx))
 	var found_token *models.UserToken
 	var found_user *models.UserData
 	// ! `if authorization header exists -> try to auth via token
@@ -117,6 +118,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 
 			return &auth.AuthResponse{
 				Username: user.Username,
+				UserId:   user.ID.String(),
 			}, nil
 		}
 
@@ -189,6 +191,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token_db.AccessToken)
 			return &auth.AuthResponse{
 				Username: response.Username,
+				UserId:   user_uuid.String(),
 			}, err
 		}
 
@@ -203,6 +206,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token_db.AccessToken)
 		return &auth.AuthResponse{
 			Username: response.Username,
+			UserId:   found_user.ID.String(),
 		}, nil
 	}
 
@@ -235,6 +239,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 
 	return &auth.AuthResponse{
 		Username: credentials.GetUsername(),
+		UserId:   userId.String(),
 	}, nil
 }
 
