@@ -1,11 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "exclude": ["node_modules"],
-  "include": ["./generated/**/*.ts", "./lib/**/*.ts"],
+  "include": ["./src/**/*.ts"],
   "compilerOptions": {
     "sourceMap": false,
     "outDir": "./dist",
     "skipLibCheck": true,
-    "declaration": false,
   }
 }

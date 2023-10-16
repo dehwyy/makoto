@@ -1,10 +1,11 @@
 import type { RequestHandler } from '@sveltejs/kit'
-import { SignUpFetch, GetFromRequest } from '$lib/api/typed-fetch'
-import { AuthClient } from '$lib/api/twirp-client'
-import { MakotoCookiesAutorization } from '$lib/api/cookies'
+import { SignUpFetch } from '$lib/api/fetches'
+import { TypedFetch as tp } from '@makoto/lib/typed-fetch'
+import { AuthClient } from '@makoto/grpc/$lib/clients'
+import { MakotoCookiesAutorization } from '@makoto/lib/cookies'
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
-	const req = await GetFromRequest(request, SignUpFetch)
+	const req = await tp.Get(request, SignUpFetch)
 
 	const { response, headers } = await AuthClient.signUp(req)
 

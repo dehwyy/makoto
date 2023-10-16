@@ -1,7 +1,7 @@
 import { redirect, type RequestHandler } from '@sveltejs/kit'
-import { AuthClient } from '$lib/api/twirp-client'
-import { RpcInterceptors } from '$lib/api/prc-interceptors'
-import { MakotoCookiesAutorization } from '$lib/api/cookies'
+import { AuthClient } from '@makoto/grpc/$lib/clients'
+import { RpcInterceptors } from '@makoto/grpc/$lib/interceptors'
+import { MakotoCookiesAutorization } from '@makoto/lib/cookies'
 
 export const GET: RequestHandler = async event => {
 	const code = event.url.searchParams.get('code')

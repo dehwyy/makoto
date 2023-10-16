@@ -4,7 +4,7 @@
 	import GoogleIcon from '$lib/components/icons/google.svelte'
 	import type { Snapshot } from './$types'
 	import Input from '$lib/components/input.svelte'
-	import { SignUpFetch } from '$lib/api/typed-fetch'
+	import { SignUpFetch } from '$lib/api/fetches'
 
 	let username: string = ''
 	let email: string = ''

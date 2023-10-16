@@ -5,7 +5,7 @@
 	import GoogleIcon from '$lib/components/icons/google.svelte'
 	import Underscore from '$lib/components/link.svelte'
 	import Input from '$lib/components/input.svelte'
-	import { SignInFetch } from '$lib/api/typed-fetch'
+	import { SignInFetch } from '$lib/api/fetches'
 
 	let username: string = ''
 	let password: string = ''

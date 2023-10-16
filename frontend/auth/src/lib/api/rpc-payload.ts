@@ -1,4 +1,4 @@
-import type { SignInRequest } from '$rpc/generated/auth/auth'
+import type { SignInRequest } from '@makoto/grpc/generated/auth/auth'
 
 // TODO: API would change
 type OAuth2Provider = 'local' | 'google'

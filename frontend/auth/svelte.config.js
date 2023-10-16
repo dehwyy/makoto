@@ -17,12 +17,7 @@ const config = {
 		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
 		adapter: adapter_node({
 			precompress: true
-		}),
-		alias: {
-			$config: path.resolve('../..', 'config', 'dist', 'config'),
-			$rpc: path.resolve('../..', 'libs', 'grpc'),
-			$houdini: path.resolve('.', '$houdini')
-		}
+		})
 	}
 }
 

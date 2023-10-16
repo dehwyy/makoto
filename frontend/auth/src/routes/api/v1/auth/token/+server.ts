@@ -1,6 +1,6 @@
-import { MakotoCookiesAutorization } from '$lib/api/cookies'
-import { RpcInterceptors } from '$lib/api/prc-interceptors'
-import { AuthClient } from '$lib/api/twirp-client'
+import { AuthClient } from '@makoto/grpc/$lib/clients'
+import { RpcInterceptors } from '@makoto/grpc/$lib/interceptors'
+import { MakotoCookiesAutorization } from '@makoto/lib/cookies'
 import type { RequestHandler } from '@sveltejs/kit'
 
 export const POST: RequestHandler = async ({ cookies }) => {

@@ -9,7 +9,7 @@
 
 	import { fade } from 'svelte/transition'
 	import { onMount } from 'svelte'
-	import { SignInByToken } from '$lib/api/typed-fetch'
+	import { SignInByToken } from '$lib/api/fetches'
 
 	let isMounted = false
 	onMount(() => {

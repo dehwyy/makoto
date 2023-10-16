@@ -1,5 +1,4 @@
 import path from 'path'
-import { config } from '$config'
 
 export enum Tokens {
 	access = 'auth-token',
@@ -7,4 +6,3 @@ export enum Tokens {
 }
 
 export const USER_ID = 'user_id'
-export const CONFIG = config(path.resolve('../../config'))

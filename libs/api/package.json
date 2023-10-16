@@ -1,16 +1,16 @@
 {
-  "name": "@makoto/grpc",
+  "name": "@makoto/lib",
   "type": "module",
   "private": true,
   "exports": {
-		"$lib/*": {
-			"import": "./dist/lib/*.js"
+		"./*": {
+			"import": "./dist/*.js"
 		}
 	},
 	"typesVersions": {
 		"*": {
-			"$lib/*": [
-				"./dist/types/lib/*.d.ts"
+			"*": [
+				"./dist/types/*.d.ts"
 			]
 		}
 	},
@@ -20,7 +20,6 @@
     "ts": "bun run generate:js && bun run generate:types"
   },
   "dependencies": {
-    "@protobuf-ts/plugin": "^2.9.1",
-     "@protobuf-ts/runtime-rpc": "^2.9.1"
+    "@protobuf-ts/runtime-rpc": "^2.9.1"
   }
 }
