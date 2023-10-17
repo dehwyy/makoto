@@ -12,14 +12,14 @@
 
 	// stores
 	import { Username, UserId } from '$lib/stores/user-store'
-	import { SetTags } from '$lib/stores/items-store'
+	import { Tags } from '$lib/stores/tags-store'
 
 	// server types
 	import type { LayoutData } from './$types'
 	export let data: LayoutData
 
 	//
-	SetTags(data.tags)
+	Tags.Set(data.tags)
 	Username.set(data.username)
 	UserId.set(data.userId)
 </script>

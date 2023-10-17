@@ -35,6 +35,7 @@
     "@fontsource-variable/shantell-sans": "^5.0.13",
     "@fontsource/jua": "^5.0.11",
     "@fontsource/klee-one": "^5.0.7",
+    "less": "^4.2.0",
     "makoto-ui-svelte": "^0.0.4"
   }
 }

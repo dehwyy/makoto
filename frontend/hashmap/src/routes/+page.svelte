@@ -6,7 +6,7 @@
 	import SelectTags from '../lib/components/tags.svelte'
 	import SearchPanel from '$lib/components/index/search-panel.svelte'
 
-	import { FilteredItems, RemoveItemById, SetItems } from '$lib/stores/items-store'
+	import { FilteredItems, Items } from '$lib/stores/items-store'
 	import { RemoveItem } from '$lib/api/fetches'
 	import { onMount } from 'svelte'
 	import type { PageData } from './$types'
@@ -17,16 +17,15 @@
 	})
 
 	const removeWord = async (itemId: number) => {
-		RemoveItemById(itemId)
+		Items.RemoveById(itemId)
 
 		RemoveItem({ itemId })
 	}
 
 	export let data: PageData
-	SetItems(data.Items || [])
+	Items.Set(data.Items || [])
 </script>
 
--->
 {#if isMounted}
 	<main class="page_wrapper">
 		<!-- search bar -->

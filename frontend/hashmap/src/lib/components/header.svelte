@@ -6,7 +6,6 @@
 	//
 	import { onMount } from 'svelte'
 	import { Username } from '$lib/stores/user-store'
-	import { SERVICES } from '$lib/const'
 
 	let isMounted = false
 	onMount(() => {
@@ -16,11 +15,11 @@
 
 {#if isMounted}
 	<header transition:fade={{ duration: 300, delay: 500 }} class="header">
-		{#if Username}
+		{#if $Username}
 			<div class="user_wrapper">
 				<p class="user_item">{$Username}</p>
 			</div>
-		{:else}<a href={SERVICES.AUTH}>
+		{:else}<a href={`http://localhost:3001`}>
 				<div class="icon_wrapper">
 					<img class="icon_item" src={user} alt="logo" />
 				</div>
