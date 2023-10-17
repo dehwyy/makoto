@@ -1,3 +1,4 @@
+import { RpcStatus } from "@protobuf-ts/runtime-rpc"
 import {AuthClient as AC} from "./auth"
 import  {HashmapClient as HS} from "./hashmap"
 
@@ -22,10 +23,12 @@ const CreateSafeClient = <T extends TwirpClient>(client: T) => new Proxy(client,
             } catch (e) {
 
               // if err occured
-              console.log(`Error occuried when calling method! ${e}`)
               return {
                 response: {},
-                status: 400
+                status: {
+                  code: "400",
+                  detail: String(e)
+                } as RpcStatus
               }
             }
           }

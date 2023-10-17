@@ -1,0 +1,58 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package hashmap;
+option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/hashmap";
+
+// Inputs
+
+message Tag {
+  uint32 tag_id = 1;
+  string text = 2;
+}
+
+message Item {
+  string key = 2;
+  string value = 3;
+  string extra = 4;
+  repeated string tags = 5;
+}
+
+message UpdateItem {
+  ItemId id = 1;
+  Item item = 2;
+}
+
+
+message UserId {
+  string user_id = 1;
+}
+
+message ItemId {
+  uint32 item_id = 1;
+}
+// Responses
+
+message TagsResponse {
+  repeated Tag tags = 1;
+}
+
+message ItemResponse {
+  uint32 id = 1;
+  string key = 2;
+  string value = 3;
+  string extra = 4;
+  repeated Tag tags = 5;
+}
+
+message Items {
+  repeated ItemResponse items = 1;
+}
+
+service Hashmap {
+  rpc GetItems(UserId) returns (Items);
+  rpc GetTags(google.protobuf.Empty) returns (TagsResponse);
+  rpc CreateItem(Item) returns (google.protobuf.Empty);
+  rpc RemoveItem(ItemId) returns (google.protobuf.Empty);
+  rpc EditItem(UpdateItem) returns (google.protobuf.Empty);
+}
