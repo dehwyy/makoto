@@ -4,27 +4,26 @@
   "private": true,
   "exports": {
 		".": {
-      "types": "./dist/types/lib/index.d.ts",
+      "types": "./dist/lib/index.d.ts",
 			"import": "./dist/lib/index.js"
 		},
     "./clients": {
-      "types": "./dist/types/lib/clients/index.d.ts",
+      "types": "./dist/lib/clients/index.d.ts",
       "import": "./dist/lib/clients/index.js"
     }
 	},
-
   "typesVersions": {
     "*": {
-      "clients":["./dist/types/lib/clients/index.d.ts"]
+      "clients":["./dist/lib/clients/index.d.ts"]
     }
   },
-  "types": "./dist/types/lib/index.d.ts",
+  "types": "./dist/lib/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "generate:js": "tsc",
-    "generate:types": "tsc --declaration true --emitDeclarationOnly --outDir dist/types",
+    "generate:types": "tsc --declaration true --emitDeclarationOnly",
     "ts": "bun run generate:js && bun run generate:types"
   },
   "dependencies": {

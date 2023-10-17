@@ -1,4 +1,4 @@
-use std::{fs, process::Command};
+use std::{fs, process::Command, thread, time};
 fn main() {
     const PATH_PROTOS: &str = "./protos";
     const PATH_GENERATED: &str = "./generated";
@@ -6,8 +6,8 @@ fn main() {
     // 0. prebuild : rm files
     let res = fs::remove_dir_all(PATH_GENERATED);
     match res {
-        Ok(_) => println!("Removed old generated files"),
-        Err(_) => println!("No /generated dir to remove"),
+        Ok(_) => println!("\n1.Removed old generated files"),
+        Err(_) => println!("\n1.No /generated dir to remove"),
     };
 
 
@@ -35,8 +35,12 @@ fn main() {
     });
 
     // 2. post-build : transpile ts -> js
-    Command::new("npx").arg("tsc").spawn().unwrap(); // that's all cuz tsc (via typescript config) would do everything by itself
+    thread::sleep(time::Duration::from_millis(150));
+    Command::new("bun").args(["run", "ts"]).spawn().unwrap(); // that's all cuz tsc (via typescript config) would do everything by itself
 
-    println!("");
-    println!("Successfully generated grpc files!");
+    println!("2.Successfully generated grpc files!\n");
+
+    // круто костыль круто люблю tsc
+    thread::sleep(time::Duration::from_millis(1500)); // waiting for tsc
+    println!("\n3.Generated .d.ts");
 }
