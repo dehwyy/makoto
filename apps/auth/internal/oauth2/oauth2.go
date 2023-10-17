@@ -2,7 +2,7 @@ package oauth2
 
 import (
 	"github.com/dehwyy/makoto/apps/auth/internal/repository"
-	"github.com/dehwyy/makoto/config"
+	"github.com/dehwyy/makoto/libs/config"
 	"github.com/dehwyy/makoto/libs/logger"
 	oauth2lib "golang.org/x/oauth2"
 )
@@ -22,7 +22,7 @@ type oauth2ProviderResponse struct {
 
 type OAuth2 struct {
 	token_repository *repository.TokenRepository
-	config           config.Config
+	config           *config.Config
 	l                logger.Logger
 }
 
@@ -39,7 +39,7 @@ const (
 	GoogleProfileURL GoogleEndpoint = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token="
 )
 
-func NewOAuth2(token_repo *repository.TokenRepository, config config.Config, l logger.Logger) *OAuth2 {
+func NewOAuth2(token_repo *repository.TokenRepository, config *config.Config, l logger.Logger) *OAuth2 {
 	return &OAuth2{
 		token_repository: token_repo,
 		config:           config,
@@ -50,8 +50,8 @@ func NewOAuth2(token_repo *repository.TokenRepository, config config.Config, l l
 func (o *OAuth2) GetProviderInstance(provider_name string) OAuth2Provider {
 	switch provider_name {
 	case "google":
-		google := o.config.Oauth2.Google
-		return newGoogleOAuth2(google.Id, google.Secret, google.RedirectURL, o.token_repository, o.l)
+		c := o.config // config
+		return newGoogleOAuth2(c.GoogleClientId, c.GoogleClientSecret, c.GoogleRedirectURL, o.token_repository, o.l)
 	default:
 		return nil
 	}

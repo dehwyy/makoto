@@ -3,17 +3,25 @@
   "type": "module",
   "private": true,
   "exports": {
-		"$lib/*": {
-			"import": "./dist/lib/*.js"
-		}
+		".": {
+      "types": "./dist/types/lib/index.d.ts",
+			"import": "./dist/lib/index.js"
+		},
+    "./clients": {
+      "types": "./dist/types/lib/clients/index.d.ts",
+      "import": "./dist/lib/clients/index.js"
+    }
 	},
-	"typesVersions": {
-		"*": {
-			"$lib/*": [
-				"./dist/types/lib/*.d.ts"
-			]
-		}
-	},
+
+  "typesVersions": {
+    "*": {
+      "clients":["./dist/types/lib/clients/index.d.ts"]
+    }
+  },
+  "types": "./dist/types/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "generate:js": "tsc",
     "generate:types": "tsc --declaration true --emitDeclarationOnly --outDir dist/types",

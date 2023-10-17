@@ -1,9 +1,9 @@
 go 1.21.2
 
 use (
-  ./config
   ./apps/auth
   ./apps/hashmap
+  ./libs/config
   ./libs/logger
   ./libs/database
   ./libs/grpc

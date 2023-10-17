@@ -2,9 +2,10 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/dehwyy/makoto/apps/auth/internal/twirp"
-	"github.com/dehwyy/makoto/config"
+	"github.com/dehwyy/makoto/libs/config"
 	"github.com/dehwyy/makoto/libs/database"
 	"github.com/dehwyy/makoto/libs/logger"
 	"github.com/dehwyy/makoto/libs/middleware"
@@ -13,12 +14,12 @@ import (
 )
 
 var (
-	l   = logger.New()
-	cfg = config.New("../../../")
+	l   = logger.New() // logger
+	cfg = config.New() // config
 )
 
 func main() {
-	db := database.New(cfg.Databases.Auth, l)
+	db := database.New(cfg.DatabaseDsn, l)
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{
@@ -33,6 +34,6 @@ func main() {
 	twirp := twirp.NewTwirpServer(db, cfg, l)
 	r.Mount(twirp.PathPrefix(), middleware.WithAuthorizationHeaderMiddleware(twirp))
 
-	l.Infof("Server started on port %v", cfg.Ports.Auth)
-	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+cfg.Ports.Auth, r))
+	l.Infof("Server started on port %v", config.PortAuth)
+	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+strconv.Itoa(int(config.PortAuth)), r))
 }

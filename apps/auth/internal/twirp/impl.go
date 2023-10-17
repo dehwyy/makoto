@@ -7,7 +7,7 @@ import (
 
 	"github.com/dehwyy/makoto/apps/auth/internal/oauth2"
 	"github.com/dehwyy/makoto/apps/auth/internal/repository"
-	"github.com/dehwyy/makoto/config"
+	"github.com/dehwyy/makoto/libs/config"
 	"github.com/dehwyy/makoto/libs/database/models"
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/logger"
@@ -30,7 +30,7 @@ type Server struct {
 	l logger.Logger
 }
 
-func NewTwirpServer(db *gorm.DB, config config.Config, l logger.Logger) auth.TwirpServer {
+func NewTwirpServer(db *gorm.DB, config *config.Config, l logger.Logger) auth.TwirpServer {
 	token_repo := repository.NewTokenRepository(db, l, config.JwtSecret)
 	user_repo := repository.NewUserRepository(db, l)
 

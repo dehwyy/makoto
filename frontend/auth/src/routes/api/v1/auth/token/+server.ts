@@ -1,5 +1,5 @@
-import { AuthClient } from '@makoto/grpc/$lib/clients'
-import { RpcInterceptors } from '@makoto/grpc/$lib/interceptors'
+import { AuthClient } from '@makoto/grpc/clients'
+import { RpcInterceptors } from '@makoto/grpc'
 import { MakotoCookiesAutorization } from '@makoto/lib/cookies'
 import type { RequestHandler } from '@sveltejs/kit'
 
