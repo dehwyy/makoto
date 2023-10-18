@@ -27,7 +27,7 @@ func New(database_url string, l logger.Logger) *gorm.DB {
 	d.SetConnMaxIdleTime(1 * time.Minute)
 
 	// run migrations
-	db.AutoMigrate(&models.UserToken{}, &models.UserData{}, &models.HashmapTag{}, &models.HashmapItem{})
+	db.AutoMigrate(&models.UserData{}, &models.UserToken{}, &models.HashmapTag{}, &models.HashmapItem{})
 
 	return db
 }

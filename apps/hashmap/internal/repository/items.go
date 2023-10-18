@@ -48,14 +48,15 @@ func (i *ItemsRepository) CreateItem(userId uuid.UUID, key, value, extra string,
 	})
 }
 
-func (i *ItemsRepository) RemoveItem(ItemId uint32) error {
+func (i *ItemsRepository) RemoveItem(user_id uuid.UUID, ItemId uint32) error {
 
 	// Removing data from `Item` and its tags
 	// ? Transaction
 	return i.db.Transaction(func(tx *gorm.DB) error {
 
 		err := i.db.Model(&models.HashmapItem{
-			Id: ItemId,
+			Id:     ItemId,
+			UserId: user_id,
 		}).Association("Tags").Clear()
 
 		if err != nil {
@@ -66,7 +67,7 @@ func (i *ItemsRepository) RemoveItem(ItemId uint32) error {
 	})
 }
 
-func (i *ItemsRepository) EditItem(itemId uint32, new_key, new_value, new_extra string, tags []*models.HashmapTag) error {
+func (i *ItemsRepository) EditItem(user_id uuid.UUID, itemId uint32, new_key, new_value, new_extra string, tags []*models.HashmapTag) error {
 
 	payload := &models.HashmapItem{
 		Key:   new_key,
@@ -78,7 +79,7 @@ func (i *ItemsRepository) EditItem(itemId uint32, new_key, new_value, new_extra 
 	// ? Transaction
 	return i.db.Transaction(func(tx *gorm.DB) error {
 
-		if err := i.schema().Where("id = ?", itemId).Updates(payload).Error; err != nil {
+		if err := i.schema().Where("id = ? and user_id = ?", itemId).Updates(payload).Error; err != nil {
 			return err
 		}
 

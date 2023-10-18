@@ -25,6 +25,10 @@ type Server struct {
 
 type Empty = empty.Empty
 
+var (
+	InvalidUserIdError = tw.PermissionDenied.Error("invalid user id")
+)
+
 func NewTwirpServer(db *gorm.DB, l logger.Logger) hashmap.TwirpServer {
 	return hashmap.NewHashmapServer(
 		&Server{
@@ -37,56 +41,80 @@ func NewTwirpServer(db *gorm.DB, l logger.Logger) hashmap.TwirpServer {
 	)
 }
 
-// TODO: twirp error
-
 func (s *Server) GetItems(ctx context.Context, req *hashmap.UserId) (*hashmap.Items, error) {
-	user_id := middleware.AuthorizationMiddlewareRead(ctx)
-	if req.UserId != "" {
-		user_id = req.UserId
-	}
-
-	parsed_user_id, err := uuid.Parse(user_id)
+	user_id, err := s.getUUIDFromContext(ctx)
 	if err != nil {
-		return nil, tw.InvalidArgumentError("invalid user id (not uuid)", err.Error())
+		return nil, InvalidUserIdError
 	}
 
-	items, err := s.items_repository.GetItems(parsed_user_id)
+	items, err := s.items_repository.GetItems(user_id)
+	if err != nil {
+		return nil, tw.InternalErrorf("failed to get items: %v", err.Error())
+	}
 
 	return &hashmap.Items{
 		Items: pipes.ItemsDb2Grpc(items),
-	}, err
+	}, nil
 }
 
-// ? NO AUTH REQUIRED
-// ? OR SHOULD BE?
-
+// No authorization required
 func (s *Server) GetTags(ctx context.Context, req *Empty) (*hashmap.TagsResponse, error) {
 	tags, err := s.tags_repository.GetAllTags()
+	if err != nil {
+		return nil, tw.InternalErrorf("failed to get tags: %v", err.Error())
+	}
 
 	return &hashmap.TagsResponse{
 		Tags: pipes.TagsFromDb2Grpc(tags),
-	}, err
+	}, nil
 }
 
 func (s *Server) CreateItem(ctx context.Context, req *hashmap.Item) (*Empty, error) {
 	tags := s.tags_repository.TagsFromStringArray(req.Tags)
-	parsed_user_id, err := uuid.Parse(middleware.AuthorizationMiddlewareRead(ctx))
+	user_id, err := s.getUUIDFromContext(ctx)
 	if err != nil {
 		return nil, tw.InvalidArgumentError("invalid user id (not uuid)", err.Error())
 	}
 
-	return &Empty{}, s.items_repository.CreateItem(parsed_user_id, req.Key, req.Value, req.Extra, tags)
+	err = s.items_repository.CreateItem(user_id, req.Key, req.Value, req.Extra, tags)
+	if err != nil {
+		return nil, tw.InternalErrorf("failed to create item: %v", err.Error())
+	}
+
+	return &Empty{}, nil
 }
 
-// TODO: clarify that Item belongs to User (by authorization-header (userId))
 func (s *Server) RemoveItem(ctx context.Context, req *hashmap.ItemId) (*Empty, error) {
+	user_id, err := s.getUUIDFromContext(ctx)
+	if err != nil {
+		return nil, InvalidUserIdError
+	}
 
-	return &Empty{}, s.items_repository.RemoveItem(uint32(req.ItemId))
+	err = s.items_repository.RemoveItem(user_id, uint32(req.ItemId))
+	if err != nil {
+		return nil, tw.InternalErrorf("failed to remove item: %v", err.Error())
+	}
+
+	return &Empty{}, nil
 }
 
-// TODO: same as above
 func (s *Server) EditItem(ctx context.Context, req *hashmap.UpdateItem) (*Empty, error) {
+	user_id, err := s.getUUIDFromContext(ctx)
+	if err != nil {
+		return nil, InvalidUserIdError
+	}
+
+	// generating tags (in db) or reading (from db)
 	tags := s.tags_repository.TagsFromStringArray(req.Item.Tags)
 
-	return &Empty{}, s.items_repository.EditItem(req.Id.ItemId, req.Item.Key, req.Item.Value, req.Item.Extra, tags)
+	err = s.items_repository.EditItem(user_id, req.Id.ItemId, req.Item.Key, req.Item.Value, req.Item.Extra, tags)
+	if err != nil {
+		return nil, tw.InternalErrorf("failed to edit item: %v", err.Error())
+	}
+
+	return &Empty{}, nil
+}
+
+func (s *Server) getUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	return uuid.Parse(middleware.AuthorizationMiddlewareRead(ctx))
 }
