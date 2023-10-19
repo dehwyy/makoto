@@ -1,6 +1,7 @@
 import { RpcStatus } from "@protobuf-ts/runtime-rpc"
 import {AuthClient as AC} from "./auth"
 import  {HashmapClient as HS} from "./hashmap"
+import {MakotoCookies, MakotoCookiesInterface as Cookies} from "@makoto/lib/cookies"
 
 interface TwirpClient {
   methods: {
@@ -8,7 +9,17 @@ interface TwirpClient {
   }[]
 }
 
-const CreateSafeClient = <T extends TwirpClient>(client: T) => new Proxy(client, {
+interface TwirpResponse {
+  requestHeaders: {
+    Authorization?: string
+  },
+  headers: {
+    authorization: string | undefined
+    [key: string]: string | undefined
+  }
+}
+
+const CreateSafeClient = <T extends TwirpClient>(client: T, cookies: Cookies) => new Proxy(client, {
   get: (target, prop: string, rec) => {
     // if this is a RpcServiceMethod
     if (target["methods"].map(m => m.localName).includes(prop)) {
@@ -19,7 +30,34 @@ const CreateSafeClient = <T extends TwirpClient>(client: T) => new Proxy(client,
             try {
 
               // try to request
-              return await Reflect.apply(target as any, thisArg, args)
+              const response = await Reflect.apply(target as any, thisArg, args) as TwirpResponse
+
+              const {authorization: authorization_header, ...headers} = response.headers
+              const new_response = {...response, headers}
+
+              let token = ""
+              // if header is not empty
+              if (authorization_header != "") {
+                const split_token = authorization_header?.split(" ")
+
+                // if after keyword there is token (f.e. Bearer <token>)
+                if (split_token && split_token.length > 1) {
+                  token = split_token[1]
+                }
+              }
+
+
+              if (response.requestHeaders?.Authorization) {
+                if (token.length) {
+                  MakotoCookies.setGlobal(cookies, "token", token)
+                } else {
+                  MakotoCookies.delete(cookies, "token")
+                }
+              }
+
+
+
+             return  new_response
             } catch (e) {
 
               // if err occured
@@ -39,8 +77,7 @@ const CreateSafeClient = <T extends TwirpClient>(client: T) => new Proxy(client,
   }
 })
 
+const AuthClient = (cookies: Cookies) => CreateSafeClient(AC, cookies)
+const HashmapClient = (cookies: Cookies) => CreateSafeClient(HS, cookies)
 
-const AuthClient = CreateSafeClient(AC)
-const HashmapClient = CreateSafeClient(HS)
-
-export {AuthClient, HashmapClient, AuthClient as SafeAuthClient, HashmapClient as SafeHashmapClient}
+export {AuthClient as SafeAuthClient, HashmapClient as SafeHashmapClient}
