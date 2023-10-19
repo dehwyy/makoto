@@ -2,9 +2,9 @@ import type { LayoutServerLoad } from './$types'
 import { SafeHashmapClient, SafeAuthClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
 
-export const load: LayoutServerLoad = async event => {
-	const request_get_tags = SafeHashmapClient.getTags({})
-	const request_signin = SafeAuthClient.signIn(
+export const load: LayoutServerLoad = async ({ cookies }) => {
+	const request_get_tags = SafeHashmapClient(cookies).getTags({})
+	const request_signin = SafeAuthClient(cookies).signIn(
 		{
 			authMethod: {
 				oneofKind: 'empty',
@@ -12,7 +12,7 @@ export const load: LayoutServerLoad = async event => {
 			}
 		},
 		{
-			interceptors: [RpcInterceptors.WithToken(event.cookies)]
+			interceptors: [RpcInterceptors.WithToken(cookies)]
 		}
 	)
 

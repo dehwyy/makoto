@@ -1,9 +1,9 @@
 # makoto/v2
 
 ## techonologies:
-- ProtocolBuffers (twirp / grpc)
-- OAuth2
-- GORM
+- ProtocolBuffer (twirp / grpc)
+- OAuth2: Google, (soon: GitHub, Discord)
+- PostgresSQL (gorm)
 - Docker
-
-## [Bun](https://bun.sh/) as a frontend package-manager
+- SvelteKit
+- Nuxt3 (would be rewrited to Next/Svelte/Astro)

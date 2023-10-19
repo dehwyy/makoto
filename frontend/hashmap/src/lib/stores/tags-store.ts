@@ -32,7 +32,16 @@ export class Tags {
 		TagsStore.set(tags.map(tag => ({ ...tag, selectedMode: this.OptionMode.startValue })))
 	}
 
-	// TODO: оно вообще надо?
+	static Add(tag: OptionInitial) {
+		// adding only tag doesn't exist yet
+		TagsStore.update(tags =>
+			tags.find(t => t.text === tag.text)
+				? tags
+				: [...tags, { ...tag, selectedMode: this.OptionMode.startValue }]
+		)
+	}
+
+	// used for dynamic CSS class
 	static GetTagValue(value: number) {
 		return this.OptionMode.getValue(value)
 	}

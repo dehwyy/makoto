@@ -2,7 +2,7 @@
 	import { fade } from 'svelte/transition'
 
 	// header's icons
-	import user from '$lib/assets/user.svg'
+	import user from '$lib/assets/logout.svg'
 	//
 	import { onMount } from 'svelte'
 	import { Username } from '$lib/stores/user-store'

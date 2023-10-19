@@ -2,13 +2,13 @@ import type { PageServerLoad } from './$types'
 import { SafeHashmapClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
 
-export const load: PageServerLoad = async event => {
-	const { response, status } = await SafeHashmapClient.getItems(
+export const load: PageServerLoad = async ({ cookies }) => {
+	const { response, status } = await SafeHashmapClient(cookies).getItems(
 		{
 			userId: ''
 		},
 		{
-			interceptors: [RpcInterceptors.AddAuthorizationHeader(event.cookies.get('token'))]
+			interceptors: [RpcInterceptors.AddAuthorizationHeader(cookies.get('token'))]
 		}
 	)
 

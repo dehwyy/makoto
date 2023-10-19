@@ -4,25 +4,15 @@ import preprocess from 'svelte-preprocess'
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: [
-		vitePreprocess({
-			style: {
-				css: {
-					postcss: true
-				}
-			}
-		}),
-		preprocess({
-			scss: true,
-			postcss: true
-		})
-	],
+	preprocess: [vitePreprocess()],
 	onwarn: (warning, handler) => {
-		console.log('HELLO>')
 		if (warning.code.startsWith('a11y-')) return
 		handler(warning)
 	},
 	kit: {
+		csrf: {
+			checkOrigin: false
+		},
 		adapter: adapter()
 	}
 }

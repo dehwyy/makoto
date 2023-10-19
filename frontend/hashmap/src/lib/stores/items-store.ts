@@ -22,6 +22,10 @@ export class Items {
 		ItemsStore.set(items)
 	}
 
+	static Edit(item: Item) {
+		ItemsStore.update(items => items.map(it => (it.id === item.id ? item : it)))
+	}
+
 	static Add(item: Item) {
 		ItemsStore.update(items => [item, ...items])
 	}
