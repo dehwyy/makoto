@@ -1,10 +1,9 @@
-import { AuthClient } from '@makoto/grpc/clients'
+import { SafeAuthClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
-import { MakotoCookiesAutorization } from '@makoto/lib/cookies'
 import type { RequestHandler } from '@sveltejs/kit'
 
 export const POST: RequestHandler = async ({ cookies }) => {
-	const { response, headers } = await AuthClient.signIn(
+	const { response, headers } = await SafeAuthClient(cookies).signIn(
 		{
 			authMethod: {
 				oneofKind: 'empty',
@@ -15,9 +14,6 @@ export const POST: RequestHandler = async ({ cookies }) => {
 			interceptors: [RpcInterceptors.AddAuthorizationHeader(cookies.get('token'))]
 		}
 	)
-
-	console.log(response, headers)
-	MakotoCookiesAutorization.setToken(headers, cookies)
 
 	return new Response(null, {
 		status: 200

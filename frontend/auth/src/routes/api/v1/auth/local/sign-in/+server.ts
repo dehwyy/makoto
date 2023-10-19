@@ -1,13 +1,12 @@
 import type { RequestHandler } from '@sveltejs/kit'
-import { AuthClient } from '@makoto/grpc/clients'
+import { SafeAuthClient } from '@makoto/grpc/clients'
 import { SignInFetch } from '$lib/api/fetches'
-import { MakotoCookiesAutorization } from '@makoto/lib/cookies'
 import { TypedFetch as tp } from '@makoto/lib/typed-fetch'
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
 	const req = await tp.Get(request, SignInFetch)
 
-	const { headers, response } = await AuthClient.signIn({
+	const { headers, response } = await SafeAuthClient(cookies).signIn({
 		authMethod: {
 			oneofKind: 'credentials',
 			credentials: {
@@ -19,10 +18,6 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 			}
 		}
 	})
-
-	MakotoCookiesAutorization.setToken(headers, cookies)
-
-	console.log(headers, response)
 
 	return new Response(null, {
 		status: 200

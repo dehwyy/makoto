@@ -7,7 +7,7 @@ import { RpcInterceptors } from '@makoto/grpc'
 export const POST: RequestHandler = async ({ cookies, request }) => {
 	const { itemId } = await tp.Get(request, RemoveItem)
 
-	const { response, status } = await SafeHashmapClient.removeItem(
+	const { response, status } = await SafeHashmapClient(cookies).removeItem(
 		{
 			itemId
 		},
@@ -15,7 +15,6 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 			interceptors: [RpcInterceptors.WithToken(cookies)]
 		}
 	)
-	console.log('remove', response, status)
 
 	return new Response(null, { status: 200 })
 }

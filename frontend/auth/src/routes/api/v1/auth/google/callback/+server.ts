@@ -1,15 +1,14 @@
 import { redirect, type RequestHandler } from '@sveltejs/kit'
-import { AuthClient } from '@makoto/grpc/clients'
+import { SafeAuthClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
-import { MakotoCookiesAutorization } from '@makoto/lib/cookies'
 
-export const GET: RequestHandler = async event => {
-	const code = event.url.searchParams.get('code')
+export const GET: RequestHandler = async ({ url, cookies }) => {
+	const code = url.searchParams.get('code')
 	if (!code) return new Response(null, { status: 403 })
 
-	const token = event.cookies.get('token')
+	const token = cookies.get('token')
 
-	const { response, headers, status } = await AuthClient.signIn(
+	const { response, headers, status } = await SafeAuthClient(cookies).signIn(
 		// RpcPayloads.SignIn({ code, provider: 'google' }),
 		{
 			authMethod: {
@@ -24,10 +23,6 @@ export const GET: RequestHandler = async event => {
 			interceptors: [RpcInterceptors.AddAuthorizationHeader(token)]
 		}
 	)
-
-	console.log(code, status, response, headers)
-
-	MakotoCookiesAutorization.setToken(headers, event.cookies)
 
 	throw redirect(301, '/')
 }
