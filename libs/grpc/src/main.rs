@@ -1,4 +1,4 @@
-use std::{fs, process::Command, thread, time};
+use std::{fs, process::Command};
 fn main() {
     const PATH_PROTOS: &str = "./protos";
     const PATH_GENERATED: &str = "./generated";
@@ -34,13 +34,8 @@ fn main() {
         });
     });
 
-    // 2. post-build : transpile ts -> js
-    thread::sleep(time::Duration::from_millis(150));
-    Command::new("bun").args(["run", "ts"]).spawn().unwrap(); // that's all cuz tsc (via typescript config) would do everything by itself
+    // 2. post-build : transpile .ts -> .js and generate .d.ts
+    Command::new("npx").arg("tsc").spawn().unwrap(); // that's all as tsc (via typescript config) would do everything by itself
 
     println!("2.Successfully generated grpc files!\n");
-
-    // круто костыль круто люблю tsc
-    thread::sleep(time::Duration::from_millis(1500)); // waiting for tsc
-    println!("\n3.Generated .d.ts");
 }
