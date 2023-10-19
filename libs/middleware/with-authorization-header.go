@@ -8,19 +8,19 @@ import (
 func WithAuthorizationHeaderMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		v := r.Header.Get("Authorization")
-		ctx = context.WithValue(ctx, _AuthorizationHeaderKey, v)
+		token := r.Header.Get(AuthorizationHeader)
+		ctx = context.WithValue(ctx, auth_token_key, token)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
 }
 
-func WithAuthorizationHeaderMiddlewareRead(ctx context.Context) string {
-	v, isOk := ctx.Value(_AuthorizationHeaderKey).(string)
-	if !isOk {
+func ReadCtxAuthorizationHeader(ctx context.Context) string {
+	token, is_ok := ctx.Value(auth_token_key).(string)
+	if !is_ok {
 		return ""
 	}
 
-	return v
+	return token
 }

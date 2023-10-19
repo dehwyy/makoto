@@ -1,8 +1,12 @@
 package middleware
 
-type MiddlewareKeys int
+type MiddlewareCtxKeys int
 
 const (
-	_AuthorizationKey       MiddlewareKeys = iota + 1
-	_AuthorizationHeaderKey MiddlewareKeys = 2
+	// ctx keys
+	auth_token_key MiddlewareCtxKeys = iota + 1
+	auth_userId_key
+
+	//
+	AuthorizationHeader = "Authorization"
 )

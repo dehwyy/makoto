@@ -80,7 +80,7 @@ func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.Aut
 
 func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
 
-	token := s.parseBearerToken(middleware.WithAuthorizationHeaderMiddlewareRead(ctx))
+	token := s.parseBearerToken(middleware.ReadCtxAuthorizationHeader(ctx))
 	var found_token *models.UserToken
 	var found_user *models.UserData
 	// ! `if authorization header exists -> try to auth via token

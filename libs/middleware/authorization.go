@@ -6,26 +6,29 @@ import (
 	"net/http"
 
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
+	"github.com/dehwyy/makoto/libs/logger"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/twitchtv/twirp"
 )
 
-func AuthorizationMiddleware(url string, next http.Handler) http.Handler {
+func AuthorizationMiddleware(url string, l logger.Logger, next http.Handler) http.Handler {
 	return WithAuthorizationHeaderMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		auth_client := auth.NewAuthProtobufClient(url, &http.Client{})
 
-		token := WithAuthorizationHeaderMiddlewareRead(ctx)
+		token := r.Header.Get(AuthorizationHeader)
 		if token == "" {
 			next.ServeHTTP(w, r)
 			return
 		}
 
+		l.Debugf("Token %v", token)
+
 		// make header
 		header := make(http.Header)
-		header.Set("Authorization", token)
+		header.Set(AuthorizationHeader, token)
 
-		// attach header to context
+		// attach header to context for Request!
 		ctx, err := twirp.WithHTTPRequestHeaders(ctx, header)
 		if err != nil {
 			fmt.Println("failed to attach header to context in AuthorizationMiddleware")
@@ -45,8 +48,14 @@ func AuthorizationMiddleware(url string, next http.Handler) http.Handler {
 		}
 		fmt.Printf("response id %v\n", res)
 
+		auth_token := r.Header.Get(AuthorizationHeader)
 		// set value to ctx
-		ctx = context.WithValue(ctx, _AuthorizationKey, res.UserId)
+		ctx = context.WithValue(ctx, auth_userId_key, res.UserId)
+		ctx = context.WithValue(ctx, auth_token_key, auth_token)
+
+		if err != nil {
+			l.Errorf("set ResponseHeader: %v", err)
+		}
 
 		// attach context to request
 		r = r.WithContext(ctx)
@@ -57,10 +66,13 @@ func AuthorizationMiddleware(url string, next http.Handler) http.Handler {
 }
 
 func AuthorizationMiddlewareRead(ctx context.Context) string {
-	v, isOk := ctx.Value(_AuthorizationKey).(string)
-	if !isOk {
+	userId, userId_ok := ctx.Value(auth_userId_key).(string)
+	token, token_ok := ctx.Value(auth_token_key).(string)
+	if !(userId_ok && token_ok) {
 		return ""
 	}
 
-	return v
+	twirp.SetHTTPResponseHeader(ctx, AuthorizationHeader, token)
+
+	return userId
 }

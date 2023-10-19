@@ -34,7 +34,7 @@ func main() {
 
 	twirp := twirp.NewTwirpServer(db, l)
 
-	r.Mount(twirp.PathPrefix(), middleware.AuthorizationMiddleware(fmt.Sprintf("http://localhost:%v", config.PortAuth), twirp))
+	r.Mount(twirp.PathPrefix(), middleware.AuthorizationMiddleware(fmt.Sprintf("http://localhost:%v", config.PortAuth), l, twirp))
 	l.Infof("Server started on port %v", config.PortHashmap)
 
 	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+strconv.Itoa(int(config.PortHashmap)), r))
