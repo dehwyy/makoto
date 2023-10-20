@@ -29,7 +29,7 @@ const services: { title: string; href: string; description: string }[] = [
 
 export default function Navigation() {
   return (
-    <div className="fixed right-0 left-0 top-0 flex justify-between px-5 py-3 gap-x-5 dark:bg-black bg-white">
+    <div className="fixed right-0 left-0 top-0 flex justify-between px-5 py-3 gap-x-5 dark:bg-black bg-white z-10">
       <NavigationMenu>
         <NavigationMenuList className="flex gap-x-3">
           <NavigationMenuItem>

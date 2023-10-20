@@ -1,3 +1,4 @@
 export default {
-  "t": "русский текст"
+  'index.sign-in': 'Войти',
+  'index.docs': 'Документация',
 } as const

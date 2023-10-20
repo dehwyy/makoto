@@ -1,3 +1,4 @@
 export default {
-  "t": "pretty 官"
+  'index.sign-in': 'Sign in',
+  'index.docs': 'Documentation',
 } as const
