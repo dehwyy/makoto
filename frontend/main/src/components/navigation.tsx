@@ -12,7 +12,9 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from '$/components/ui/navigation-menu'
+import { Button } from '$/components/ui/button'
 import ThemeToggler from '$/components/theme-toggler'
+import { GearIcon } from '@radix-ui/react-icons'
 
 const services: { title: string; href: string; description: string }[] = [
   {
@@ -29,7 +31,12 @@ const services: { title: string; href: string; description: string }[] = [
 
 export default function Navigation() {
   return (
-    <div className="fixed right-0 left-0 top-0 flex justify-between px-5 py-3 gap-x-5 dark:bg-black bg-white z-10">
+    <div className="fixed right-0 left-0 top-0 flex px-5 py-3 gap-x-14 dark:bg-black bg-white z-10">
+      <Link href="/" title="Go to home page">
+        <p className="font-Kanji text-3xl font-[600] relative bottom-[2.1px]">
+          誠 /<span className="font-Jua text-2xl font-[400] "> Makoto</span>
+        </p>
+      </Link>
       <NavigationMenu>
         <NavigationMenuList className="flex gap-x-3">
           <NavigationMenuItem>
@@ -78,7 +85,14 @@ export default function Navigation() {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      <ThemeToggler />
+      <div className="ml-auto flex gap-x-3">
+        <div>
+          <Button variant="outline" size="icon">
+            <GearIcon className="h-4 w-4" />
+          </Button>
+        </div>
+        <ThemeToggler />
+      </div>
     </div>
   )
 }
