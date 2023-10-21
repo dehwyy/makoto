@@ -2,14 +2,20 @@ use std::{fs, process::Command};
 fn main() {
     const PATH_PROTOS: &str = "./protos";
     const PATH_GENERATED: &str = "./generated";
+    const PATH_DIST: &str = "./dist";
 
     // 0. prebuild : rm files
     let res = fs::remove_dir_all(PATH_GENERATED);
     match res {
-        Ok(_) => println!("\n1.Removed old generated files"),
-        Err(_) => println!("\n1.No /generated dir to remove"),
+        Ok(_) => println!("\n1.1.Removed old generated files"),
+        Err(_) => println!("\n1.1.No /generated dir to remove"),
     };
 
+    let res = fs::remove_dir_all(PATH_DIST);
+    match res {
+        Ok(_) => println!("1.2.Removed old dist files\n"),
+        Err(_) => println!("1.2.No /dist dir to remove\n"),
+    };
 
     // 1. build
     fs::read_dir(PATH_PROTOS).unwrap().for_each(|e| {
