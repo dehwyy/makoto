@@ -54,7 +54,7 @@
 	bind:isEdit
 	onFinalButtonClick={Apply}>
 	<div
-		transition:fade={{ duration: 500, delay: 100 }}
+		transition:fade={{ duration: 250 }}
 		aria-hidden="true"
 		class="flex flex-col select-none items-center bg-base-200 w-full px-5 py-2 rounded-xl border-2 border-base-100 relative">
 		<div class="word_wrapper_content grid font-Jua text-xl place-items-center w-full">
@@ -94,6 +94,7 @@
 							on:click={e => {
 								e.stopPropagation()
 								Copy2Buffer(item_id.toString())
+								isOpenOptions = false
 							}}
 							class="text-info">copy <span class="underline">id</span></button>
 						<div />

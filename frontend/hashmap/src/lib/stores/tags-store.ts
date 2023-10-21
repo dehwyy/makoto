@@ -61,25 +61,6 @@ export class Tags {
 		)
 	}
 }
-// export const SetTags = (tags: OptionInitial[]) => {
-// 	TagsStore.set(tags.map(tag => ({ ...tag, selectedMode: OptionMode.startValue })))
-// }
-
-// export const GetTagValue = (value: number) => OptionMode.getValue(value)
-
-// export const ToggleTag = (tag_id: number, tags: Option[]) => {
-// 	// "!" at the end cuz it cannot be undefined
-// 	const current_option_index = tags.indexOf(tags.find(tag => tag.tagId === tag_id)!)
-
-// 	// toggle `selectMode`
-// 	TagsStore.set(
-// 		tags.map((tag, i) =>
-// 			i != current_option_index
-// 				? tag
-// 				: { ...tag, selectedMode: OptionMode.increased(tag.selectedMode) }
-// 		)
-// 	)
-// }
 
 // Filtered Tags
 export const FilterTagQueryStore = writable('') // (input) query

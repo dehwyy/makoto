@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition'
 
-	import Item from '$lib/components/item.svelte'
 	import SelectTags from '../lib/components/tags.svelte'
 	import SearchPanel from '$lib/components/index/search-panel.svelte'
+	import Item from '$lib/components/item.svelte'
 
 	import { FilteredItems, Items } from '$lib/stores/items-store'
 	import { RemoveItem } from '$lib/api/fetches'
@@ -45,18 +45,22 @@
 
 		<!-- items -->
 		<section
-			transition:fade={{ duration: 300, delay: 200 }}
+			transition:fade={{ duration: 150 }}
 			class="flex flex-col gap-y-10 items-center lg:w-[80%] w-full">
 			<div class="w-full flex flex-col gap-y-5">
-				{#each $FilteredItems as item}
-					<Item
-						removeItem={() => removeItem(item.id)}
-						tags={item.tags.map(tag => tag.text)}
-						item_id={item.id}
-						item={item.key}
-						value={item.value}
-						extra={item.extra} />
-				{/each}
+				{#if $FilteredItems.length === 0}
+					<p class="text-center font-[800] text-5xl font-Jua mt-5">No items were f</p>
+				{:else}
+					{#each $FilteredItems as item}
+						<Item
+							removeItem={() => removeItem(item.id)}
+							tags={item.tags.map(tag => tag.text)}
+							item_id={item.id}
+							item={item.key}
+							value={item.value}
+							extra={item.extra} />
+					{/each}
+				{/if}
 			</div>
 		</section>
 	</main>

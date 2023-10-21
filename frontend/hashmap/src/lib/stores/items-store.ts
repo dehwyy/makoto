@@ -2,7 +2,7 @@ import { derived, writable } from 'svelte/store'
 import { TagsStore } from './tags-store'
 
 // Initial Store
-interface Item {
+export interface Item {
 	id: number
 	key: string
 	value: string
@@ -51,18 +51,64 @@ export class Items {
 export const FilteredItems = derived(
 	[ItemsStore, ItemsFilterQueryStore, TagsStore],
 	([items, filter, specified_tags]) => {
-		return items.filter(item => {
-			const keyWord = new RegExp(
-				filter
-					.split('')
-					.map(w => w + '[a-zа-я\\s]*')
-					.join(''),
-				'ig'
-			)
+		//
 
-			const wordMatch = item.key.match(keyWord)
-			const translateMatch = item.value.match(keyWord)
-			const extraMatch = item.extra?.match(keyWord)
+		// ? Searching using reserved search params like `item?key=word` or `item?id=123`
+		const reserved_search_params = {
+			// id: number
+			// key: string
+			//
+		} as Record<string, string>
+		const common_words: string[] = []
+
+		filter.split(' ').forEach(w => {
+			// if word doesn't match the `reserved search params`
+			if (!w.match(/^(item)\?[(id)|(key)|(value)|(extra)]+=/)) {
+				common_words.push(w)
+				return
+			}
+
+			const [prefix, value] = w.split('=')
+			const key = prefix.split('?')[1]
+			reserved_search_params[key] = value
+		})
+
+		const match_word = new RegExp(
+			common_words
+				.join(' ')
+				.split('')
+				.map(w => w + '[a-zа-я\\s]*')
+				.join(''),
+			'ig'
+		)
+
+		return items.filter(item => {
+			//
+
+			// if ID (unique) exists in query BUT not match current Item => return false
+			const id = reserved_search_params.id
+			if (id && Number(id) != item.id) {
+				return false
+			}
+
+			const k = reserved_search_params.key
+			if (k && k != item.key) {
+				return false
+			}
+
+			const v = reserved_search_params.value
+			if (v && v != item.value) {
+				return false
+			}
+
+			const e = reserved_search_params.extra
+			if (e && e != item.extra) {
+				return false
+			}
+
+			const wordMatch = item.key.match(match_word)
+			const translateMatch = item.value.match(match_word)
+			const extraMatch = item.extra?.match(match_word)
 
 			// creating dict to importve performance from O(n^2) to O(n)
 			const tags = {} as Record<string, boolean>

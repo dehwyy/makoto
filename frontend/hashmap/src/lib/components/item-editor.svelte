@@ -12,6 +12,8 @@
 		extra: '',
 		tags: [] as string[]
 	}
+	export let isCreateItemMode = false
+
 	export let onFinalButtonClick = (payload: {
 		key: string
 		value: string
@@ -35,12 +37,37 @@
 	let tags_saved = defaultValues.tags
 	let tags = defaultValues.tags // temporary stor
 
-	$: isInAddingTagsMode = false
+	//
+	let isInAddingTagsMode = false
+	let isTransitionTags = false
+	let tagsBlock: HTMLElement
+	let tagsBlockHeight = 0
+
+	const makeTranstionTags = () => {
+		isTransitionTags = true
+		setTimeout(() => {
+			isTransitionTags = false
+		}, 200)
+	}
 
 	const SaveTag = () => {
-		tags = Array.from(new Set<string>(tags).add(time_tag))
-		time_tag = ''
+		makeTranstionTags()
 		isInAddingTagsMode = false
+		setTimeout(() => {
+			tags = Array.from(new Set<string>(tags).add(time_tag))
+			time_tag = ''
+		}, 150)
+
+		tagsBlockHeight = tagsBlock?.clientHeight
+	}
+
+	const RemoveTag = (tag: string) => {
+		makeTranstionTags()
+		setTimeout(() => {
+			tags = tags.filter(t => t !== tag)
+		}, 150)
+
+		tagsBlockHeight = tagsBlock?.clientHeight
 	}
 
 	const CloseModal = () => {
@@ -48,6 +75,14 @@
 		isInAddingTagsMode = false
 		time_tag = ''
 
+		if (isCreateItemMode) {
+			key = ''
+			value = ''
+			extra = ''
+			tags = []
+
+			return
+		}
 		// restore values from saved
 		key = key_saved
 		value = value_saved
@@ -62,6 +97,15 @@
 		isEdit = false
 		time_tag = ''
 
+		if (isCreateItemMode) {
+			key = ''
+			value = ''
+			extra = ''
+			tags = []
+
+			return
+		}
+
 		// set *_saved values
 		key_saved = key
 		value_saved = value
@@ -75,7 +119,7 @@
 		transition:fade={{ duration: 150, delay: 0 }}
 		class="fixed top-0 left-0 right-0 bottom-0 z-50 font-[600]">
 		<!-- Modal itself -->
-		<Modal base_width={400} isOpen={isEdit} close={CloseModal}>
+		<Modal base_width={426} isOpen={isEdit} close={CloseModal}>
 			<div class="p-10 flex flex-col gap-y-7 w-full font-Content">
 				<!-- Heading -->
 				<h2 class="text-2xl text-center font-Content text-white">
@@ -88,15 +132,19 @@
 				<Input bind:value={extra} placeholder="extra" />
 
 				<!-- Tags -->
-				<div class="flex flex-wrap gap-x-2 gap-y-2">
+				<div
+					bind:this={tagsBlock}
+					style={`${isTransitionTags ? `max-height:${tagsBlockHeight}px` : 'max-height:500px'}`}
+					class={`${
+						isTransitionTags ? 'opacity-[1%] invisible' : 'opacity-100 visible'
+					} flex flex-wrap gap-x-2 gap-y-2 transition-all duration-150`}>
 					<!-- Already created tags -->
 					{#each tags as tag}
 						<div
-							transition:scale={{ duration: 500, delay: 0 }}
 							class="flex-auto py-2 px-7 rounded-full bg-base-200 text-center font-Content relative pr-9">
 							{tag}
 							<button
-								on:click={() => (tags = tags.filter(t => t !== tag))}
+								on:click={() => RemoveTag(tag)}
 								class="hover:text-red-500 transition-all duration-300 cursor-pointer bg-base-100 bg-opacity-80 text-gray-400 rounded-full absolute right-[5px] top-[7.5px] h-[25px] w-[25px] text-sm font-[700] font-Jua px-1 grid place-items-center"
 								><span class="pt-[2px]">X</span>
 							</button>
@@ -119,7 +167,7 @@
 					<!-- `createTagMode` Input and SaveButton -->
 					{#if isInAddingTagsMode}
 						<div
-							transition:fade={{ duration: 300, delay: 0 }}
+							transition:fade={{ duration: 200, delay: 0 }}
 							class="absolute z-30 right-10 left-10 bottom-28 flex gap-x-5 text-md font-[600]">
 							<Input bind:value={time_tag} placeholder="tag" />
 							<div

@@ -1,32 +1,33 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition'
-
 	// header's icons
 	import user from '$lib/assets/logout.svg'
 	//
 	import { onMount } from 'svelte'
 	import { Username } from '$lib/stores/user-store'
 
-	let isMounted = false
+	$: isMounted = false
 	onMount(() => {
 		isMounted = true
 	})
 </script>
 
-{#if isMounted}
-	<header transition:fade={{ duration: 300, delay: 500 }} class="header">
-		{#if $Username}
-			<div class="user_wrapper">
+<header class="header">
+	{#if $Username}
+		<div
+			class={`${
+				isMounted ? 'opacity-100' : 'opacity-[1%]'
+			} transition-all duration-300 delay-150 user_wrapper`}>
+			<a href={`http://localhost:3000`}>
 				<p class="user_item">{$Username}</p>
-			</div>
-		{:else}<a href={`http://localhost:3001`}>
-				<div class="icon_wrapper">
-					<img class="icon_item" src={user} alt="logo" />
-				</div>
 			</a>
-		{/if}
-	</header>
-{/if}
+		</div>
+	{:else}<a href={`http://localhost:3001`}>
+			<div class="icon_wrapper">
+				<img class="icon_item" src={user} alt="logo" />
+			</div>
+		</a>
+	{/if}
+</header>
 
 <style lang="scss">
 	.header {

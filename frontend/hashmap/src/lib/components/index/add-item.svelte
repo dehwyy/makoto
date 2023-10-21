@@ -31,7 +31,7 @@
 	}
 </script>
 
-<ItemEditor finalButtonText="Add" bind:isEdit {onFinalButtonClick}>
+<ItemEditor isCreateItemMode={true} finalButtonText="Add" bind:isEdit {onFinalButtonClick}>
 	<div class="w-full md:w-1/2">
 		<Button onClick={() => (isEdit = !isEdit)}>
 			<span class="text-lg font-ContentT font-[600]">Add new word</span></Button>
