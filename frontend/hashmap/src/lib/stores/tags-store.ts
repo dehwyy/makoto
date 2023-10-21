@@ -3,7 +3,7 @@ import { derived, writable } from 'svelte/store'
 interface OptionInitial {
 	tagId: number
 	text: string
-	usages?: number
+	usages: number
 }
 
 interface Option extends OptionInitial {
@@ -36,7 +36,7 @@ export class Tags {
 		// adding only tag doesn't exist yet
 		TagsStore.update(tags =>
 			tags.find(t => t.text === tag.text)
-				? tags
+				? tags.map(found_tag => ({ ...found_tag, usages: found_tag.usages + 1 }))
 				: [...tags, { ...tag, selectedMode: this.OptionMode.startValue }]
 		)
 	}

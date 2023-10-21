@@ -6,7 +6,7 @@
 	import ItemEditor from '../item-editor.svelte'
 
 	let isEdit = false
-	const onFinalButtonClick = (payload: {
+	const onFinalButtonClick = async (payload: {
 		key: string
 		value: string
 		extra: string
@@ -25,7 +25,9 @@
 		tags.forEach((tag, i) => Tags.Add({ tagId: 0 << (20 - i), text: tag, usages: 1 }))
 
 		// Request 2 backend
-		CreateItem({ key, value, extra, tags })
+		const response = await CreateItem({ key, value, extra, tags })
+
+		Items.SetIdToItemAfterCreate(response.data?.itemId ?? 0)
 	}
 </script>
 

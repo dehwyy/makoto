@@ -19,7 +19,19 @@ export const ItemsFilterQueryStore = writable('') // (input) query
 
 export class Items {
 	static Set(items: Item[]) {
-		ItemsStore.set(items)
+		ItemsStore.set(Array.from(items).reverse())
+	}
+
+	static SetIdToItemAfterCreate(id: number) {
+		ItemsStore.update(items =>
+			items.map(it => {
+				if (it.id == 0) {
+					return { ...it, id }
+				} else {
+					return it
+				}
+			})
+		)
 	}
 
 	static Edit(item: Item) {

@@ -20,41 +20,62 @@
 	}) => {}
 
 	// form_fields
+	let key_saved = defaultValues.key
 	let key = defaultValues.key
+
+	let value_saved = defaultValues.value
 	let value = defaultValues.value
+
+	let extra_saved = defaultValues.extra
 	let extra = defaultValues.extra
 
 	// tags
 	let time_tag = ''
-	let tags: string[] = defaultValues.tags // temporary stor
+
+	let tags_saved = defaultValues.tags
+	let tags = defaultValues.tags // temporary stor
 
 	$: isInAddingTagsMode = false
 
 	const SaveTag = () => {
 		tags = Array.from(new Set<string>(tags).add(time_tag))
 		time_tag = ''
-
 		isInAddingTagsMode = false
+	}
+
+	const CloseModal = () => {
+		isEdit = false
+		isInAddingTagsMode = false
+		time_tag = ''
+
+		// restore values from saved
+		key = key_saved
+		value = value_saved
+		extra = extra_saved
+		tags = tags_saved
 	}
 
 	const FinalButtonClick = () => {
 		onFinalButtonClick({ key, value, extra, tags })
 		// reset
+		isInAddingTagsMode = false
 		isEdit = false
-		key = ''
-		value = ''
-		extra = ''
 		time_tag = ''
-		tags = []
+
+		// set *_saved values
+		key_saved = key
+		value_saved = value
+		extra_saved = extra
+		tags_saved = tags
 	}
 </script>
 
 {#if isEdit}
 	<article
 		transition:fade={{ duration: 150, delay: 0 }}
-		class="fixed top-0 left-0 right-0 bottom-0 z-50">
+		class="fixed top-0 left-0 right-0 bottom-0 z-50 font-[600]">
 		<!-- Modal itself -->
-		<Modal base_width={400} isOpen={isEdit} close={() => (isEdit = !isEdit)}>
+		<Modal base_width={400} isOpen={isEdit} close={CloseModal}>
 			<div class="p-10 flex flex-col gap-y-7 w-full font-Content">
 				<!-- Heading -->
 				<h2 class="text-2xl text-center font-Content text-white">

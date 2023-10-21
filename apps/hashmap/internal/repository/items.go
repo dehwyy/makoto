@@ -27,7 +27,7 @@ func (i *ItemsRepository) GetItems(userId uuid.UUID) (items []*models.HashmapIte
 	return items, i.schema().Preload("Tags").Where("user_id = ?", userId).Find(&items).Error
 }
 
-func (i *ItemsRepository) CreateItem(userId uuid.UUID, key, value, extra string, tags []*models.HashmapTag) error {
+func (i *ItemsRepository) CreateItem(userId uuid.UUID, key, value, extra string, tags []*models.HashmapTag) (itemId uint32, err error) {
 
 	new_item := &models.HashmapItem{
 		UserId: userId,
@@ -39,7 +39,7 @@ func (i *ItemsRepository) CreateItem(userId uuid.UUID, key, value, extra string,
 	// Create `Word` and add to it `Tags`
 	// ? Transaction
 
-	return i.db.Transaction(func(tx *gorm.DB) error {
+	return new_item.Id, i.db.Transaction(func(tx *gorm.DB) error {
 		if err := i.db.Create(new_item).Error; err != nil {
 			return err
 		}
@@ -79,7 +79,7 @@ func (i *ItemsRepository) EditItem(user_id uuid.UUID, itemId uint32, new_key, ne
 	// ? Transaction
 	return i.db.Transaction(func(tx *gorm.DB) error {
 
-		if err := i.schema().Where("id = ? and user_id = ?", itemId).Updates(payload).Error; err != nil {
+		if err := i.schema().Where("id = ? and user_id = ?", itemId, user_id).Updates(payload).Error; err != nil {
 			return err
 		}
 

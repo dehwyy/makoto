@@ -69,19 +69,23 @@ func (s *Server) GetTags(ctx context.Context, req *Empty) (*hashmap.TagsResponse
 	}, nil
 }
 
-func (s *Server) CreateItem(ctx context.Context, req *hashmap.Item) (*Empty, error) {
+func (s *Server) CreateItem(ctx context.Context, req *hashmap.Item) (*hashmap.ItemId, error) {
 	tags := s.tags_repository.TagsFromStringArray(req.Tags)
 	user_id, err := s.getUUIDFromContext(ctx)
 	if err != nil {
 		return nil, tw.InvalidArgumentError("invalid user id (not uuid)", err.Error())
 	}
 
-	err = s.items_repository.CreateItem(user_id, req.Key, req.Value, req.Extra, tags)
+	item_id, err := s.items_repository.CreateItem(user_id, req.Key, req.Value, req.Extra, tags)
 	if err != nil {
 		return nil, tw.InternalErrorf("failed to create item: %v", err.Error())
 	}
 
-	return &Empty{}, nil
+	s.l.Debugf("item created: %v", item_id)
+
+	return &hashmap.ItemId{
+		ItemId: item_id,
+	}, nil
 }
 
 func (s *Server) RemoveItem(ctx context.Context, req *hashmap.ItemId) (*Empty, error) {

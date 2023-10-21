@@ -7,7 +7,7 @@ import { RpcInterceptors } from '@makoto/grpc'
 export const POST: RequestHandler = async ({ cookies, request }) => {
 	const { key, value, extra, tags } = await tp.Get(request, CreateItem)
 
-	const { response, status } = await SafeHashmapClient(cookies).createItem(
+	const { response } = await SafeHashmapClient(cookies).createItem(
 		{
 			key,
 			value,
@@ -19,5 +19,5 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 		}
 	)
 
-	return new Response(null, { status: 200 })
+	return new Response(JSON.stringify({ itemId: response.itemId }), { status: 200 })
 }

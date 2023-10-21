@@ -52,7 +52,7 @@ message Items {
 service Hashmap {
   rpc GetItems(UserId) returns (Items);
   rpc GetTags(google.protobuf.Empty) returns (TagsResponse);
-  rpc CreateItem(Item) returns (google.protobuf.Empty);
+  rpc CreateItem(Item) returns (ItemId);
   rpc RemoveItem(ItemId) returns (google.protobuf.Empty);
   rpc EditItem(UpdateItem) returns (google.protobuf.Empty);
 }
