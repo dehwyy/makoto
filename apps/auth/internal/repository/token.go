@@ -84,10 +84,8 @@ func (t *TokenRepository) ValidateToken(token string) error {
 // ! if authorization method is OAuth2
 func (t *TokenRepository) UpdateTokenByOAuth2Token(userId uuid.UUID, token *oauth2.Token) error {
 	return t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Updates(&models.UserToken{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		Expiry:       token.Expiry,
-		TokenType:    token.TokenType,
+		AccessToken: token.AccessToken,
+		Expiry:      token.Expiry,
 	}).Error
 }
 
