@@ -19,7 +19,7 @@
 	export let data: LayoutData
 
 	//
-	Tags.Set(data.tags)
+	Tags.Set(data.tags.map(t => ({...t, usages: 1})))
 	Username.set(data.username)
 	UserId.set(data.userId)
 </script>

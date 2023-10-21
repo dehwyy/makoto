@@ -23,7 +23,7 @@
 	}
 
 	export let data: PageData
-	Items.Set(data.Items || [])
+	Items.Set(data.items || [])
 </script>
 
 {#if isMounted}

@@ -11,18 +11,35 @@ import (
 	"github.com/twitchtv/twirp"
 )
 
+type round_tripper_transport struct {
+	response_auth_header string
+}
+
+func (tripper *round_tripper_transport) RoundTrip(r *http.Request) (*http.Response, error) {
+	response, err := http.DefaultTransport.RoundTrip(r)
+	if err != nil {
+		return response, err
+	}
+
+	tripper.response_auth_header = response.Header.Get(AuthorizationHeader)
+
+	return response, nil
+}
+
 func AuthorizationMiddleware(url string, l logger.Logger, next http.Handler) http.Handler {
 	return WithAuthorizationHeaderMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		auth_client := auth.NewAuthProtobufClient(url, &http.Client{})
+		transport := &round_tripper_transport{}
+
+		auth_client := auth.NewAuthProtobufClient(url, &http.Client{
+			Transport: transport,
+		})
 
 		token := r.Header.Get(AuthorizationHeader)
 		if token == "" {
 			next.ServeHTTP(w, r)
 			return
 		}
-
-		l.Debugf("Token %v", token)
 
 		// make header
 		header := make(http.Header)
@@ -46,12 +63,12 @@ func AuthorizationMiddleware(url string, l logger.Logger, next http.Handler) htt
 			next.ServeHTTP(w, r)
 			return
 		}
+
 		fmt.Printf("response id %v\n", res)
 
-		auth_token := r.Header.Get(AuthorizationHeader)
 		// set value to ctx
 		ctx = context.WithValue(ctx, auth_userId_key, res.UserId)
-		ctx = context.WithValue(ctx, auth_token_key, auth_token)
+		ctx = context.WithValue(ctx, auth_token_key, transport.response_auth_header)
 
 		if err != nil {
 			l.Errorf("set ResponseHeader: %v", err)
@@ -72,6 +89,7 @@ func AuthorizationMiddlewareRead(ctx context.Context) string {
 		return ""
 	}
 
+	fmt.Printf("Token in Authorization middleware: %v", token)
 	twirp.SetHTTPResponseHeader(ctx, AuthorizationHeader, token)
 
 	return userId
