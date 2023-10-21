@@ -49,7 +49,7 @@
 			class="flex flex-col gap-y-10 items-center lg:w-[80%] w-full">
 			<div class="w-full flex flex-col gap-y-5">
 				{#if $FilteredItems.length === 0}
-					<p class="text-center font-[800] text-5xl font-Jua mt-5">No items were f</p>
+					<p class="text-center font-[800] text-5xl font-Jua mt-5">No items were found</p>
 				{:else}
 					{#each $FilteredItems as item}
 						<Item

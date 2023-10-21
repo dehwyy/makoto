@@ -58,8 +58,20 @@ func (s *Server) GetItems(ctx context.Context, req *hashmap.UserId) (*hashmap.It
 }
 
 // No authorization required
-func (s *Server) GetTags(ctx context.Context, req *Empty) (*hashmap.TagsResponse, error) {
-	tags, err := s.tags_repository.GetAllTags()
+func (s *Server) GetTags(ctx context.Context, req *hashmap.UserId) (*hashmap.TagsResponse, error) {
+	user_id, err := s.getUUIDFromContext(ctx)
+	if err != nil {
+		return nil, InvalidUserIdError
+	}
+
+	if req.UserId != "" {
+		user_id, err = uuid.Parse(req.UserId)
+		if err != nil {
+			return nil, tw.InvalidArgumentError("invalid user id", err.Error())
+		}
+	}
+
+	tags, err := s.tags_repository.GetAllTags(user_id)
 	if err != nil {
 		return nil, tw.InternalErrorf("failed to get tags: %v", err.Error())
 	}

@@ -34,11 +34,31 @@ export class Tags {
 
 	static Add(tag: OptionInitial) {
 		// adding only tag doesn't exist yet
-		TagsStore.update(tags =>
-			tags.find(t => t.text === tag.text)
-				? tags.map(found_tag => ({ ...found_tag, usages: found_tag.usages + 1 }))
-				: [...tags, { ...tag, selectedMode: this.OptionMode.startValue }]
-		)
+
+		TagsStore.update(old_tags => {
+			const idx = old_tags.findIndex(t => t.text === tag.text)
+			console.log(idx, old_tags, idx === -1)
+			if (idx === -1) {
+				return [...old_tags, { ...tag, selectedMode: this.OptionMode.startValue }]
+			}
+
+			console.log(old_tags)
+
+			old_tags[idx].usages++
+
+			console.log(old_tags)
+
+			return old_tags
+		})
+
+		// TagsStore.update(tags =>
+		// 	tags.find(t => t.text === tag.text)
+		// 		? tags.map(found_tag => ({
+		// 				...found_tag,
+		// 				usages: found_tag.text === tag.text ? found_tag.usages + 1 : found_tag.usages
+		// 		  }))
+		// 		: [...tags, { ...tag, selectedMode: this.OptionMode.startValue }]
+		// )
 	}
 
 	// used for dynamic CSS class
@@ -76,6 +96,6 @@ export const FilteredTags = derived([TagsStore, FilterTagQueryStore], ([tags, fi
 			'ig'
 		)
 
-		return tag.text.match(query)
+		return tag.text.match(query) && tag.usages > 0
 	})
 })

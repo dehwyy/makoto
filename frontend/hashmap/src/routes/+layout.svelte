@@ -18,7 +18,7 @@
 	import type { LayoutData } from './$types'
 	export let data: LayoutData
 
-	Tags.Set(data.tags.map(t => ({ ...t, usages: 1 })))
+	Tags.Set(data.tags)
 	Username.set(data.username)
 	UserId.set(data.userId)
 </script>

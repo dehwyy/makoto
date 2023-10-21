@@ -2,7 +2,7 @@ import type { LayoutServerLoad } from './$types'
 import { SafeHashmapClient, SafeAuthClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
 
-export const load: LayoutServerLoad = async ({ cookies }) => {
+export const load: LayoutServerLoad = async ({ cookies, params }) => {
 	/**
 	 * recently had a bug which was caused by the `DataRace`
 	 * it was appearing when `AuthToken` (stored in cookies) was expired and have to be renewed
@@ -14,21 +14,25 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 	 * If request doesn't use `AuthToken` そのルールを守る必要ない (don't have to control request sequence)
 	 */
 
-	// send this request in parallel as it doesn't use `AuthToken`
-	const request_get_tags = SafeHashmapClient(cookies).getTags({})
+	const token = cookies.get('token')
 
-	// but not this one as it use `AuthToken` so we have to wait until response would be get
+	const { response: tags_response } = await SafeHashmapClient(cookies).getTags(
+		{ userId: '' },
+		{
+			interceptors: [RpcInterceptors.AddAuthorizationHeader(token)]
+		}
+	)
+
 	const { response: items_response } = await SafeHashmapClient(cookies).getItems(
 		{
 			userId: ''
 		},
 		{
-			interceptors: [RpcInterceptors.AddAuthorizationHeader(cookies.get('token'))]
+			interceptors: [RpcInterceptors.AddAuthorizationHeader(token)]
 		}
 	)
 
-	// only after this sending request. As this is the latest request we don't have to wait it => instead we'll wait for all parallel at the end
-	const request_signin = SafeAuthClient(cookies).signIn(
+	const { response: signin_response } = await SafeAuthClient(cookies).signIn(
 		{
 			authMethod: {
 				oneofKind: 'empty',
@@ -39,12 +43,6 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 			interceptors: [RpcInterceptors.WithToken(cookies)]
 		}
 	)
-
-	const [{ response: tags_response }, { response: signin_response }] = await Promise.all([
-		request_get_tags,
-		request_signin
-	])
-
 	return {
 		userId: signin_response.userId ?? '',
 		username: signin_response.username ?? '',

@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/dehwyy/makoto/libs/database/models"
 	"github.com/dehwyy/makoto/libs/logger"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -30,8 +31,9 @@ func (t *TagsRepository) GetTagOrCreate(text string) (tag *models.HashmapTag) {
 	return tag
 }
 
-func (t *TagsRepository) GetAllTags() (tags []models.HashmapTag, err error) {
-	return tags, t.db.Model(&models.HashmapTag{}).Find(&tags).Error
+func (t *TagsRepository) GetAllTags(userId uuid.UUID) (tags []*models.HashmapTag, err error) {
+	result := t.db.Model(&models.HashmapTag{}).Preload("Items", "user_id = ?", userId).Find(&tags)
+	return tags, result.Error
 }
 
 func (t *TagsRepository) GetTag(text string) (tag *models.HashmapTag, err error) {
