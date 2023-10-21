@@ -10,7 +10,7 @@ export class TypedFetch {
 			body: JSON.stringify(data)
 		})
 
-		let response_data: R | underfined = undefined
+		let response_data: R | undefined = undefined
 		if (!response.ok) {
 			response_data = await response.json()
 		}
