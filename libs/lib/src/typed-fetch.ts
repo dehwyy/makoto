@@ -11,8 +11,16 @@ export class TypedFetch {
 		})
 
 		let response_data: R | undefined = undefined
-		if (!response.ok) {
-			response_data = await response.json()
+		if (response.ok) {
+			try {
+				response_data = await response.json()
+
+				// error would occur if response is Empty (idk why)
+			} catch (e) {
+				if (!(e instanceof  SyntaxError)) {
+					console.log(e)
+				}
+			}
 		}
 
 
