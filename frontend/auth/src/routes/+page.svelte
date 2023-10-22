@@ -1,11 +1,15 @@
 <script lang="ts">
 	import type { Snapshot } from './$types'
 
+	// icons
+	import google from '$lib/static/icons/google.svg'
+	import github from '$lib/static/icons/github.svg'
+
 	import { Button, RainbowBlock } from 'makoto-ui-svelte'
-	import GoogleIcon from '$lib/components/icons/google.svelte'
 	import Underscore from '$lib/components/link.svelte'
 	import Input from '$lib/components/input.svelte'
 	import { SignInFetch } from '$lib/api/fetches'
+	import Oauth2Icon from '$lib/components/oauth2-icon.svelte'
 
 	let username: string = ''
 	let password: string = ''
@@ -46,7 +50,10 @@
 		</div>
 		<div class="divider font-ContentT">OR</div>
 		<a href="/api/v1/auth/google">
-			<GoogleIcon />
+			<Oauth2Icon icon={google} provider="Google" />
+		</a>
+		<a href="/api/v1/auth/github">
+			<Oauth2Icon icon={github} provider="GitHub" />
 		</a>
 	</div>
 </RainbowBlock>

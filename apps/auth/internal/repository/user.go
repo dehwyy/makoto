@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/dehwyy/makoto/apps/auth/internal/utils"
 	"github.com/dehwyy/makoto/libs/database/models"
@@ -71,6 +72,21 @@ func (u *UserRepository) GetUserByProviderId(provider_id string) (user *models.U
 }
 
 func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {
+	username := user_payload.Username
+
+	var found_user_by_username *models.UserData // clarify if there is a user with this username
+	err := u.db.Model(&models.UserData{}).Where("username = ?", username).First(&found_user_by_username).Error
+
+	// if internal error => return it
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+	// if gorm.ErrRecordNotFound => Ok => won't change username
+	// if user was found => Error would appear, but we have to change username (as it must be unique)
+	if err == nil {
+		username = fmt.Sprintf("%s_%s", username, string(user_payload.Provider)) // create new nickname. example: `dehwyy_github` or `dehwyy_google`
+	}
+
 	hashed_password, err := u.hasher.Hash(user_payload.Password)
 	if err != nil {
 		return err
@@ -78,7 +94,7 @@ func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {
 
 	return u.db.Model(&models.UserData{}).Create(&models.UserData{
 		ID:         user_payload.ID,
-		Username:   user_payload.Username,
+		Username:   username,
 		Email:      user_payload.Email,
 		CustomId:   user_payload.Id,
 		Picture:    user_payload.Picture,

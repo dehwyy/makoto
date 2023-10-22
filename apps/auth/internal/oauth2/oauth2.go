@@ -27,7 +27,7 @@ type OAuth2 struct {
 }
 
 type TokenStatus int
-type GoogleEndpoint string
+type Endpoint string
 
 const (
 	// enum TokenStatus
@@ -36,7 +36,8 @@ const (
 	InternalError                        // internal error
 
 	// enum OAuth2GoogleEndpoints
-	GoogleProfileURL GoogleEndpoint = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token="
+	GoogleProfileURL Endpoint = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token="
+	GithubProfileURL Endpoint = "https://api.github.com/user"
 )
 
 func NewOAuth2(token_repo *repository.TokenRepository, config *config.Config, l logger.Logger) *OAuth2 {
@@ -48,10 +49,12 @@ func NewOAuth2(token_repo *repository.TokenRepository, config *config.Config, l 
 }
 
 func (o *OAuth2) GetProviderInstance(provider_name string) OAuth2Provider {
+	c := o.config // config
 	switch provider_name {
 	case "google":
-		c := o.config // config
 		return newGoogleOAuth2(c.GoogleClientId, c.GoogleClientSecret, c.GoogleRedirectURL, o.token_repository, o.l)
+	case "github":
+		return newGithubOAuth2(c.GithubClientId, c.GithubClientSecret, c.GithubRedirectUrl, o.token_repository, o.l)
 	default:
 		return nil
 	}

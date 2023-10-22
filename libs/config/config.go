@@ -22,9 +22,14 @@ type Config struct {
 	JwtSecret   string `required:"true"    envconfig:"JWT_SECRET"`
 
 	// OAuth2
+	// google
 	GoogleClientId     string `required:"true"    envconfig:"GOOGLE_CLIENT_ID"`
 	GoogleClientSecret string `required:"true"    envconfig:"GOOGLE_CLIENT_SECRET"`
 	GoogleRedirectURL  string `required:"true"    envconfig:"GOOGLE_REDIRECT_URL"`
+	// github
+	GithubClientId     string `required:"true"    envconfig:"GITHUB_CLIENT_ID"`
+	GithubClientSecret string `required:"true"    envconfig:"GITHUB_CLIENT_SECRET"`
+	GithubRedirectUrl  string `required:"true"    envconfig:"GITHUB_REDIRECT_URL"`
 
 	// Mode
 	NodeEnv string `required:"false" envconfig:"NODE_ENV" default:"development" `

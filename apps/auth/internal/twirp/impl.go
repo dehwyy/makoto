@@ -205,7 +205,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		// set header
 		tw.SetHTTPResponseHeader(ctx, "Authorization", "Bearer "+token_db.AccessToken)
 		return &auth.AuthResponse{
-			Username: response.Username,
+			Username: found_user.Username,
 			UserId:   found_user.ID.String(),
 		}, nil
 	}
