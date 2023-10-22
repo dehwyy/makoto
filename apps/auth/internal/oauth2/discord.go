@@ -24,7 +24,7 @@ func newDiscordOAuth2(clientId, clientSecret, redirectURL string, token_reposito
 			ClientSecret: clientSecret,
 			Endpoint:     ds.Endpoint,
 			RedirectURL:  redirectURL,
-			Scopes:       []string{ds.ScopeEmail, ds.ScopeActivitiesRead},
+			Scopes:       []string{ds.ScopeEmail, ds.ScopeIdentify},
 		},
 		l: logger,
 	}
@@ -48,29 +48,35 @@ func (d *discord) GetUserByToken(token *oauth2lib.Token) (*oauth2ProviderRespons
 	}
 
 	var DiscordResponse struct {
-		User struct {
-			Id       string `json:"id"`
-			Username string `json:"username"`
-			Email    string `json:"email"`
-			Avatar   string `json:"avatar"`
-		} `json:"user"`
+		Id         string `json:"id"`
+		GlobalName string `json:"global_name"`
+		Username   string `json:"username"`
+		Email      string `json:"email"`
+		Avatar     string `json:"avatar"`
 	}
 
 	if err := pipes.Body2Struct(res.Body, &DiscordResponse); err != nil {
 		d.l.Errorf("pipes res.body %v", err)
 		return nil, err
 	}
+	d.l.Debugf("DiscordResponseUser %v", DiscordResponse)
 
-	d.l.Debugf("DiscordResponse: %v", DiscordResponse)
-	avatar := DiscordResponse.User.Avatar
+	// @see https://discord.com/developers/docs/reference#image-formatting
+	avatar := DiscordResponse.Avatar
 	if avatar != "" {
-		avatar = fmt.Sprintf("https://cdn.discordapp.com/avatars/user_id/%s.png", avatar)
+		avatar = fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s?size=1024", DiscordResponse.Id, avatar)
+	}
+
+	//
+	username := DiscordResponse.Username
+	if DiscordResponse.GlobalName != "" {
+		username = DiscordResponse.GlobalName
 	}
 
 	return &oauth2ProviderResponse{
-		Id:       DiscordResponse.User.Id,
-		Username: DiscordResponse.User.Username,
-		Email:    DiscordResponse.User.Email,
+		Id:       DiscordResponse.Id,
+		Username: username,
+		Email:    DiscordResponse.Email,
 		Picture:  avatar,
 	}, nil
 }
