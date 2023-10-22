@@ -9,6 +9,7 @@ option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/hashmap";
 message Tag {
   uint32 tag_id = 1;
   string text = 2;
+  int32 usages = 3;
 }
 
 message Item {
@@ -51,7 +52,7 @@ message Items {
 
 service Hashmap {
   rpc GetItems(UserId) returns (Items);
-  rpc GetTags(google.protobuf.Empty) returns (TagsResponse);
+  rpc GetTags(UserId) returns (TagsResponse);
   rpc CreateItem(Item) returns (ItemId);
   rpc RemoveItem(ItemId) returns (google.protobuf.Empty);
   rpc EditItem(UpdateItem) returns (google.protobuf.Empty);
