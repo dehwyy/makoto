@@ -29,7 +29,11 @@ type Config struct {
 	// github
 	GithubClientId     string `required:"true"    envconfig:"GITHUB_CLIENT_ID"`
 	GithubClientSecret string `required:"true"    envconfig:"GITHUB_CLIENT_SECRET"`
-	GithubRedirectUrl  string `required:"true"    envconfig:"GITHUB_REDIRECT_URL"`
+	GithubRedirectURL  string `required:"true"    envconfig:"GITHUB_REDIRECT_URL"`
+	// discord
+	DiscordClientId     string `required:"true"    envconfig:"DISCORD_CLIENT_ID"`
+	DiscordClientSecret string `required:"true"    envconfig:"DISCORD_CLIENT_SECRET"`
+	DiscordRedirectURL  string `required:"true"    envconfig:"DISCORD_REDIRECT_URL"`
 
 	// Mode
 	NodeEnv string `required:"false" envconfig:"NODE_ENV" default:"development" `

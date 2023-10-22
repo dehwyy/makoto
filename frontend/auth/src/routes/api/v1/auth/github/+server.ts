@@ -14,8 +14,8 @@ export const GET: RequestHandler = async () => {
 	const authorizationUrl = createAuthorizationUrl(
 		config.GITHUB_CLIENT_ID,
 		config.GITHUB_REDIRECT_URL,
-		config.GITHUB_STATE
+		'str'
 	)
 
-	throw redirect(301, authorizationUrl)
+	throw redirect(307, authorizationUrl)
 }

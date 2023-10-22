@@ -4,6 +4,7 @@
 	// icons
 	import google from '$lib/static/icons/google.svg'
 	import github from '$lib/static/icons/github.svg'
+	import discord from '$lib/static/icons/discord.svg'
 
 	import { Button, RainbowBlock } from 'makoto-ui-svelte'
 	import Underscore from '$lib/components/link.svelte'
@@ -54,6 +55,9 @@
 		</a>
 		<a href="/api/v1/auth/github">
 			<Oauth2Icon icon={github} provider="GitHub" />
+		</a>
+		<a href="/api/v1/auth/discord">
+			<Oauth2Icon icon={discord} provider="Discord" />
 		</a>
 	</div>
 </RainbowBlock>

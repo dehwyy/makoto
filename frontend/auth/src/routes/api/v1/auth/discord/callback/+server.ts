@@ -4,9 +4,8 @@ import { RpcInterceptors } from '@makoto/grpc'
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
 	const code = url.searchParams.get('code')
-	const state = url.searchParams.get('state')
 
-	console.log('code & state', code, state)
+	console.log('code', code)
 	if (!code) return new Response(null, { status: 403 })
 
 	const { response, headers, status } = await SafeAuthClient(cookies).signIn(
@@ -14,7 +13,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			authMethod: {
 				oneofKind: 'oauth2',
 				oauth2: {
-					provider: 'github',
+					provider: 'discord',
 					code
 				}
 			}

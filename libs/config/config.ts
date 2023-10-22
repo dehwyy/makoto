@@ -19,6 +19,11 @@ export const config = cleanEnv(process.env, {
   GITHUB_CLIENT_SECRET: str({default: ""}),
   GITHUB_REDIRECT_URL: str({default: ""}),
   GITHUB_STATE: str({default: ""}),
+  // discord
+  DISCORD_CLIENT_ID:str({default: ""}),
+  DISCORD_CLIENT_SECRET:str({default: ""}),
+  DISCORD_REDIRECT_URL:str({default: ""}),
+  DISCORD_STATE:str({default: ""}),
 
 
   // mode

@@ -16,7 +16,7 @@ const (
 type UserData struct {
 	ID         uuid.UUID    `gorm:"type:uuid;primary_key;default:gen_random_uuid()"` // @see https://www.postgresql.org/docs/current/functions-uuid.html
 	Username   string       `gorm:"not null; unique; index"`
-	Email      string       `gorm:"not null; unique"`
+	Email      string       `gorm:"not null"`
 	CustomId   string       `gorm:"not null; unique; index"` // by default, CustomId == ProviderId
 	Picture    string       `gorm:"size:2048"`               // would be data64 or url
 	Provider   AuthProvider `gorm:"default:local"`           // "local" | "Google"

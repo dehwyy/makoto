@@ -24,7 +24,7 @@ type Server struct {
 	user_repository  *repository.UserRepository
 
 	// oauth
-	oauth2 *oauth2.OAuth2
+	oauth2 *oauth2.OAuth2Creator
 
 	//
 	l logger.Logger
@@ -40,7 +40,7 @@ func NewTwirpServer(db *gorm.DB, config *config.Config, l logger.Logger) auth.Tw
 		user_repository:  user_repo,
 
 		// oauth
-		oauth2: oauth2.NewOAuth2(token_repo, config, l),
+		oauth2: oauth2.NewOAuth2Creator(token_repo, config, l),
 
 		// logger
 		l: l,
@@ -131,17 +131,17 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		s.l.Debugf("token %s", token)
 
 		// is it ok? xd
-		var oauth2_inst oauth2.OAuth2Provider
+		var oauth2_inst *oauth2.OAuth2
 		var token_db *oauth2lib.Token
 		var status oauth2.TokenStatus
 
 		// direct request
 		if oauth2_input != nil {
-			oauth2_inst = s.oauth2.GetProviderInstance(oauth2_input.Provider)
+			oauth2_inst = s.oauth2.NewOAuth2(oauth2_input.Provider)
 			token_db, status = oauth2_inst.GetToken(token, oauth2_input.GetCode())
 
 		} else { // only token request (it proceeds here from above (scope `if request is Empty`))
-			oauth2_inst = s.oauth2.GetProviderInstance(string(found_user.Provider))
+			oauth2_inst = s.oauth2.NewOAuth2(string(found_user.Provider))
 			token_db, status = oauth2_inst.GetToken(found_token.AccessToken, "")
 		}
 
@@ -152,7 +152,7 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			return nil, tw.NewError(tw.Internal, "internal error")
 		}
 
-		response, err := oauth2_inst.GetOAuth2UserByToken(token_db)
+		response, err := oauth2_inst.GetUserByToken(token_db)
 		if err != nil {
 			return nil, tw.InternalErrorf("internal error %v", err.Error())
 		}
