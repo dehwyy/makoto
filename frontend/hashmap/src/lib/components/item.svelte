@@ -34,7 +34,7 @@
 			key,
 			value,
 			extra,
-			tags: tags.map(tag => ({ tagId: 0 << 19, text: tag }))
+			tags
 		})
 
 		// Request 2 backend
@@ -49,7 +49,10 @@
 <svelte:body on:click={() => (isOpenOptions = false)} />
 
 <ItemEditor
-	defaultValues={{ key: item, value, extra, tags }}
+	key={item}
+	{value}
+	{extra}
+	{tags}
 	finalButtonText="Apply"
 	bind:isEdit
 	onFinalButtonClick={Apply}>

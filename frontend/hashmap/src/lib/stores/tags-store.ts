@@ -1,16 +1,16 @@
 import { derived, writable } from 'svelte/store'
 
-interface OptionInitial {
+export interface TagInitial {
 	tagId: number
 	text: string
 	usages: number
 }
 
-interface Option extends OptionInitial {
+interface Tag extends TagInitial {
 	selectedMode: number
 }
 
-export const TagsStore = writable<Option[]>([])
+export const TagsStore = writable<Tag[]>([])
 export class Tags {
 	private static OptionMode = {
 		/**
@@ -28,37 +28,31 @@ export class Tags {
 		}
 	}
 
-	static Set(tags: OptionInitial[]) {
+	static Set(tags: TagInitial[]) {
 		TagsStore.set(tags.map(tag => ({ ...tag, selectedMode: this.OptionMode.startValue })))
 	}
 
-	static Add(tag: OptionInitial) {
+	static DescreaseCount(tags: string[]) {
+		TagsStore.update(ts =>
+			ts.map(t => ({ ...t, usages: tags.includes(t.text) ? t.usages - 1 : t.usages }))
+		)
+	}
+
+	static Add(tag: string) {
 		// adding only tag doesn't exist yet
-
 		TagsStore.update(old_tags => {
-			const idx = old_tags.findIndex(t => t.text === tag.text)
-			console.log(idx, old_tags, idx === -1)
+			const idx = old_tags.findIndex(t => t.text === tag)
 			if (idx === -1) {
-				return [...old_tags, { ...tag, selectedMode: this.OptionMode.startValue }]
+				return [
+					...old_tags,
+					{ text: tag, tagId: 0, usages: 1, selectedMode: this.OptionMode.startValue }
+				]
 			}
-
-			console.log(old_tags)
 
 			old_tags[idx].usages++
 
-			console.log(old_tags)
-
 			return old_tags
 		})
-
-		// TagsStore.update(tags =>
-		// 	tags.find(t => t.text === tag.text)
-		// 		? tags.map(found_tag => ({
-		// 				...found_tag,
-		// 				usages: found_tag.text === tag.text ? found_tag.usages + 1 : found_tag.usages
-		// 		  }))
-		// 		: [...tags, { ...tag, selectedMode: this.OptionMode.startValue }]
-		// )
 	}
 
 	// used for dynamic CSS class
@@ -66,7 +60,7 @@ export class Tags {
 		return this.OptionMode.getValue(value)
 	}
 
-	static Toggle(tag_id: number, tags: Option[]) {
+	static Toggle(tag_id: number, tags: Tag[]) {
 		// "!" at the end cuz it cannot be undefined
 		const current_option_index = tags.indexOf(tags.find(tag => tag.tagId === tag_id)!)
 

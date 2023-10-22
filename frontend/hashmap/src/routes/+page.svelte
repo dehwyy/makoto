@@ -23,7 +23,7 @@
 	}
 
 	export let data: PageData
-	Items.Set(data.items || [])
+	Items.Set(data.items.map(item => ({ ...item, tags: item.tags.map(tag => tag.text) })) || [])
 </script>
 
 {#if isMounted}
@@ -47,21 +47,25 @@
 		<section
 			transition:fade={{ duration: 150 }}
 			class="flex flex-col gap-y-10 items-center lg:w-[80%] w-full">
-			<div class="w-full flex flex-col gap-y-5">
-				{#if $FilteredItems.length === 0}
-					<p class="text-center font-[800] text-5xl font-Jua mt-5">No items were found</p>
-				{:else}
+			{#if $FilteredItems.length === 0}
+				<p
+					transition:fade={{ duration: 150 }}
+					class="absolute z-10 text-center font-[800] text-5xl font-Jua mt-5">
+					No items were found
+				</p>
+			{:else}
+				<div class="w-full flex flex-col gap-y-5">
 					{#each $FilteredItems as item}
 						<Item
 							removeItem={() => removeItem(item.id)}
-							tags={item.tags.map(tag => tag.text)}
+							tags={item.tags}
 							item_id={item.id}
 							item={item.key}
 							value={item.value}
 							extra={item.extra} />
 					{/each}
-				{/if}
-			</div>
+				</div>
+			{/if}
 		</section>
 	</main>
 {/if}

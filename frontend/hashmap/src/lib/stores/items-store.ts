@@ -1,5 +1,5 @@
 import { derived, writable } from 'svelte/store'
-import { TagsStore } from './tags-store'
+import { Tags, TagsStore, type TagInitial } from './tags-store'
 
 // Initial Store
 export interface Item {
@@ -7,10 +7,7 @@ export interface Item {
 	key: string
 	value: string
 	extra: string
-	tags: {
-		tagId: number
-		text: string
-	}[]
+	tags: string[]
 }
 
 // stores
@@ -35,15 +32,33 @@ export class Items {
 	}
 
 	static Edit(item: Item) {
-		ItemsStore.update(items => items.map(it => (it.id === item.id ? item : it)))
+		item.tags.forEach(tag => Tags.Add(tag))
+
+		ItemsStore.update(items =>
+			items.map(it => {
+				const is_needed_item = it.id == item.id
+				is_needed_item && Tags.DescreaseCount(it.tags)
+
+				return is_needed_item ? item : it
+			})
+		)
 	}
 
 	static Add(item: Item) {
+		item.tags.forEach(tag => Tags.Add(tag))
+
 		ItemsStore.update(items => [item, ...items])
 	}
 
 	static RemoveById(id: number) {
-		ItemsStore.update(items => items.filter(item => item.id !== id))
+		ItemsStore.update(items =>
+			items.filter(item => {
+				const is_needed_item = item.id == id
+				is_needed_item && Tags.DescreaseCount(item.tags)
+
+				return !is_needed_item
+			})
+		)
 	}
 }
 
@@ -113,7 +128,7 @@ export const FilteredItems = derived(
 			// creating dict to importve performance from O(n^2) to O(n)
 			const tags = {} as Record<string, boolean>
 			for (const tag of item.tags) {
-				tags[tag.text.toLowerCase()] = true
+				tags[tag.toLowerCase()] = true
 			}
 
 			for (const tag of specified_tags) {

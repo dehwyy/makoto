@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { CreateItem } from '$lib/api/fetches'
 	import { Items } from '$lib/stores/items-store'
-	import { Tags } from '$lib/stores/tags-store'
+	import { Tags, type TagInitial } from '$lib/stores/tags-store'
 	import { Button } from 'makoto-ui-svelte'
 	import ItemEditor from '../item-editor.svelte'
 
@@ -19,10 +19,8 @@
 			key,
 			value,
 			extra,
-			tags: tags.map(tag => ({ tagId: 0, text: tag }))
+			tags
 		})
-
-		tags.forEach((tag, i) => Tags.Add({ tagId: 0 << (20 - i), text: tag, usages: 1 }))
 
 		// Request 2 backend
 		const response = await CreateItem({ key, value, extra, tags })

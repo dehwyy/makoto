@@ -6,12 +6,6 @@
 	// props
 	export let finalButtonText = ''
 	export let isEdit = false
-	export let defaultValues = {
-		key: '',
-		value: '',
-		extra: '',
-		tags: [] as string[]
-	}
 	export let isCreateItemMode = false
 
 	export let onFinalButtonClick = (payload: {
@@ -22,20 +16,20 @@
 	}) => {}
 
 	// form_fields
-	let key_saved = defaultValues.key
-	let key = defaultValues.key
+	export let key = ''
+	let key_saved = key
 
-	let value_saved = defaultValues.value
-	let value = defaultValues.value
+	export let value = ''
+	let value_saved = value
 
-	let extra_saved = defaultValues.extra
-	let extra = defaultValues.extra
+	export let extra = ''
+	let extra_saved = extra
 
 	// tags
 	let time_tag = ''
 
-	let tags_saved = defaultValues.tags
-	let tags = defaultValues.tags // temporary stor
+	export let tags: string[] = [] // temporary stor
+	let tags_saved = tags
 
 	//
 	let isInAddingTagsMode = false
