@@ -2,7 +2,7 @@
 	import { fade, scale } from 'svelte/transition'
 	import { Button, Modal } from 'makoto-ui-svelte'
 	import Input from './input.svelte'
-
+	import { TagsStore } from '$lib/stores/tags-store'
 	// props
 	export let finalButtonText = ''
 	export let isEdit = false
@@ -40,6 +40,7 @@
 	//
 	let isInAddingTagsMode = false
 	let isTransitionTags = false
+	let isInputFocus = false
 	let tagsBlock: HTMLElement
 	let tagsBlockHeight = 0
 
@@ -68,6 +69,11 @@
 		}, 150)
 
 		tagsBlockHeight = tagsBlock?.clientHeight
+	}
+
+	const SelectAutosuggestedTag = (tag: string) => {
+		time_tag = tag
+		SaveTag()
 	}
 
 	const CloseModal = () => {
@@ -112,7 +118,47 @@
 		extra_saved = extra
 		tags_saved = tags
 	}
+
+	let autocompleteTags: string[]
+
+	$: {
+		/**
+		 * 1st priopity are tags which start with written query (time_tag)
+		 * 2nd priority are tags which not start BUT contain query from any position
+		 * 3rd priority are tags which contain query from any position
+		 */
+		const exac_match: string[] = []
+		const contains: string[] = []
+		const someway_match: string[] = []
+
+		const query = new RegExp(
+			time_tag
+				.split('')
+				.map(w => w + '[a-zа-я\\s]*')
+				.join(''),
+			'ig'
+		)
+
+		$TagsStore.forEach(tag => {
+			if (tags.includes(tag.text)) {
+				return
+			}
+
+			if (tag.text.startsWith(time_tag)) {
+				exac_match.push(tag.text)
+			} else if (tag.text.includes(time_tag)) {
+				contains.push(tag.text)
+			} else if (tag.text.match(query)) {
+				someway_match.push(tag.text)
+			}
+		})
+
+		const result = [...exac_match, ...contains, ...someway_match]
+		autocompleteTags = result.length > 3 ? result.slice(0, 3) : result
+	}
 </script>
+
+<svelte:body on:click={() => (isInputFocus = false)} />
 
 {#if isEdit}
 	<article
@@ -168,21 +214,47 @@
 					{#if isInAddingTagsMode}
 						<div
 							transition:fade={{ duration: 200, delay: 0 }}
-							class="absolute z-30 right-10 left-10 bottom-28 flex gap-x-5 text-md font-[600]">
-							<Input bind:value={time_tag} placeholder="tag" />
+							class="absolute z-30 right-10 left-10 bottom-32 text-md font-[600]">
+							<div class="flex gap-x-5">
+								<div
+									aria-hidden="true"
+									class="w-full"
+									on:click={e => {
+										e.stopPropagation()
+										isInputFocus = true
+									}}>
+									<Input bind:value={time_tag} placeholder="tag" />
+								</div>
+								<div
+									on:click={SaveTag}
+									aria-hidden="true"
+									class="cursor-pointer flex items-end rounded-full">
+									<span class="hover:text-green-400 transition-all duration-300 font-Jua text-lg"
+										>Save</span>
+								</div>
+							</div>
 							<div
-								on:click={SaveTag}
-								aria-hidden="true"
-								class="cursor-pointer flex items-end rounded-full">
-								<span class="hover:text-green-400 transition-all duration-300 font-Jua text-lg"
-									>Save</span>
+								class={`${
+									autocompleteTags.length && isInputFocus
+										? 'max-h-[150px]'
+										: 'max-h-[0px] opacity-0 invisible'
+								} overflow-hidden transition-max-height absolute top-[4.7rem] left-0 right-0 bg-base-300 py-1 border-solid border border-gray-300`}>
+								{#each autocompleteTags as tag, i}
+									<button
+										on:click={() => SelectAutosuggestedTag(tag)}
+										class="px-4 py-2 font-[600] font-ContentT cursor-pointer hover:bg-[#191919] w-full text-start"
+										>{tag}</button>
+									{#if i != 2}
+										<div class="h-[1px] w-full bg-gray-500 rounded-full" />
+									{/if}
+								{/each}
 							</div>
 						</div>
 					{/if}
 				</div>
 
 				<!-- Button to create word (locally and server) -->
-				<div class="w-full mt-16 font-ContentT text-xl">
+				<div class="w-full mt-28 font-ContentT text-xl">
 					<Button onClick={FinalButtonClick}>{finalButtonText}</Button>
 				</div>
 			</div>
@@ -190,3 +262,9 @@
 	</article>
 {/if}
 <slot />
+
+<style>
+	.transition-max-height {
+		transition: max-height 0.5s;
+	}
+</style>
