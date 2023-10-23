@@ -1,22 +1,33 @@
+'use client'
+
+import { useState } from 'react'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from '$/components/ui/select'
+import { useChangeLocale, useCurrentLocale } from '$/locales/client'
 
 const placeholders = {
-  ru: 'English / English',
-  en: 'Russian / Русский',
+  en: 'English / English',
+  ru: 'Russian / Русский',
 } as const
 
 const Language = () => {
-  const language_value_from_store = 'ru' as keyof typeof placeholders
+  const current_locale = useCurrentLocale()
+  const set_locale = useChangeLocale({ preserveSearchParams: true })
+  const [lang, setLang] = useState(current_locale)
+
+  const onValueChange = (value: keyof typeof placeholders) => {
+    setLang(value)
+    set_locale(value)
+  }
 
   return (
     <>
-      <p className="font-Content font-[600]">Язык</p>
-      <Select>
-        <SelectTrigger className="w-full">{placeholders[language_value_from_store]}</SelectTrigger>
+      <p className="font-Content font-[600]">Language</p>
+      <Select onValueChange={onValueChange}>
+        <SelectTrigger className="w-full">{placeholders[lang]}</SelectTrigger>
         <SelectContent>
-          <SelectGroup defaultValue={language_value_from_store} className="font-Content">
-            <SelectItem value="english">English / English</SelectItem>
-            <SelectItem value="russian">Russian / Русский</SelectItem>
+          <SelectGroup defaultValue={lang} className="font-Content">
+            <SelectItem value="en">English / English</SelectItem>
+            <SelectItem value="ru">Russian / Русский</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>

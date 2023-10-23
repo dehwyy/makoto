@@ -2,12 +2,15 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '$/components/ui/accordion'
 import { Button } from '$/components/ui/button'
 import { GearIcon, CookieIcon, CubeIcon } from '@radix-ui/react-icons'
+import { useTheme } from 'next-themes'
 import { Switch } from '$/components/ui/switch'
 import Language from '$/components/navigation/settings/language'
+import DataAndStorage from '$/components/navigation/settings/data-storage'
 
 const ContentClass = 'grid grid-cols-[2fr_3fr] items-center gap-y-5 py-5 font-Content'
 
 const Settings = () => {
+  const { setTheme, theme } = useTheme()
   return (
     <SettingsWrapper>
       <Accordion type="single" collapsible className="w-full">
@@ -25,14 +28,25 @@ const Settings = () => {
         <AccordionItem value="item-2">
           <Trigger text="Appearance" Icon={CubeIcon} />
           <AccordionContent>
-            <div className="py-3"></div>
+            <div className={`${ContentClass}`}>
+              <p>Dark theme</p>
+              <Switch
+                defaultChecked={theme === 'dark'}
+                onCheckedChange={() => setTimeout(() => setTheme(theme === 'dark' ? 'light' : 'dark'), 150)}
+                className="ml-auto"
+              />
+            </div>
           </AccordionContent>
         </AccordionItem>
 
         {/* 3rd - Storage Settings */}
         <AccordionItem value="item-3">
-          <Trigger text="Data and Storage" Icon={CookieIcon} />
-          <AccordionContent>Yes. It&apos;s animated by default, but you can disable it if you prefer.</AccordionContent>
+          <Trigger text="UNSAFE: Data and Storage" Icon={CookieIcon} />
+          <AccordionContent>
+            <div className={`${ContentClass} !grid-cols-[1fr_1fr_2fr]`}>
+              <DataAndStorage />
+            </div>
+          </AccordionContent>
         </AccordionItem>
       </Accordion>
     </SettingsWrapper>
@@ -63,9 +77,6 @@ const SettingsWrapper = ({ children }: { children: React.ReactNode }) => {
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-y-4 w-full py-5">{children}</div>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
