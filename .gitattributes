@@ -1,0 +1,5 @@
+frontend/main/src/components/ui/* linguist-vendored
+*.js linguist-vendored
+*.css linguist-vendored
+*.scss linguist-vendored
+*.html linguist-vendored
