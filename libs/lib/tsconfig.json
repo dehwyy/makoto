@@ -6,5 +6,6 @@
     "sourceMap": false,
     "outDir": "./dist",
     "skipLibCheck": true,
+    "declaration": true
   }
 }

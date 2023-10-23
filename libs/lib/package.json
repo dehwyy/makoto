@@ -10,14 +10,12 @@
 	"typesVersions": {
 		"*": {
 			"*": [
-				"./dist/types/*.d.ts"
+				"./dist/*.d.ts"
 			]
 		}
 	},
   "scripts": {
-    "generate:js": "tsc",
-    "generate:types": "tsc --declaration true --emitDeclarationOnly --outDir dist/types",
-    "ts": "bun run generate:js && bun run generate:types"
+    "ts": "tsc"
   },
   "dependencies": {
     "@protobuf-ts/runtime-rpc": "^2.9.1"
