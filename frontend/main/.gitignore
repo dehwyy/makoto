@@ -1,5 +1,5 @@
 node_modules
-ui
 .env*.local
 .vercel
 next-env.d.ts
+.next
