@@ -36,17 +36,20 @@ const PictureEditor = ({ onSave: onSaveFromParent }: Props) => {
 
   return (
     <>
-      <Cropper
-        src={image || '/images/kawaii.png'}
-        className="mt-3"
-        style={{ height: Math.min(windowHeight, 500) }}
-        initialAspectRatio={1 / 1}
-        aspectRatio={1 / 1}
-        guides={false}
-        viewMode={2}
-        crop={onCrop}
-        ref={cropperRef}
-      />
+      {image && (
+        <Cropper
+          src={image}
+          className="mt-3"
+          style={{ height: Math.min(windowHeight, 500) }}
+          initialAspectRatio={1 / 1}
+          aspectRatio={1 / 1}
+          guides={false}
+          viewMode={2}
+          crop={onCrop}
+          ref={cropperRef}
+        />
+      )}
+
       <Input type="file" className="mt-3" onChange={e => setFile(e.target.files?.item(0))} />
       <DialogClose asChild>
         <Button onClick={onSave}>Save</Button>
