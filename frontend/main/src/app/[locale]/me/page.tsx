@@ -2,8 +2,19 @@ import { Button } from '$/components/ui/button'
 import Image from 'next/image'
 import { DiscordLogoIcon, GitHubLogoIcon, InstagramLogoIcon } from '@radix-ui/react-icons'
 import { cn } from '$/lib/utils'
+import Link from 'next/link'
+import { Routes } from '$/lib/constants'
 
-const Page = () => {
+interface PageDefaultProps {
+  searchParams: {
+    id?: string
+  }
+  params: {}
+}
+
+const Page = async ({ searchParams }: PageDefaultProps) => {
+  console.log(searchParams.id)
+
   const dark_background = 'dark:bg-[#171717]'
   const background = 'bg-[#00a2ff]'
   const nickname = 'dehwyy'
@@ -22,9 +33,9 @@ const Page = () => {
             <div className="flex-auto">
               <h3 className="font-Jua text-2xl dark:font-[800] font-[500] tracking-wider ">{nickname}</h3>
             </div>
-            <div>
-              <Button>Edit profile</Button>
-            </div>
+            <Link href={Routes.MeEdit}>
+              <Button className="px-10 font-ContentT">Edit</Button>
+            </Link>
           </div>
           <div className="px-7 pb-5">
             {/* integrations */}

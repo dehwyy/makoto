@@ -2,7 +2,7 @@ import { Button } from '$/components/ui/button'
 import FadeTransition from '$/components/fade'
 import { getScopedI18n } from '$/locales/server'
 import Link from 'next/link'
-import { Services } from '$/lib/constants'
+import { Routes, Services } from '$/lib/constants'
 
 const Page = async () => {
   const t = await getScopedI18n('index')
@@ -17,7 +17,7 @@ const Page = async () => {
               <a href={Services.Auth}>
                 <Button className="text-lg w-full">{t('sign-in')}</Button>
               </a>
-              <Link href={Services.Docs || '/'}>
+              <Link href={Routes.Docs || '/'}>
                 {' '}
                 <Button variant="secondary" className="text-lg w-full">
                   {t('docs')}

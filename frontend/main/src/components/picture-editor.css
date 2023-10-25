@@ -1,0 +1,8 @@
+.cropper-view-box {
+  border-radius: 100% !important;
+}
+
+.cropper-bg {
+  background-image: none !important;
+  @apply dark:bg-[#121212] bg-white;
+}

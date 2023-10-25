@@ -11,16 +11,17 @@ import {
   navigationMenuTriggerStyle,
 } from '$/components/ui/navigation-menu'
 import Link from 'next/link'
+import { Services, Routes } from '$/lib/constants'
 
 const services: { title: string; href: string; description: string }[] = [
   {
     title: 'Hashmap',
-    href: `http://localhost:${PORTS.HASHMAP}`,
+    href: Services.Hashmap,
     description: "A service to store key-value pairs which support features like searching, sorting, editing and viewing other users' data",
   },
   {
     title: 'Intergrations/Discord',
-    href: '/docs/primitives/hover-card',
+    href: Routes.Docs,
     description: 'Discord integration with Makoto which allows users to use Makoto as a bot for server.',
   },
 ]
@@ -43,10 +44,10 @@ const NavigationItems = () => {
                   </a>
                 </NavigationMenuLink>
               </li>
-              <ListItem href={`http://localhost:${PORTS.AUTH}`} title="Authorize">
+              <ListItem href={Services.Auth} title="Authorize">
                 Login using Google, Discord or create a new Makoto account.
               </ListItem>
-              <ListItem href="/" title="Customize">
+              <ListItem href={Routes.Me} title="Customize">
                 Make your new Makoto profile look unique.
               </ListItem>
               <ListItem href="/" title="Use">
