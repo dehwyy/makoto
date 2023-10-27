@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button, RainbowBlock } from 'makoto-ui-svelte'
 	import Link from '$lib/components/link.svelte'
-	import GoogleIcon from '$lib/components/icons/google.svelte'
 	import type { Snapshot } from './$types'
 	import Input from '$lib/components/input.svelte'
 	import { SignUpFetch } from '$lib/api/fetches'
@@ -55,7 +54,6 @@
 		<!-- hidden, while Google Auth is not providede -->
 		<div class="hidden">
 			<div class="divider font-ContentT">OR</div>
-			<GoogleIcon />
 		</div>
 	</div>
 </RainbowBlock>
