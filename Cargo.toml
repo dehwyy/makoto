@@ -1,2 +1,6 @@
 [workspace]
-members = ["libs/grpc"]
+
+members = [
+  "libs/grpc",
+  "libs/config",
+]

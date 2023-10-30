@@ -1,0 +1,30 @@
+services:
+  apps:
+    build:
+      dockerfile: ./dockerfile
+    ports:
+      - 7100:7100
+    container_name: apps
+    depends_on:
+      -db
+    networks:
+      - makoto_micro
+      - makoto_db
+
+  db:
+    restart: always
+    image: postgres:latest
+    container_name: makoto_postgres
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+    ports:
+      - 5432:5432
+    networks:
+      - makoto_db
+
+networks:
+  services:
+    name: makoto_micro
+    external: true
+  makoto_auth_db:
+    name: makoto_auth_db

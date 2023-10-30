@@ -19,7 +19,7 @@ type UserData struct {
 	Email      string       `gorm:"not null"`
 	CustomId   string       `gorm:"not null; unique; index"` // by default, CustomId == ProviderId
 	Picture    string       `gorm:"size:2048"`               // would be data64 or url
-	Provider   AuthProvider `gorm:"default:local"`           // "local" | "Google"
+	Provider   AuthProvider `gorm:"default:local"`           // "local" | "google" | "github" | "discord"
 	Role       string       `gorm:"default:user"`            // "user" | "admin"
 	ProviderId string       // Id specified in OAuthProvider, if Provider==local -> same as ID
 	Password   string

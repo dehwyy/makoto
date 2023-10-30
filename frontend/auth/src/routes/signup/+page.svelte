@@ -41,7 +41,7 @@
 		<div class="w-full flex flex-col gap-y-3 font-Content">
 			<Input bind:value={username} placeholder="username" />
 			<Input bind:value={email} placeholder="email" />
-			<Input ableToChangeVisibility={true} bind:value={password} placeholder="password" />
+		u<Input ableToChangeVisibility={true} bind:value={password} placeholder="password" />
 			<Input isPasswordType={true} bind:value={repeatedPassword} placeholder="confirm password" />
 		</div>
 		<div class="mt-10 w-full font-ContentT font-[600] text-lg">
@@ -53,7 +53,5 @@
 		</div>
 		<!-- hidden, while Google Auth is not providede -->
 		<div class="hidden">
-			<div class="divider font-ContentT">OR</div>
-		</div>
 	</div>
 </RainbowBlock>
