@@ -1,26 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
+	"strings"
 
 	"github.com/dehwyy/makoto/apps/hashmap/internal/twirp"
-	"github.com/dehwyy/makoto/libs/config"
+	makoto_config "github.com/dehwyy/makoto/libs/config"
 	"github.com/dehwyy/makoto/libs/database"
 	"github.com/dehwyy/makoto/libs/logger"
-	"github.com/dehwyy/makoto/libs/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
 
-var (
-	l   = logger.New()
-	cfg = config.New()
-)
-
 func main() {
-	db := database.New(cfg.DatabaseDsn, l)
+	log := logger.New()
+	config := makoto_config.New()
+
+	db := database.New(config.DatabaseDsn, log)
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{
@@ -32,10 +28,12 @@ func main() {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	twirp := twirp.NewTwirpServer(db, l)
+	twirp := twirp.NewTwirpServer(db, log)
 
-	r.Mount(twirp.PathPrefix(), middleware.AuthorizationMiddleware(fmt.Sprintf("http://localhost:%v", config.PortAuth), l, twirp))
-	l.Infof("Server started on port %v", config.PortHashmap)
+	r.Mount(twirp.PathPrefix(), twirp)
 
-	l.Fatalf("server shutdown, %v", http.ListenAndServe(":"+strconv.Itoa(int(config.PortHashmap)), r))
+	port := ":" + strings.Split(config.HashmapUrl, ":")[1]
+
+	log.Infof("Server started on port %v", port)
+	log.Fatalf("server shutdown, %v", http.ListenAndServe(port, r))
 }

@@ -5,9 +5,9 @@ import (
 
 	"github.com/dehwyy/makoto/apps/hashmap/internal/pipes"
 	"github.com/dehwyy/makoto/apps/hashmap/internal/repository"
+	"github.com/dehwyy/makoto/libs/grpc/generated/general"
 	"github.com/dehwyy/makoto/libs/grpc/generated/hashmap"
 	"github.com/dehwyy/makoto/libs/logger"
-	"github.com/dehwyy/makoto/libs/middleware"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	tw "github.com/twitchtv/twirp"
@@ -30,7 +30,7 @@ var (
 )
 
 func NewTwirpServer(db *gorm.DB, l logger.Logger) hashmap.TwirpServer {
-	return hashmap.NewHashmapServer(
+	return hashmap.NewHashmapRPCServer(
 		&Server{
 			//
 			tags_repository:  repository.NewTagsRepository(db, l),
@@ -41,8 +41,8 @@ func NewTwirpServer(db *gorm.DB, l logger.Logger) hashmap.TwirpServer {
 	)
 }
 
-func (s *Server) GetItems(ctx context.Context, req *hashmap.UserId) (*hashmap.Items, error) {
-	user_id, err := s.getUUIDFromContext(ctx)
+func (s *Server) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*hashmap.GetItemsResponse, error) {
+	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
 		return nil, InvalidUserIdError
 	}
@@ -52,23 +52,15 @@ func (s *Server) GetItems(ctx context.Context, req *hashmap.UserId) (*hashmap.It
 		return nil, tw.InternalErrorf("failed to get items: %v", err.Error())
 	}
 
-	return &hashmap.Items{
-		Items: pipes.ItemsDb2Grpc(items),
+	return &hashmap.GetItemsResponse{
+		Items: pipes.ToRpcItems(items),
 	}, nil
 }
 
-// No authorization required
-func (s *Server) GetTags(ctx context.Context, req *hashmap.UserId) (*hashmap.TagsResponse, error) {
-	user_id, err := s.getUUIDFromContext(ctx)
+func (s *Server) GetTags(ctx context.Context, req *general.UserId) (*hashmap.GetTagsResponse, error) {
+	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
 		return nil, InvalidUserIdError
-	}
-
-	if req.UserId != "" {
-		user_id, err = uuid.Parse(req.UserId)
-		if err != nil {
-			return nil, tw.InvalidArgumentError("invalid user id", err.Error())
-		}
 	}
 
 	tags, err := s.tags_repository.GetAllTags(user_id)
@@ -76,14 +68,15 @@ func (s *Server) GetTags(ctx context.Context, req *hashmap.UserId) (*hashmap.Tag
 		return nil, tw.InternalErrorf("failed to get tags: %v", err.Error())
 	}
 
-	return &hashmap.TagsResponse{
-		Tags: pipes.TagsFromDb2Grpc(tags),
+	return &hashmap.GetTagsResponse{
+		Tags: pipes.ToRpcTags(tags),
 	}, nil
 }
 
-func (s *Server) CreateItem(ctx context.Context, req *hashmap.Item) (*hashmap.ItemId, error) {
+func (s *Server) CreateItem(ctx context.Context, req *hashmap.CreateItemPayload) (*general.IsSuccess, error) {
 	tags := s.tags_repository.TagsFromStringArray(req.Tags)
-	user_id, err := s.getUUIDFromContext(ctx)
+
+	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
 		return nil, tw.InvalidArgumentError("invalid user id (not uuid)", err.Error())
 	}
@@ -95,13 +88,13 @@ func (s *Server) CreateItem(ctx context.Context, req *hashmap.Item) (*hashmap.It
 
 	s.l.Debugf("item created: %v", item_id)
 
-	return &hashmap.ItemId{
-		ItemId: item_id,
+	return &general.IsSuccess{
+		IsSuccess: true,
 	}, nil
 }
 
-func (s *Server) RemoveItem(ctx context.Context, req *hashmap.ItemId) (*Empty, error) {
-	user_id, err := s.getUUIDFromContext(ctx)
+func (s *Server) RemoveItem(ctx context.Context, req *hashmap.RemoveItemPayload) (*general.IsSuccess, error) {
+	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
 		return nil, InvalidUserIdError
 	}
@@ -111,26 +104,26 @@ func (s *Server) RemoveItem(ctx context.Context, req *hashmap.ItemId) (*Empty, e
 		return nil, tw.InternalErrorf("failed to remove item: %v", err.Error())
 	}
 
-	return &Empty{}, nil
+	return &general.IsSuccess{
+		IsSuccess: true,
+	}, nil
 }
 
-func (s *Server) EditItem(ctx context.Context, req *hashmap.UpdateItem) (*Empty, error) {
-	user_id, err := s.getUUIDFromContext(ctx)
+func (s *Server) EditItem(ctx context.Context, req *hashmap.EditItemPayload) (*general.IsSuccess, error) {
+	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
 		return nil, InvalidUserIdError
 	}
 
 	// generating tags (in db) or reading (from db)
-	tags := s.tags_repository.TagsFromStringArray(req.Item.Tags)
+	tags := s.tags_repository.TagsFromStringArray(req.Tags)
 
-	err = s.items_repository.EditItem(user_id, req.Id.ItemId, req.Item.Key, req.Item.Value, req.Item.Extra, tags)
+	err = s.items_repository.EditItem(user_id, req.ItemId, req.Key, req.Value, req.Extra, tags)
 	if err != nil {
 		return nil, tw.InternalErrorf("failed to edit item: %v", err.Error())
 	}
 
-	return &Empty{}, nil
-}
-
-func (s *Server) getUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
-	return uuid.Parse(middleware.AuthorizationMiddlewareRead(ctx))
+	return &general.IsSuccess{
+		IsSuccess: true,
+	}, nil
 }
