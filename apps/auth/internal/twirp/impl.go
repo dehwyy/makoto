@@ -237,17 +237,71 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 }
 
 func (s *Server) IsUniqueUsername(ctx context.Context, req *auth.IsUniqueUsernamePayload) (*auth.IsUnique, error) {
+	_, err := s.user_repository.GetUserByUsername(req.Username)
+	// if user wasn't found -> it will return error (instanceof gorm.ErrRecordNotFound)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &auth.IsUnique{IsUnique: true}, nil
+	}
+
+	// internal error
+	if err != nil {
+		return nil, tw.InternalError(err.Error())
+	}
+
 	return nil, nil
 }
 
 func (s *Server) VerifyUserEmail(ctx context.Context, req *general.UserId) (*general.IsSuccess, error) {
-	return nil, nil
+	user_id, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, tw.InternalError(err.Error())
+	}
+
+	err = s.user_repository.VerifyUserEmail(user_id)
+	if err != nil {
+		return nil, tw.InternalError(err.Error())
+	}
+
+	return &general.IsSuccess{IsSuccess: true}, nil
 }
 
-func (s *Server) ChangePassword(ctx context.Context, req *auth.ChangePasswordPayload) (*auth.ChangePasswordResponse, error) {
-	return nil, nil
+func (s *Server) ChangePassword(ctx context.Context, req *auth.ChangePasswordPayload) (*general.IsSuccess, error) {
+	user_id, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, tw.InternalError(err.Error())
+	}
+
+	_, err = s.user_repository.ValidateUser(repository.ValidateUserPayload{
+		UserId:   user_id,
+		Password: req.OldPassword,
+	})
+	if err != nil {
+		if errors.Is(err, repository.USER_NOT_FOUND) {
+			return nil, tw.NewError(tw.NotFound, "user with provided credentials wasn't found")
+		} else if errors.Is(err, repository.USER_WRONG_PASSWORD) {
+			return nil, tw.NewError(tw.Unauthenticated, "wrong password")
+		}
+	}
+	// -> validation passed -> allow change password
+
+	err = s.user_repository.UpdateUserPassword(user_id, req.NewPassword)
+	if err != nil {
+		return nil, tw.InternalError(err.Error())
+	}
+
+	return &general.IsSuccess{IsSuccess: true}, nil
 }
 
 func (s *Server) Logout(ctx context.Context, req *general.UserId) (*general.IsSuccess, error) {
-	return nil, nil
+	user_id, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, tw.InternalError(err.Error())
+	}
+
+	err = s.token_repository.DeleteTokenByUserId(user_id)
+	if err != nil {
+		return nil, tw.InternalError(err.Error())
+	}
+
+	return &general.IsSuccess{IsSuccess: true}, nil
 }

@@ -40,6 +40,7 @@ type CreateUserPayload struct {
 }
 
 type ValidateUserPayload struct {
+	UserId   uuid.UUID
 	Username string
 	Email    string
 	Password string
@@ -65,6 +66,10 @@ func (u *UserRepository) GetUserById(user_payload GetUserPayload) (user *models.
 	}
 
 	return user, u.db.Model(&models.UserData{}).Where("custom_id = ?", user_payload.CustomId).First(&user).Error
+}
+
+func (u *UserRepository) GetUserByUsername(username string) (user *models.UserData, erorr error) {
+	return user, u.db.Model(&models.UserData{}).Where("username = ?", username).First(&user).Error
 }
 
 func (u *UserRepository) GetUserByProviderId(provider_id string) (user *models.UserData, erorr error) {
@@ -110,8 +115,10 @@ func (u *UserRepository) ValidateUser(user_payload ValidateUserPayload) (id *uui
 
 	if user_payload.Email != "" {
 		u.db.Model(&models.UserData{}).Where("email = ?", user_payload.Email).First(&user_data)
-	} else {
+	} else if user_payload.Username != "" {
 		u.db.Model(&models.UserData{}).Where("username = ?", user_payload.Username).First(&user_data)
+	} else {
+		u.db.Model(&models.UserData{}).Where("id = ?", user_payload.UserId).First(&user_data)
 	}
 
 	// if username is equal to "" => user wasn't found as "" is a default string's value
@@ -126,4 +133,12 @@ func (u *UserRepository) ValidateUser(user_payload ValidateUserPayload) (id *uui
 
 	return &user_data.ID, nil
 
+}
+
+func (u *UserRepository) VerifyUserEmail(user_id uuid.UUID) error {
+	return u.db.Model(&models.UserData{}).Where("id = ?", user_id).Update("is_verified", true).Error
+}
+
+func (u *UserRepository) UpdateUserPassword(user_id uuid.UUID, new_password string) error {
+	return u.db.Model(&models.UserData{}).Where("id = ?", user_id).Update("password", new_password).Error
 }

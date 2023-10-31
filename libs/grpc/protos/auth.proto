@@ -10,7 +10,7 @@ service AuthRPC {
   rpc SignIn(SignInRequest) returns (AuthResponse);
   rpc IsUniqueUsername(IsUniqueUsernamePayload) returns (IsUnique);
   rpc VerifyUserEmail(general.UserId) returns (general.IsSuccess);
-  rpc ChangePassword(ChangePasswordPayload) returns (ChangePasswordResponse);
+  rpc ChangePassword(ChangePasswordPayload) returns (general.IsSuccess);
   rpc Logout(general.UserId) returns (general.IsSuccess);
 }
 
@@ -58,12 +58,7 @@ message IsUnique {
 }
 
 message ChangePasswordPayload {
-  string token = 1;
+  string user_id = 1;
   string old_password = 2;
   string new_password = 3;
-}
-
-message ChangePasswordResponse {
-  bool isSuccess = 1;
-  optional string reason = 2;
 }

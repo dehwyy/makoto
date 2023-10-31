@@ -10,12 +10,12 @@ require (
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/cors v1.2.1
 	github.com/golang/protobuf v1.5.3
-	github.com/twitchtv/twirp v8.1.3+incompatible
 )
 
 require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
+	github.com/twitchtv/twirp v8.1.3+incompatible // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect

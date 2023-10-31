@@ -9,5 +9,4 @@ use (
   ./libs/logger
   ./libs/database
   ./libs/grpc
-  ./libs/middleware
 )

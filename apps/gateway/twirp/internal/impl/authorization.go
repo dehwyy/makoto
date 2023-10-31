@@ -33,7 +33,7 @@ func (s *TwirpAuthorizationService) VerifyUserEmail(ctx context.Context, req *ge
 	return nil, nil
 }
 
-func (s *TwirpAuthorizationService) ChangePassword(ctx context.Context, req *auth.ChangePasswordPayload) (*auth.ChangePasswordResponse, error) {
+func (s *TwirpAuthorizationService) ChangePassword(ctx context.Context, req *auth.ChangePasswordPayload) (*general.IsSuccess, error) {
 	return nil, nil
 }
 

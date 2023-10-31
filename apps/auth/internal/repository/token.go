@@ -97,3 +97,7 @@ func (t *TokenRepository) CreateTokenByOAuth2Token(userId uuid.UUID, token *oaut
 		TokenType:    token.TokenType,
 	}).Error
 }
+
+func (t *TokenRepository) DeleteTokenByUserId(userId uuid.UUID) error {
+	return t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Delete(&models.UserToken{}).Error
+}

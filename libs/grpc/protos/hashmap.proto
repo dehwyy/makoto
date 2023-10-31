@@ -4,11 +4,10 @@ package hashmap;
 option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/hashmap";
 
 import "general.proto";
-import "google/protobuf/empty.proto";
 
 service HashmapRPC {
   rpc GetItems(GetItemsPayload) returns (GetItemsResponse);
-  rpc GetTags(google.protobuf.Empty) returns (GetTagsResponse);
+  rpc GetTags(general.UserId) returns (GetTagsResponse);
   rpc CreateItem(CreateItemPayload) returns (general.IsSuccess);
   rpc RemoveItem(RemoveItemPayload) returns (general.IsSuccess);
   rpc EditItem(EditItemPayload) returns (general.IsSuccess);
