@@ -42,6 +42,11 @@ type Config struct {
 	HttpGatewayUrl  string `required:"true"    envconfig:"HTTP_GATEWAY_URL"`
 	AuthUrl         string `required:"true"    envconfig:"AUTH_URL"`
 	HashmapUrl      string `required:"true"    envconfig:"HASHMAP_URL"`
+
+	// Gmail
+	GmailSennderName    string `required:"true"    envconfig:"GMAIL_SENDER_NAME"`
+	GmailSenderAddr     string `required:"true"    envconfig:"GMAIL_SENDER_ADDRESS"`
+	GmailSenderPassword string `required:"true"    envconfig:"GMAIL_SENDER_PASSWORD"`
 }
 
 func New() *Config {
