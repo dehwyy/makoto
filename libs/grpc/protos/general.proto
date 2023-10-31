@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package general;
+option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/general";
+
+message IsSuccess {
+  bool isSuccess = 1;
+}
+
+message UserId {
+  string user_id = 1;
+}
