@@ -1,14 +1,17 @@
 services:
-  apps:
+  twirp_gateway:
     build:
-      dockerfile: ./dockerfile
+      context: .
+      dockerfile: ./apps/gateway/twirp/Dockerfile
     ports:
-      - 7100:7100
-    container_name: apps
+      - ${TWIRP_GATEWAY_PORT}:80
+    container_name: twirp_gateway
+    env_file:
+      - .env.prod
     depends_on:
-      -db
+      - db
     networks:
-      - makoto_micro
+      - makoto_network
       - makoto_db
 
   db:
@@ -16,15 +19,15 @@ services:
     image: postgres:latest
     container_name: makoto_postgres
     environment:
-      - POSTGRES_PASSWORD=qwerty
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
     ports:
       - 5432:5432
     networks:
       - makoto_db
 
 networks:
-  services:
-    name: makoto_micro
+  makoto_network:
     external: true
-  makoto_auth_db:
-    name: makoto_auth_db
+  makoto_db:
+    name: makoto_db

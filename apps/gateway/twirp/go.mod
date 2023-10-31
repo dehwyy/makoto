@@ -3,6 +3,7 @@ module github.com/dehwyy/makoto/apps/gateway/twirp
 go 1.21.2
 
 require (
+	github.com/dehwyy/makoto/apps/gateway/services v0.0.0-00010101000000-000000000000
 	github.com/dehwyy/makoto/libs/config v0.0.0-00010101000000-000000000000
 	github.com/dehwyy/makoto/libs/grpc v0.0.0-00010101000000-000000000000
 	github.com/dehwyy/makoto/libs/logger v0.0.0-00010101000000-000000000000
@@ -21,6 +22,7 @@ require (
 )
 
 replace (
+	github.com/dehwyy/makoto/apps/gateway/services => ../services
 	github.com/dehwyy/makoto/libs/config => ../../../libs/config
 	github.com/dehwyy/makoto/libs/database => ../../../libs/database
 	github.com/dehwyy/makoto/libs/grpc => ../../../libs/grpc
