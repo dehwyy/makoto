@@ -2,13 +2,10 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/logger"
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/twitchtv/twirp"
 )
 
 type withAuthorization struct {
@@ -34,26 +31,14 @@ func (middleware *withAuthorization) Middleware(next http.Handler) http.Handler 
 			return
 		}
 
-		// make header
-		header := make(http.Header)
-		header.Set(_AuthorizationHeader, token)
-
-		// attach header to context for request
-		ctx, err := twirp.WithHTTPRequestHeaders(ctx, header)
-		if err != nil {
-			fmt.Println("failed to attach header to context in AuthorizationMiddleware")
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		transport := newTwirpClientRoundTripper()
-		twirpAuthorizationClient := auth.NewAuthProtobufClient(middleware.authorizationClientUrl, &http.Client{
+		twirpAuthorizationClient := auth.NewAuthRPCProtobufClient(middleware.authorizationClientUrl, &http.Client{
 			Transport: transport,
 		})
 
 		res, err := twirpAuthorizationClient.SignIn(ctx, &auth.SignInRequest{
-			AuthMethod: &auth.SignInRequest_Empty{
-				Empty: &empty.Empty{},
+			AuthMethod: &auth.SignInRequest_Token{
+				Token: token,
 			},
 		})
 		if err != nil {

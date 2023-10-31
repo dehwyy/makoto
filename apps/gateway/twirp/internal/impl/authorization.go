@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
+	"github.com/dehwyy/makoto/libs/grpc/generated/general"
 )
 
 type TwirpAuthorizationService struct {
@@ -11,7 +12,7 @@ type TwirpAuthorizationService struct {
 }
 
 func NewAuthorizationService(args TwirpAuthorizationService) auth.TwirpServer {
-	return auth.NewAuthServer(&TwirpAuthorizationService{
+	return auth.NewAuthRPCServer(&TwirpAuthorizationService{
 		ReadHeader: args.ReadHeader,
 	})
 }
@@ -21,5 +22,21 @@ func (s *TwirpAuthorizationService) SignUp(ctx context.Context, req *auth.SignUp
 }
 
 func (s *TwirpAuthorizationService) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
+	return nil, nil
+}
+
+func (s *TwirpAuthorizationService) IsUniqueUsername(ctx context.Context, req *auth.IsUniqueUsernamePayload) (*auth.IsUnique, error) {
+	return nil, nil
+}
+
+func (s *TwirpAuthorizationService) VerifyUserEmail(ctx context.Context, req *general.UserId) (*general.IsSuccess, error) {
+	return nil, nil
+}
+
+func (s *TwirpAuthorizationService) ChangePassword(ctx context.Context, req *auth.ChangePasswordPayload) (*auth.ChangePasswordResponse, error) {
+	return nil, nil
+}
+
+func (s *TwirpAuthorizationService) Logout(ctx context.Context, req *general.UserId) (*general.IsSuccess, error) {
 	return nil, nil
 }

@@ -60,10 +60,9 @@ func (t *TokenRepository) CreateToken(userId uuid.UUID, username string) (token 
 	}).Error
 }
 
-func (t *TokenRepository) UpdateToken(userId uuid.UUID, username string) (token string, err error) {
+func (t *TokenRepository) UpdateToken(userId uuid.UUID) (token string, err error) {
 	token, exp, err := t.jwt.NewAccessToken(utils.JwtPayload{
-		Username: username,
-		UserId:   userId.String(),
+		UserId: userId.String(),
 	})
 
 	if err != nil {

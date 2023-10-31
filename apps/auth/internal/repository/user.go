@@ -108,8 +108,6 @@ func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {
 func (u *UserRepository) ValidateUser(user_payload ValidateUserPayload) (id *uuid.UUID, err error) {
 	var user_data models.UserData
 
-	u.l.Debugf("user_payload %v", user_payload)
-
 	if user_payload.Email != "" {
 		u.db.Model(&models.UserData{}).Where("email = ?", user_payload.Email).First(&user_data)
 	} else {

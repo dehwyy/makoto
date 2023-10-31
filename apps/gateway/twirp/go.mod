@@ -27,5 +27,4 @@ replace (
 	github.com/dehwyy/makoto/libs/database => ../../../libs/database
 	github.com/dehwyy/makoto/libs/grpc => ../../../libs/grpc
 	github.com/dehwyy/makoto/libs/logger => ../../../libs/logger
-	github.com/dehwyy/makoto/libs/middleware => ../../../libs/middleware
 )

@@ -7,7 +7,6 @@ replace (
 	github.com/dehwyy/makoto/libs/database => ../../libs/database
 	github.com/dehwyy/makoto/libs/grpc => ../../libs/grpc
 	github.com/dehwyy/makoto/libs/logger => ../../libs/logger
-	github.com/dehwyy/makoto/libs/middleware => ../../libs/middleware
 )
 
 require (
@@ -15,7 +14,6 @@ require (
 	github.com/dehwyy/makoto/libs/database v0.0.0-20231016182119-ee1c9c5c6502
 	github.com/dehwyy/makoto/libs/grpc v0.0.0-20231016182119-ee1c9c5c6502
 	github.com/dehwyy/makoto/libs/logger v0.0.0-20231016182119-ee1c9c5c6502
-	github.com/dehwyy/makoto/libs/middleware v0.0.0-20231016182119-ee1c9c5c6502
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/cors v1.2.1
 	github.com/golang-jwt/jwt/v5 v5.0.0
