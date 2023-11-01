@@ -28,7 +28,7 @@ func (s *HashmapService) GetTags(ctx context.Context, req *general.UserId) (*has
 	return hashmap_client.GetTags(ctx, req)
 }
 
-func (s *HashmapService) CreateItem(ctx context.Context, req *hashmap.CreateItemPayload) (*general.IsSuccess, error) {
+func (s *HashmapService) CreateItem(ctx context.Context, req *hashmap.CreateItemPayload) (*hashmap.CreateItemResponse, error) {
 	hashmap_client := s.cl(ctx)
 	return hashmap_client.CreateItem(ctx, req)
 }

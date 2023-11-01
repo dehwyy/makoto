@@ -45,7 +45,7 @@ func (s *TwirpHashmapService) GetTags(ctx context.Context, req *general.UserId) 
 	return response, nil
 }
 
-func (s *TwirpHashmapService) CreateItem(ctx context.Context, req *hashmap.CreateItemPayload) (*general.IsSuccess, error) {
+func (s *TwirpHashmapService) CreateItem(ctx context.Context, req *hashmap.CreateItemPayload) (*hashmap.CreateItemResponse, error) {
 	response, err := s.client.CreateItem(ctx, req)
 	if err != nil {
 		return nil, err
