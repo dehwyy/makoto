@@ -5,14 +5,26 @@ services:
       dockerfile: ./apps/gateway/twirp/Dockerfile
     ports:
       - ${TWIRP_GATEWAY_PORT}:80
-    container_name: twirp_gateway
+    container_name: twirp_gateway1
     env_file:
       - .env.prod
-    depends_on:
-      - db
     networks:
       - makoto_network
-      - makoto_db
+
+  # auth:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/auth/Dockerfile
+  #   ports:
+  #     - ${AUTH_PORT}:80
+  #   container_name: auth
+  #   env_file:
+  #     - .env.prod
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - makoto_network
+  #     - makoto_db
 
   db:
     restart: always
