@@ -32,7 +32,7 @@ func main() {
 
 	r.Mount(twirp.PathPrefix(), twirp)
 
-	port := ":" + strings.Split(config.HashmapUrl, ":")[1]
+	port := ":" + strings.Split(config.HashmapUrl, ":")[2]
 
 	log.Infof("Server started on port %v", port)
 	log.Fatalf("server shutdown, %v", http.ListenAndServe(port, r))

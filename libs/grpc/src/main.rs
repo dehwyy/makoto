@@ -1,4 +1,4 @@
-use std::{fs, process::Command, time, thread};
+use std::{fs, process::Command, time, thread, io::Read};
 fn main() {
     const PATH_PROTOS: &str = "./protos";
     const PATH_GENERATED: &str = "./generated";
@@ -40,7 +40,17 @@ fn main() {
     });
 
     // 2. post-build : transpile .ts -> .js and generate .d.ts
-    thread::sleep(time::Duration::from_secs(1));
+    thread::sleep(time::Duration::from_secs(3));
+
+
+    let mut file = fs::File::options().write(true).read(true).append(true).open("./generated/auth/auth.ts").unwrap();
+
+    let mut buf = String::new();
+    file.read_to_string(&mut buf).unwrap();
+    fs::remove_file("generated/auth/auth.ts").unwrap();
+    fs::write("generated/auth/auth.ts", "//@ts-nocheck\n".to_string() + &buf).unwrap();
+
+
     Command::new("npx").arg("tsc").spawn().unwrap(); // that's all as tsc (via typescript config) would do everything by itself
 
 

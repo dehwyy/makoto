@@ -1,5 +1,5 @@
 import { redirect, type RequestHandler } from '@sveltejs/kit'
-import { SafeAuthClient } from '@makoto/grpc/clients'
+import { SafeTwirpClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
@@ -8,7 +8,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 
 	const token = cookies.get('token')
 
-	const { response, headers, status } = await SafeAuthClient(cookies).signIn(
+	const { response, headers, status } = await SafeTwirpClient(cookies).Authorization.signIn(
 		// RpcPayloads.SignIn({ code, provider: 'google' }),
 		{
 			authMethod: {

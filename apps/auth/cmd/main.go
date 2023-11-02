@@ -31,7 +31,7 @@ func main() {
 
 	r.Mount(twirp.PathPrefix(), twirp)
 
-	port := ":" + strings.Split(config.AuthUrl, ":")[1]
+	port := ":" + strings.Split(config.AuthUrl, ":")[2]
 
 	log.Infof("Server started on port %v", port)
 	log.Fatalf("server shutdown, %v", http.ListenAndServe(port, r))

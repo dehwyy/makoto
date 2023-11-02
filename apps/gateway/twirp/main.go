@@ -30,18 +30,23 @@ func main() {
 	md_authorization := middleware.NewMiddleware_OnlyAuthorized(config.AuthUrl, log)
 
 	// services
-	authorization_service := twirp.NewAuthorizationService(twirp.TwirpAuthorizationService{
-		ReadHeader: md_with_authorization_header.Read,
+	authorization_service := twirp.NewAuthorizationService(config.AuthUrl, twirp.TwirpAuthorizationService{
+		ReadHeader:             md_with_authorization_header.Read,
+		SetAuthorizationHeader: md_with_authorization_header.SetAuthorizationHeader,
 	})
 	hashmap_service := twirp.NewHashmapService(config.HashmapUrl, twirp.TwirpHashmapService{
 		ReadAuthorizationData: md_authorization.Read,
 	})
 
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("hello"))
+	})
+
 	// mount
-	r.Mount("/authorization", md_with_authorization_header.Middleware(authorization_service))
+	r.Mount(authorization_service.PathPrefix(), md_with_authorization_header.Middleware(authorization_service))
 	r.Mount("/hashmap", md_authorization.Middleware(hashmap_service))
 
-	port := ":" + strings.Split(config.TwirpGatewayUrl, ":")[1]
+	port := ":" + strings.Split(config.TwirpGatewayUrl, ":")[2]
 
 	log.Infof("Gateway server started on port %s", port)
 	log.Errorf("server shutdown, %v", http.ListenAndServe(port, r))

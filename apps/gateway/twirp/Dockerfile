@@ -3,7 +3,7 @@ FROM oven/bun as bun
 
 RUN mkdir -p /temp/dev
 COPY package.json /temp/dev
-COPY frontend /temp/dev/frontend
+RUN mkdir -p /temp/dev/frontend
 COPY libs /temp/dev/libs
 RUN cd /temp/dev && bun install
 
