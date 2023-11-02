@@ -3,18 +3,18 @@
   "type": "module",
   "private": true,
   "exports": {
-		".": {
+    ".": {
       "types": "./dist/lib/index.d.ts",
-			"import": "./dist/lib/index.js"
-		},
+      "import": "./dist/lib/index.js"
+    },
     "./clients": {
       "types": "./dist/lib/clients/index.d.ts",
       "import": "./dist/lib/clients/index.js"
     }
-	},
+  },
   "typesVersions": {
     "*": {
-      "clients":["./dist/lib/clients/index.d.ts"]
+      "clients": ["./dist/lib/clients/index.d.ts"]
     }
   },
   "types": "./dist/lib/index.d.ts",
@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@protobuf-ts/plugin": "^2.9.1",
-     "@protobuf-ts/runtime-rpc": "^2.9.1"
+    "@protobuf-ts/runtime-rpc": "^2.9.1",
+    "typescript": "^5.2.2"
   }
 }

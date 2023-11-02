@@ -1,11 +1,12 @@
 go 1.21.2
 
 use (
+  ./apps/gateway/twirp
+  ./apps/gateway/services
   ./apps/auth
   ./apps/hashmap
   ./libs/config
   ./libs/logger
   ./libs/database
   ./libs/grpc
-  ./libs/middleware
 )

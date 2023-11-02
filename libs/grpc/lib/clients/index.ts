@@ -77,7 +77,10 @@ const CreateSafeClient = <T extends TwirpClient>(client: T, cookies: Cookies) =>
   }
 })
 
-const AuthClient = (cookies: Cookies) => CreateSafeClient(AC, cookies)
-const HashmapClient = (cookies: Cookies) => CreateSafeClient(HS, cookies)
 
-export {AuthClient as SafeAuthClient, HashmapClient as SafeHashmapClient}
+const TwirpClient = (cookies: Cookies) => ({
+  Authorization: CreateSafeClient(AC, cookies),
+  Hashmap: CreateSafeClient(HS, cookies)
+})
+
+export {TwirpClient as SafeTwirpClient}

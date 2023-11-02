@@ -1,0 +1,74 @@
+services:
+  twirp_gateway:
+    build:
+      context: .
+      dockerfile: ./apps/gateway/twirp/Dockerfile
+    ports:
+      - ${TWIRP_GATEWAY_PORT}:4000
+    container_name: twirp_gateway
+    env_file:
+      - .env.prod
+    networks:
+      - makoto_network
+
+  auth_backend:
+    build:
+      context: .
+      dockerfile: ./apps/auth/Dockerfile
+    ports:
+      - ${AUTH_PORT}:4000
+    container_name: auth_backend
+    env_file:
+      - .env.prod
+    depends_on:
+      - db
+    networks:
+      - makoto_network
+      - makoto_db
+
+  hashmap_backend:
+    build:
+      context: .
+      dockerfile: ./apps/hashmap/Dockerfile
+    ports:
+      - ${HASHMAP_PORT}:4000
+    container_name: hashmap_backend
+    env_file:
+      - .env.prod
+    depends_on:
+      - db
+    networks:
+      - makoto_network
+      - makoto_db
+
+  auth_frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/auth/Dockerfile
+    ports:
+      - ${AUTH_FRONTEND_PORT}:3001
+    container_name: auth_frontend
+    env_file:
+      - .env.prod
+    networks:
+      - makoto_network
+
+  db:
+    restart: always
+    image: postgres:latest
+    container_name: makoto_postgres
+    volumes:
+      - ./.database/postgresql:/var/lib/postgresql/makoto/
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+    ports:
+      - 5432:5432
+    networks:
+      - makoto_db
+
+networks:
+  makoto_network:
+    external: true
+  makoto_db:
+    name: makoto_db

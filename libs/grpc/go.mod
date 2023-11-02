@@ -3,6 +3,7 @@ module github.com/dehwyy/makoto/libs/grpc
 go 1.21.2
 
 require (
+	github.com/golang/protobuf v1.5.0
 	github.com/twitchtv/twirp v8.1.3+incompatible
 	google.golang.org/protobuf v1.31.0
 )

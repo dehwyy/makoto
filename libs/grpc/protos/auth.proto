@@ -1,12 +1,17 @@
 syntax = "proto3";
-import "google/protobuf/empty.proto";
 
 package auth;
 option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/auth";
 
-service Auth {
+import "general.proto";
+
+service AuthRPC {
   rpc SignUp(SignUpRequest) returns (AuthResponse);
   rpc SignIn(SignInRequest) returns (AuthResponse);
+  rpc IsUniqueUsername(IsUniqueUsernamePayload) returns (IsUnique);
+  rpc VerifyUserEmail(general.UserId) returns (general.IsSuccess);
+  rpc ChangePassword(ChangePasswordPayload) returns (general.IsSuccess);
+  rpc Logout(general.UserId) returns (general.IsSuccess);
 }
 
 message SignUpRequest {
@@ -34,11 +39,26 @@ message SignInRequest {
   oneof auth_method {
     UserCredentials credentials = 1; // should be provided if SignIn not via OAuth2
     UserOAuth2 oauth2 = 2;
-    google.protobuf.Empty empty = 3; // via AuthoizationHeader
+    string token = 3; // via authorization token
   }
 }
 
 message AuthResponse {
-  string userId = 1;
-  string username = 2;
+  string token = 1;
+  string userId = 2;
+  string username = 3;
+}
+
+message IsUniqueUsernamePayload {
+  string username = 1;
+}
+
+message IsUnique {
+  bool isUnique = 1;
+}
+
+message ChangePasswordPayload {
+  string user_id = 1;
+  string old_password = 2;
+  string new_password = 3;
 }

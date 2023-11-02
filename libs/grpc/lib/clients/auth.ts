@@ -1,8 +1,8 @@
 import { TwirpFetchTransport } from '@protobuf-ts/twirp-transport'
-import { AuthClient as GeneratedAuthClient } from "../../generated/auth/auth.client"
+import { AuthRPCClient as GeneratedAuthClient } from "../../generated/auth/auth.client"
 
 const transport = new TwirpFetchTransport({
-	baseUrl: `http://localhost:5001/twirp`,
+	baseUrl: (process.env.TWIRP_GATEWAY_URL || "http://localhost:4000") + "/authorization",
 })
 
 const AuthClient = new GeneratedAuthClient(transport)

@@ -1,9 +1,8 @@
 import { TwirpFetchTransport } from '@protobuf-ts/twirp-transport'
-import { HashmapClient as GeneratedHashmapClient } from "../../generated/hashmap/hashmap.client"
-import {SERVER_PORTS} from "@makoto/config"
+import { HashmapRPCClient as GeneratedHashmapClient } from "../../generated/hashmap/hashmap.client"
 
 const transport = new TwirpFetchTransport({
-	baseUrl: `http://localhost:${SERVER_PORTS.HASHMAP}/twirp`,
+	baseUrl: (process.env.TWIRP_GATEWAY_URL || "http://localhost:4000") + "/authorization",
 })
 
 const HashmapClient = new GeneratedHashmapClient(transport)

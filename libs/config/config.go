@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
@@ -37,6 +36,17 @@ type Config struct {
 
 	// Mode
 	NodeEnv string `required:"false" envconfig:"NODE_ENV" default:"development" `
+
+	// Urls
+	TwirpGatewayUrl string `required:"true"    envconfig:"TWIRP_GATEWAY_URL"`
+	HttpGatewayUrl  string `required:"true"    envconfig:"HTTP_GATEWAY_URL"`
+	AuthUrl         string `required:"true"    envconfig:"AUTH_URL"`
+	HashmapUrl      string `required:"true"    envconfig:"HASHMAP_URL"`
+
+	// Gmail
+	GmailSennderName    string `required:"true"    envconfig:"GMAIL_SENDER_NAME"`
+	GmailSenderAddr     string `required:"true"    envconfig:"GMAIL_SENDER_ADDRESS"`
+	GmailSenderPassword string `required:"true"    envconfig:"GMAIL_SENDER_PASSWORD"`
 }
 
 func New() *Config {
@@ -47,13 +57,12 @@ func New() *Config {
 		fmt.Printf("failed to get current working directory: %v\n", err)
 	}
 
-	if strings.HasPrefix(wd, "/workspace") {
-		wd = "/workspace"
-	} else {
-		wd = filepath.Join(wd, "..", "..", "..")
-	}
+	wd = filepath.Join(wd, "..", "..", "..")
 
 	envPath := filepath.Join(wd, ".env")
+	_ = godotenv.Load(envPath)
+
+	envPath = filepath.Join(wd, "..", ".env")
 	_ = godotenv.Load(envPath)
 
 	if err = envconfig.Process("", &cfg); err != nil {

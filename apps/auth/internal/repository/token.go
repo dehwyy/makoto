@@ -60,10 +60,9 @@ func (t *TokenRepository) CreateToken(userId uuid.UUID, username string) (token 
 	}).Error
 }
 
-func (t *TokenRepository) UpdateToken(userId uuid.UUID, username string) (token string, err error) {
+func (t *TokenRepository) UpdateToken(userId uuid.UUID) (token string, err error) {
 	token, exp, err := t.jwt.NewAccessToken(utils.JwtPayload{
-		Username: username,
-		UserId:   userId.String(),
+		UserId: userId.String(),
 	})
 
 	if err != nil {
@@ -97,4 +96,8 @@ func (t *TokenRepository) CreateTokenByOAuth2Token(userId uuid.UUID, token *oaut
 		Expiry:       token.Expiry,
 		TokenType:    token.TokenType,
 	}).Error
+}
+
+func (t *TokenRepository) DeleteTokenByUserId(userId uuid.UUID) error {
+	return t.db.Model(&models.UserToken{}).Where("user_id = ?", userId).Delete(&models.UserToken{}).Error
 }
