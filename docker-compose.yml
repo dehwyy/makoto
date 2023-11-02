@@ -26,6 +26,21 @@ services:
       - makoto_network
       - makoto_db
 
+  hashmap_backend:
+    build:
+      context: .
+      dockerfile: ./apps/hashmap/Dockerfile
+    ports:
+      - ${HASHMAP_PORT}:4000
+    container_name: hashmap_backend
+    env_file:
+      - .env.prod
+    depends_on:
+      - db
+    networks:
+      - makoto_network
+      - makoto_db
+
   auth_frontend:
     build:
       context: .
@@ -33,6 +48,18 @@ services:
     ports:
       - ${AUTH_FRONTEND_PORT}:3001
     container_name: auth_frontend
+    env_file:
+      - .env.prod
+    networks:
+      - makoto_network
+
+  hashmap_frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/hashmap/Dockerfile
+    ports:
+      - ${HASHMAP_FRONTEND_PORT}:3002
+    container_name: hashmap_frontend
     env_file:
       - .env.prod
     networks:

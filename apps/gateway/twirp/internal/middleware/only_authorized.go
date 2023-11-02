@@ -24,6 +24,8 @@ func (s *onlyAuthorized) Middleware(next http.Handler) http.Handler {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
+
+		next.ServeHTTP(w, r)
 	}))
 }
 

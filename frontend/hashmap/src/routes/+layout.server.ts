@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types'
-import { SafeHashmapClient, SafeAuthClient } from '@makoto/grpc/clients'
+import { SafeTwirpClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
 
 export const load: LayoutServerLoad = async ({ cookies, params }) => {
@@ -16,27 +16,29 @@ export const load: LayoutServerLoad = async ({ cookies, params }) => {
 
 	const token = cookies.get('token')
 
-	const { response: tags_response } = await SafeHashmapClient(cookies).getTags(
+	const { response: tags_response } = await SafeTwirpClient(cookies).Hashmap.getTags(
 		{ userId: '' },
 		{
 			interceptors: [RpcInterceptors.AddAuthorizationHeader(token)]
 		}
 	)
 
-	const { response: items_response } = await SafeHashmapClient(cookies).getItems(
+	const { response: items_response } = await SafeTwirpClient(cookies).Hashmap.getItems(
 		{
-			userId: ''
+			userId: '',
+			keyword: '',
+			part: 0
 		},
 		{
 			interceptors: [RpcInterceptors.AddAuthorizationHeader(token)]
 		}
 	)
 
-	const { response: signin_response } = await SafeAuthClient(cookies).signIn(
+	const { response: signin_response } = await SafeTwirpClient(cookies).Authorization.signIn(
 		{
 			authMethod: {
-				oneofKind: 'empty',
-				empty: {}
+				oneofKind: 'token',
+				token
 			}
 		},
 		{
