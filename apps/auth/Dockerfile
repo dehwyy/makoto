@@ -13,6 +13,6 @@ COPY libs libs
 
 RUN go work init ./apps/auth ./libs/config ./libs/logger ./libs/database ./libs/grpc
 
-RUN  go build -o authorization ./apps/auth
+RUN  go build -o authorization ./apps/auth/cmd
 
 CMD ["./authorization"]

@@ -22,12 +22,13 @@ func TestRequest(t *testing.T) {
 		return
 	}
 
+	// well its mine address
 	to := "dehwyy@yandex.ru"
 
 	err = sender.Send(subject, html, to)
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 	} else {
-		fmt.Printf("Success\n")
+		fmt.Printf("Success!\n")
 	}
 }

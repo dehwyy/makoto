@@ -24,7 +24,6 @@ require (
 replace (
 	github.com/dehwyy/makoto/apps/gateway/services => ../services
 	github.com/dehwyy/makoto/libs/config => ../../../libs/config
-	github.com/dehwyy/makoto/libs/database => ../../../libs/database
 	github.com/dehwyy/makoto/libs/grpc => ../../../libs/grpc
 	github.com/dehwyy/makoto/libs/logger => ../../../libs/logger
 )

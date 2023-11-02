@@ -8,7 +8,7 @@ import "general.proto";
 service HashmapRPC {
   rpc GetItems(GetItemsPayload) returns (GetItemsResponse);
   rpc GetTags(general.UserId) returns (GetTagsResponse);
-  rpc CreateItem(CreateItemPayload) returns (general.IsSuccess);
+  rpc CreateItem(CreateItemPayload) returns (CreateItemResponse);
   rpc RemoveItem(RemoveItemPayload) returns (general.IsSuccess);
   rpc EditItem(EditItemPayload) returns (general.IsSuccess);
 }
@@ -33,6 +33,10 @@ message CreateItemPayload {
   string value = 3;
   string extra = 4;
   repeated string tags = 5;
+}
+
+message CreateItemResponse {
+  uint32 id = 1;
 }
 
 message RemoveItemPayload {
