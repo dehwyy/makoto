@@ -7,6 +7,7 @@ import (
 	"github.com/dehwyy/makoto/libs/grpc/generated/general"
 	"github.com/dehwyy/makoto/libs/grpc/generated/hashmap"
 	"github.com/golang/protobuf/ptypes/empty"
+	tw "github.com/twitchtv/twirp"
 )
 
 type Empty = empty.Empty
@@ -24,7 +25,7 @@ func NewHashmapService(hashmap_service_url string, args TwirpHashmapService) has
 		client: services.NewHashmapService(services.HashmapService{
 			HashmapServiceUrl: hashmap_service_url,
 		}),
-	})
+	}, tw.WithServerPathPrefix("/hashmap"))
 }
 
 func (s *TwirpHashmapService) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*hashmap.GetItemsResponse, error) {

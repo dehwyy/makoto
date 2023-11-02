@@ -38,14 +38,11 @@ func main() {
 		ReadAuthorizationData: md_authorization.Read,
 	})
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("hello"))
-	})
-
 	// mount
 	r.Mount(authorization_service.PathPrefix(), md_with_authorization_header.Middleware(authorization_service))
-	r.Mount("/hashmap", md_authorization.Middleware(hashmap_service))
+	r.Mount(hashmap_service.PathPrefix(), md_authorization.Middleware(hashmap_service))
 
+	// as TwirpGatewayUrl looks like `http://{host}:{port}/*`
 	port := ":" + strings.Split(config.TwirpGatewayUrl, ":")[2]
 
 	log.Infof("Gateway server started on port %s", port)

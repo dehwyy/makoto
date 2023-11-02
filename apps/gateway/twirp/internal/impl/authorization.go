@@ -28,14 +28,10 @@ func NewAuthorizationService(auth_service_url string, args TwirpAuthorizationSer
 }
 
 func (s *TwirpAuthorizationService) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.AuthResponse, error) {
-	fmt.Printf("SignUp %v", req)
 	response, err := s.client.SignUp(ctx, req)
 	if err != nil {
-		fmt.Printf("Error %v", err)
 		return nil, err
 	}
-
-	fmt.Printf("Response %v", response)
 
 	if err = s.set_token(ctx, response.Token); err != nil {
 		return nil, err
@@ -54,7 +50,16 @@ func (s *TwirpAuthorizationService) SignIn(ctx context.Context, req *auth.SignIn
 		return nil, err
 	}
 
-	return response, nil
+	if err = s.set_token(ctx, response.Token); err != nil {
+		return nil, err
+	}
+
+	new_response := &auth.AuthResponse{
+		UserId:   response.UserId,
+		Username: response.Username,
+	}
+
+	return new_response, nil
 }
 
 func (s *TwirpAuthorizationService) IsUniqueUsername(ctx context.Context, req *auth.IsUniqueUsernamePayload) (*auth.IsUnique, error) {
