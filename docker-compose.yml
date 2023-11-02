@@ -5,7 +5,7 @@ services:
       dockerfile: ./apps/gateway/twirp/Dockerfile
     ports:
       - ${TWIRP_GATEWAY_PORT}:80
-    container_name: twirp_gateway1
+    container_name: twirp_gateway
     env_file:
       - .env.prod
     networks:

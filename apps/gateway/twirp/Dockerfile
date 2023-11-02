@@ -1,41 +1,33 @@
 
-FROM ubuntu as installer
+FROM oven/bun as bun
+
+RUN mkdir -p /temp/dev
+COPY package.json /temp/dev
+COPY frontend /temp/dev/frontend
+COPY libs /temp/dev/libs
+RUN cd /temp/dev && bun install
 
 
-# install dependencies
-RUN apt-get -y update
-RUN apt-get install -y curl protobuf-compiler unzip
-RUN apt-get install -y --no-install-recommends build-essential
-RUN apt-get update
+FROM node:18-alpine as builder
+RUN apk add build-base curl libc6-compat g++ git protoc
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y nodejs \
-    npm
-
-RUN npm install -g bun
-
-COPY package.json ./
-COPY frontend frontend
-COPY libs libs
-
-RUN bun install
-
 COPY --from=golang:1.21.0-alpine /usr/local/go/ /usr/local/go/
 ENV PATH="$PATH:/usr/local/go/bin"
 ENV PATH="$PATH:/root/go/bin"
 
 WORKDIR /src
 
-
 ENV PATH="$HOME/.cargo/bin:${PATH}"
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1  && \
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0 && \
-    go install github.com/twitchtv/twirp/protoc-gen-twirp@latest
+    go install github.com/twitchtv/twirp/protoc-gen-twirp@latest && \
+    npm i -g pnpm
 
 # copy files
+COPY --from=bun /temp/dev/node_modules ./node_modules
 COPY ./apps/gateway/twirp/go.mod ./apps/gateway/twirp/go.sum ./apps/gateway/twirp/
 COPY ./apps/gateway/twirp ./apps/gateway/twirp
 COPY Cargo.toml .
