@@ -29,7 +29,16 @@ func NewHashmapService(hashmap_service_url string, args TwirpHashmapService) has
 }
 
 func (s *TwirpHashmapService) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*hashmap.GetItemsResponse, error) {
-	response, err := s.client.GetItems(ctx, req)
+
+	userId, _ := s.ReadAuthorizationData(ctx)
+
+	new_req := &hashmap.GetItemsPayload{
+		UserId:  userId,
+		Part:    req.Part,
+		Keyword: req.Keyword,
+	}
+
+	response, err := s.client.GetItems(ctx, new_req)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +47,14 @@ func (s *TwirpHashmapService) GetItems(ctx context.Context, req *hashmap.GetItem
 }
 
 func (s *TwirpHashmapService) GetTags(ctx context.Context, req *general.UserId) (*hashmap.GetTagsResponse, error) {
-	response, err := s.client.GetTags(ctx, req)
+
+	userId, _ := s.ReadAuthorizationData(ctx)
+
+	new_req := &general.UserId{
+		UserId: userId,
+	}
+
+	response, err := s.client.GetTags(ctx, new_req)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +63,17 @@ func (s *TwirpHashmapService) GetTags(ctx context.Context, req *general.UserId) 
 }
 
 func (s *TwirpHashmapService) CreateItem(ctx context.Context, req *hashmap.CreateItemPayload) (*hashmap.CreateItemResponse, error) {
-	response, err := s.client.CreateItem(ctx, req)
+	userId, _ := s.ReadAuthorizationData(ctx)
+
+	new_req := &hashmap.CreateItemPayload{
+		UserId: userId,
+		Key:    req.Key,
+		Value:  req.Value,
+		Extra:  req.Extra,
+		Tags:   req.Tags,
+	}
+
+	response, err := s.client.CreateItem(ctx, new_req)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +82,15 @@ func (s *TwirpHashmapService) CreateItem(ctx context.Context, req *hashmap.Creat
 }
 
 func (s *TwirpHashmapService) RemoveItem(ctx context.Context, req *hashmap.RemoveItemPayload) (*general.IsSuccess, error) {
-	response, err := s.client.RemoveItem(ctx, req)
+
+	userId, _ := s.ReadAuthorizationData(ctx)
+
+	new_req := &hashmap.RemoveItemPayload{
+		UserId: userId,
+		ItemId: req.ItemId,
+	}
+
+	response, err := s.client.RemoveItem(ctx, new_req)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +99,19 @@ func (s *TwirpHashmapService) RemoveItem(ctx context.Context, req *hashmap.Remov
 }
 
 func (s *TwirpHashmapService) EditItem(ctx context.Context, req *hashmap.EditItemPayload) (*general.IsSuccess, error) {
-	response, err := s.client.EditItem(ctx, req)
+
+	userId, _ := s.ReadAuthorizationData(ctx)
+
+	new_req := &hashmap.EditItemPayload{
+		UserId: userId,
+		ItemId: req.ItemId,
+		Key:    req.Key,
+		Value:  req.Value,
+		Extra:  req.Extra,
+		Tags:   req.Tags,
+	}
+
+	response, err := s.client.EditItem(ctx, new_req)
 	if err != nil {
 		return nil, err
 	}

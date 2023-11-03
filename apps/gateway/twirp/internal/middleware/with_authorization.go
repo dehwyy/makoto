@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/logger"
@@ -26,10 +27,13 @@ func (middleware *withAuthorization) Middleware(next http.Handler) http.Handler 
 
 		// if token is not provided in header
 		token := r.Header.Get(_AuthorizationHeader)
-		if token == "" {
+		split_token := strings.Split(token, " ")
+		if token == "" || len(split_token) != 2 {
 			next.ServeHTTP(w, r)
 			return
 		}
+
+		token = split_token[1]
 
 		transport := newTwirpClientRoundTripper()
 		twirpAuthorizationClient := auth.NewAuthRPCProtobufClient(middleware.authorizationClientUrl, &http.Client{
@@ -49,7 +53,7 @@ func (middleware *withAuthorization) Middleware(next http.Handler) http.Handler 
 
 		// set value to ctx
 		ctx = context.WithValue(ctx, _CtxKeyUserId, res.UserId)
-		ctx = context.WithValue(ctx, _CtxKeyAuthorizationHeader, transport.AuthorizationHeader)
+		ctx = context.WithValue(ctx, _CtxKeyAuthorizationHeader, res.Token)
 
 		// attach context to request
 		r = r.WithContext(ctx)

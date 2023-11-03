@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/twitchtv/twirp"
 )
@@ -23,7 +23,13 @@ func (s *withAuthorizationHeader) Middleware(next http.Handler) http.Handler {
 		// get token from `Authorization` header
 		token := r.Header.Get(_AuthorizationHeader)
 
-		fmt.Printf("token: %v", token)
+		split_token := strings.Split(token, " ")
+		if len(split_token) != 2 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		token = split_token[1]
 
 		// set Token in context
 		ctx = context.WithValue(ctx, _CtxKeyAuthorizationHeader, token)

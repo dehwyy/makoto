@@ -53,6 +53,18 @@ services:
     networks:
       - makoto_network
 
+  hashmap_frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/hashmap/Dockerfile
+    ports:
+      - ${HASHMAP_FRONTEND_PORT}:3002
+    container_name: hashmap_frontend
+    env_file:
+      - .env.prod
+    networks:
+      - makoto_network
+
   db:
     restart: always
     image: postgres:latest

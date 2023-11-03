@@ -1,15 +1,17 @@
 import type { RequestHandler } from '@sveltejs/kit'
 import { TypedFetch as tp } from '@makoto/lib/typed-fetch'
 import { RemoveItem } from '$lib/api/fetches'
-import { SafeHashmapClient } from '@makoto/grpc/clients'
+import { SafeTwirpClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
 	const { itemId } = await tp.Get(request, RemoveItem)
 
-	const { response, status } = await SafeHashmapClient(cookies).removeItem(
+	// TODO: Fix
+	const { response, status } = await SafeTwirpClient(cookies).Hashmap.removeItem(
 		{
-			itemId
+			itemId,
+			userId: ''
 		},
 		{
 			interceptors: [RpcInterceptors.WithToken(cookies)]
