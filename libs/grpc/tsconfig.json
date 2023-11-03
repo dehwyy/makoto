@@ -5,6 +5,7 @@
   "compilerOptions": {
     "strict": false,
     "sourceMap": false,
+    "lib": ["ES2015.Proxy", "ES2015", "ES2015.Reflect"],
     "outDir": "./dist",
     "skipLibCheck": true,
     "declaration": true,

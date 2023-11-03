@@ -40,7 +40,7 @@ fn main() {
     });
 
     // 2. post-build : transpile .ts -> .js and generate .d.ts
-    thread::sleep(time::Duration::from_secs(3));
+    thread::sleep(time::Duration::from_secs(5));
 
 
     let mut file = fs::File::options().write(true).read(true).append(true).open("./generated/auth/auth.ts").unwrap();

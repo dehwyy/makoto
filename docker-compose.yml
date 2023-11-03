@@ -23,8 +23,8 @@ services:
     depends_on:
       - db
     networks:
-      - makoto_network
       - makoto_db
+      - makoto_network
 
   hashmap_backend:
     build:
@@ -38,8 +38,8 @@ services:
     depends_on:
       - db
     networks:
-      - makoto_network
       - makoto_db
+      - makoto_network
 
   auth_frontend:
     build:
@@ -75,12 +75,13 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
     ports:
-      - 5432:5432
+      - 5435:5432
     networks:
       - makoto_db
 
 networks:
   makoto_network:
     external: true
+    name: makoto_network
   makoto_db:
     name: makoto_db
