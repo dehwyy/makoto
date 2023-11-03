@@ -42,7 +42,6 @@ func NewTwirpServer(db *gorm.DB, l logger.Logger) hashmap.TwirpServer {
 }
 
 func (s *Server) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*hashmap.GetItemsResponse, error) {
-	s.l.Debugf("HERE")
 	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
 		return nil, InvalidUserIdError

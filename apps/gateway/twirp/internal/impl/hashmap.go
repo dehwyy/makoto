@@ -29,7 +29,6 @@ func NewHashmapService(hashmap_service_url string, args TwirpHashmapService) has
 }
 
 func (s *TwirpHashmapService) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*hashmap.GetItemsResponse, error) {
-
 	userId, _ := s.ReadAuthorizationData(ctx)
 
 	new_req := &hashmap.GetItemsPayload{
