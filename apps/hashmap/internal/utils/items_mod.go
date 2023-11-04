@@ -10,7 +10,13 @@ import (
 	"github.com/dehwyy/makoto/libs/grpc/generated/hashmap"
 )
 
-func FilterItemsByQueryAndTags(items []*hashmap.Item, query string, tags []string) []*hashmap.Item {
+type FilterTags struct {
+	Text  string
+	State bool // if true -> selected, have to be on item, else -> should not appear in item's tags
+}
+
+// TODO: add tags query
+func FilterItemsByQueryAndTags(items []*hashmap.Item, query string, tags []FilterTags) []*hashmap.Item {
 	// initial slice capacity
 	initial_slice_cap := int(math.Min(20, float64(len(items))))
 	// minimum of 5 and query.length / 2 (ceiled)
@@ -64,6 +70,36 @@ func FilterItemsByQueryAndTags(items []*hashmap.Item, query string, tags []strin
 ItemsSort:
 	for _, item := range items {
 
+		falsy_tags := 0
+		requested_tags := make(map[string]bool)
+		for _, tag := range tags {
+			if !tag.State {
+				falsy_tags++
+			}
+			requested_tags[tag.Text] = tag.State
+		}
+
+		for _, item_tag := range item.Tags {
+			val, ok := requested_tags[item_tag.Text]
+			// if tag wasn't marked as request -> skip
+			if !ok {
+				continue
+			}
+
+			// if val is false -> should not be in item
+			if !val {
+				continue ItemsSort
+			}
+
+			// delete the key
+			delete(requested_tags, item_tag.Text)
+		}
+
+		// if requested_tags is not empty -> not all selected tags were provided in the item
+		if len(requested_tags) > falsy_tags {
+			continue
+		}
+
 		is_ok := make(chan bool, 1)
 		ready := make(chan bool, 1)
 
@@ -97,9 +133,8 @@ ItemsSort:
 					strong_filtered_items = append(strong_filtered_items, item)
 					break // once
 				}
-
-				ready <- true
 			}
+			ready <- true
 		}()
 
 		// weak match
@@ -154,6 +189,10 @@ ItemsSort:
 }
 
 func GetPart[T any](items []T, part int, part_size ...int) []T {
+	if len(items) == 0 {
+		return []T{}
+	}
+
 	// default value
 	part_s := 50
 	// if other is provided -> use it
@@ -165,10 +204,12 @@ func GetPart[T any](items []T, part int, part_size ...int) []T {
 }
 
 func saveSlice[T any](arr []T, from, to int) []T {
-	last_possible_index := len(arr) - 1
+	if to > len(arr) {
+		to = len(arr)
+	}
 
-	if to > last_possible_index {
-		to = last_possible_index
+	if from > len(arr)-1 {
+		return []T{}
 	}
 
 	return arr[from:to]

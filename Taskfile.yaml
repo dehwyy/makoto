@@ -24,3 +24,7 @@ tasks:
       HASHMAP_BACKEND: hashmap_backend
       AUTH_FRONTEND: auth_frontend
       HASHMAP_FRONTEND: hashmap_frontend
+
+  go-test:
+    cmds:
+      - cd apps/hashmap/internal/utils && go test
