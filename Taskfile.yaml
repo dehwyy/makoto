@@ -1,0 +1,26 @@
+version: '3'
+
+dotenv: [.env.prod, .env]
+
+tasks:
+  up:
+    deps: [containers-rmi]
+    cmds:
+      - echo "Running docker-compose up --build"
+      - docker-compose --env-file .env.prod up --build
+
+  containers-rmi:
+    silent: true
+    cmds:
+      - echo "Running docker-compose down"
+      - docker rmi -f v2-$TWIRP_GATEWAY
+      - docker rmi -f v2-$AUTH_BACKEND
+      - docker rmi -f v2-$HASHMAP_BACKEND
+      - docker rmi -f v2-$AUTH_FRONTEND
+      - docker rmi -f v2-$HASHMAP_FRONTEND
+    env:
+      TWIRP_GATEWAY: twirp_gateway
+      AUTH_BACKEND: auth_backend
+      HASHMAP_BACKEND: hashmap_backend
+      AUTH_FRONTEND: auth_frontend
+      HASHMAP_FRONTEND: hashmap_frontend
