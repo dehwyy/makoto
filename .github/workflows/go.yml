@@ -18,13 +18,27 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+
       - name: Install Task
         uses: arduino/setup-task@v1
         with:
           version: 3.x
+
+      - name: Install Cargo
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+
+      - name: Run Task compile
+        run: task protoc-twirp-go
+
       - name: Run tests
         run: task go-test

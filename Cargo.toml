@@ -4,3 +4,5 @@ members = [
   "libs/grpc",
   "libs/config",
 ]
+
+resolver = "2"

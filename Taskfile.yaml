@@ -26,6 +26,25 @@ tasks:
       HASHMAP_FRONTEND: hashmap_frontend
 
   go-test:
+    env:
+      EMAIL_TEST_DISABLED: true
     cmds:
       - cd apps/hashmap/internal/utils && go test
       - cd apps/auth/internal/utils && go test
+
+  protoc-twirp-go:
+    env:
+      TWIRP_GO_COMPILE: true
+    cmds:
+      - cd libs/grpc && cargo run
+
+  protoc-twirp-ts:
+    env:
+      TWIRP_TS_COMPILE: true
+    cmds:
+      - cd libs/grpc && cargo run
+
+  protoc-twirp:
+    cmds:
+      - task: protoc-twirp-ts
+      - task: protoc-twirp-go

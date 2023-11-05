@@ -4,28 +4,32 @@
   "private": true,
   "exports": {
     ".": {
-      "types": "./dist/lib/index.d.ts",
-      "import": "./dist/lib/index.js"
+      "types": "./.ts/index.d.ts",
+      "import": "./.ts/index.js"
     },
     "./clients": {
-      "types": "./dist/lib/clients/index.d.ts",
-      "import": "./dist/lib/clients/index.js"
-    }
+      "types": "./.ts/lib/clients/index.d.ts",
+      "import": "./.ts/lib/clients/index.js"
+    },
+    "./generated/auth": {
+      "types": "./.ts/generated/auth/auth.clients.client.d.ts",
+      "import": "./.ts/generated/auth/auth.client.js"
+    },
+     "./generated/hashmap": {
+      "types": "./.ts/generated/hashmap/hashmap.clients.client.d.ts",
+      "import": "./.ts/generated/hashmap/hashmap.client.js"
+     }
   },
   "typesVersions": {
     "*": {
-      "clients": ["./dist/lib/clients/index.d.ts"]
+      "clients":   ["./.ts/clients/index.d.ts"],
+      "generated/auth": ["./.ts/generated/auth/auth.client.d.ts"],
+      "generated/hashmap": ["./.ts/generated/hashmap/hashmap.client.d.ts"]
     }
   },
-  "types": "./dist/lib/index.d.ts",
   "files": [
-    "dist"
+    ".ts"
   ],
-  "scripts": {
-    "generate:js": "tsc",
-    "generate:types": "tsc --declaration true --emitDeclarationOnly",
-    "ts": "bun run generate:js && bun run generate:types"
-  },
   "dependencies": {
     "@protobuf-ts/plugin": "^2.9.1",
     "@protobuf-ts/runtime-rpc": "^2.9.1",

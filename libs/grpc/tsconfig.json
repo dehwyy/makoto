@@ -1,11 +1,10 @@
 {
-  "extends": "../../tsconfig.json",
   "exclude": ["node_modules"],
-  "include": ["./generated/**/*.ts", "./lib/**/*.ts"],
+  "include": ["./lib/**/*.ts"],
   "compilerOptions": {
     "strict": false,
     "sourceMap": false,
-    "outDir": "./dist",
+    "outDir": "./.ts/lib",
     "lib": ["ES2015.Reflect", "ES2015.Proxy", "ES2015"],
     "skipLibCheck": true,
     "declaration": true,
