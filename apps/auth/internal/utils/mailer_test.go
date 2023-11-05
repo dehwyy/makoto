@@ -11,6 +11,10 @@ import (
 
 func TestRequest(t *testing.T) {
 	// if test is running on github workflow -> skip
+	if is_disabled := os.Getenv("EMAIL_TEST_DISABLED"); is_disabled != "" {
+		return
+	}
+
 	if is_github_workflow := os.Getenv("WORKFLOW"); is_github_workflow != "" {
 		return
 	}
