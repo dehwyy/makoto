@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	mailtemplates "github.com/dehwyy/makoto/apps/auth/internal/utils/mail-templates"
@@ -9,6 +10,13 @@ import (
 )
 
 func TestRequest(t *testing.T) {
+	// if test is running on github workflow -> skip
+	if is_github_workflow := os.Getenv("WORKFLOW"); is_github_workflow != "" {
+		return
+	}
+
+	fmt.Println("Sending email...")
+
 	cfg := config.New()
 	sender := NewGmailSender(cfg.GmailSennderName, cfg.GmailSenderAddr, cfg.GmailSenderPassword)
 
@@ -31,4 +39,6 @@ func TestRequest(t *testing.T) {
 	} else {
 		fmt.Printf("Success!\n")
 	}
+
+	fmt.Println("Email sent!")
 }

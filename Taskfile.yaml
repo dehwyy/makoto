@@ -28,3 +28,4 @@ tasks:
   go-test:
     cmds:
       - cd apps/hashmap/internal/utils && go test
+      - cd apps/auth/internal/utils && go test

@@ -4,7 +4,10 @@ on:
   push:
     branches:
       - v2
-      - v2.with_gateway
+      - dev
+
+env:
+  WORKFLOW: true
 
 jobs:
   run:

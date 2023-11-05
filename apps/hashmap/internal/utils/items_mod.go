@@ -15,7 +15,6 @@ type FilterTags struct {
 	State bool // if true -> selected, have to be on item, else -> should not appear in item's tags
 }
 
-// TODO: add tags query
 func FilterItemsByQueryAndTags(items []*hashmap.Item, query string, tags []FilterTags) []*hashmap.Item {
 	// initial slice capacity
 	initial_slice_cap := int(math.Min(20, float64(len(items))))
