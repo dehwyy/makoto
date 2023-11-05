@@ -15,7 +15,7 @@ type FilterTags struct {
 	State bool // if true -> selected, have to be on item, else -> should not appear in item's tags
 }
 
-func FilterItemsByQueryAndTags(items []*hashmap.Item, query string, tags []FilterTags) []*hashmap.Item {
+func FilterItemsByQueryAndTags(items []*hashmap.Item, query string, tags []*hashmap.GetItemsPayload_FilterTags) []*hashmap.Item {
 	// initial slice capacity
 	initial_slice_cap := int(math.Min(20, float64(len(items))))
 	// minimum of 5 and query.length / 2 (ceiled)
@@ -72,10 +72,10 @@ ItemsSort:
 		falsy_tags := 0
 		requested_tags := make(map[string]bool)
 		for _, tag := range tags {
-			if !tag.State {
+			if !tag.Include {
 				falsy_tags++
 			}
-			requested_tags[tag.Text] = tag.State
+			requested_tags[tag.Text] = tag.Include
 		}
 
 		for _, item_tag := range item.Tags {
@@ -199,10 +199,10 @@ func GetPart[T any](items []T, part int, part_size ...int) []T {
 		part_s = part_size[0]
 	}
 
-	return saveSlice(items, part*part_s, (part+1)*part_s)
+	return safeSlice(items, part*part_s, (part+1)*part_s)
 }
 
-func saveSlice[T any](arr []T, from, to int) []T {
+func safeSlice[T any](arr []T, from, to int) []T {
 	if to > len(arr) {
 		to = len(arr)
 	}

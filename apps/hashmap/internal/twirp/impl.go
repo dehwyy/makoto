@@ -5,6 +5,7 @@ import (
 
 	"github.com/dehwyy/makoto/apps/hashmap/internal/pipes"
 	"github.com/dehwyy/makoto/apps/hashmap/internal/repository"
+	"github.com/dehwyy/makoto/apps/hashmap/internal/utils"
 	"github.com/dehwyy/makoto/libs/grpc/generated/general"
 	"github.com/dehwyy/makoto/libs/grpc/generated/hashmap"
 	"github.com/dehwyy/makoto/libs/logger"
@@ -51,6 +52,11 @@ func (s *Server) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*h
 	if err != nil {
 		return nil, tw.InternalErrorf("failed to get items: %v", err.Error())
 	}
+
+	items_rpc := pipes.ToRpcItems(items)
+
+	items_rpc = utils.FilterItemsByQueryAndTags(items_rpc, req.Query, req.Tags)
+	items_rpc = utils.GetPart(items_rpc, int(req.Part), int(req.PartSize))
 
 	return &hashmap.GetItemsResponse{
 		Items: pipes.ToRpcItems(items),

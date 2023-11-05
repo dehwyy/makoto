@@ -30,14 +30,9 @@ func NewHashmapService(hashmap_service_url string, args TwirpHashmapService) has
 
 func (s *TwirpHashmapService) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*hashmap.GetItemsResponse, error) {
 	userId, _ := s.ReadAuthorizationData(ctx)
+	req.UserId = userId
 
-	new_req := &hashmap.GetItemsPayload{
-		UserId:  userId,
-		Part:    req.Part,
-		Keyword: req.Keyword,
-	}
-
-	response, err := s.client.GetItems(ctx, new_req)
+	response, err := s.client.GetItems(ctx, req)
 	if err != nil {
 		return nil, err
 	}

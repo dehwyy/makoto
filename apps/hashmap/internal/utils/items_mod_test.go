@@ -16,7 +16,7 @@ func Test_FilterItemsByQueryAndTags(t *testing.T) {
 	type S struct {
 		items      []*hashmap.Item
 		query      string
-		tags       []FilterTags
+		tags       []*hashmap.GetItemsPayload_FilterTags
 		expect_len int
 	}
 
@@ -47,55 +47,55 @@ func Test_FilterItemsByQueryAndTags(t *testing.T) {
 		{
 			items:      items,
 			query:      "a",
-			tags:       []FilterTags{},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{},
 			expect_len: 2,
 		},
 		{
 			items:      items,
 			query:      "5",
-			tags:       []FilterTags{},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{},
 			expect_len: 0,
 		},
 		{
 			items:      items,
 			query:      "key",
-			tags:       []FilterTags{},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{},
 			expect_len: 1,
 		},
 		{
 			items:      items,
 			query:      "v",
-			tags:       []FilterTags{},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{},
 			expect_len: 2,
 		},
 		{
 			items:      items,
 			query:      "",
-			tags:       []FilterTags{},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{},
 			expect_len: 4,
 		},
 		{
 			items:      items,
 			query:      "1",
-			tags:       []FilterTags{},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{},
 			expect_len: 1,
 		},
 		{
 			items:      items,
 			query:      "",
-			tags:       []FilterTags{{Text: "makoto", State: true}},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{{Text: "makoto", Include: true}},
 			expect_len: 1,
 		},
 		{
 			items:      items,
 			query:      "",
-			tags:       []FilterTags{{Text: "makoto", State: false}},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{{Text: "makoto", Include: false}},
 			expect_len: 3,
 		},
 		{
 			items:      items,
 			query:      "",
-			tags:       []FilterTags{{Text: "tag", State: true}, {Text: "not a tag", State: true}},
+			tags:       []*hashmap.GetItemsPayload_FilterTags{{Text: "tag", Include: true}, {Text: "not a tag", Include: true}},
 			expect_len: 1,
 		},
 	}
@@ -159,6 +159,12 @@ func Test_GetPart(t *testing.T) {
 			part:      0,
 			part_size: 0,
 		},
+		{
+			val:       []int{1, 2, 3},
+			res:       []int{1, 2, 3},
+			part:      0,
+			part_size: 5,
+		},
 	}
 
 	bm.Start()
@@ -173,9 +179,9 @@ func Test_GetPart(t *testing.T) {
 
 }
 
-func Test_saveSlice(t *testing.T) {
+func Test_safeSlice(t *testing.T) {
 	bm := lib.NewBenchmark(lib.Benchmark{
-		Name: "SaveSlice",
+		Name: "SafeSlice",
 	})
 
 	type S struct {
@@ -234,7 +240,7 @@ func Test_saveSlice(t *testing.T) {
 	defer bm.EndAndSummarize(len(args))
 
 	for _, arg := range args {
-		res := saveSlice(arg.val, arg.from, arg.to)
+		res := safeSlice(arg.val, arg.from, arg.to)
 		if !reflect.DeepEqual(res, arg.expect) {
 			t.Errorf("expected %v, got %v", arg.expect, res)
 		}
