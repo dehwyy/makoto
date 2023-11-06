@@ -39,6 +39,7 @@
 		"less": "^4.2.0",
 		"makoto-ui-svelte": "^0.0.4",
 		"@protobuf-ts/twirp-transport": "^2.9.1",
+		"@makoto/grpc": "workspace:*",
 		"@makoto/lib": "workspace:*",
 		"@makoto/config": "workspace:*"
 	}

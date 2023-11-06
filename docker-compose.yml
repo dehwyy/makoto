@@ -1,3 +1,5 @@
+version: '3'
+
 services:
   twirp_gateway:
     build:
@@ -8,8 +10,6 @@ services:
     container_name: twirp_gateway
     env_file:
       - .env.prod
-    networks:
-      - makoto_network
 
   auth_backend:
     build:
@@ -21,10 +21,8 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
-    networks:
-      - makoto_network
-      - makoto_db
+      db:
+        condition: service_healthy
 
   hashmap_backend:
     build:
@@ -36,51 +34,42 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
-    networks:
-      - makoto_network
-      - makoto_db
+      db:
+        condition: service_healthy
 
   auth_frontend:
     build:
       context: .
       dockerfile: ./frontend/auth/Dockerfile
     ports:
-      - ${AUTH_FRONTEND_PORT}:3001
+      - ${AUTH_FRONTEND_PORT}:3000
     container_name: auth_frontend
     env_file:
       - .env.prod
-    networks:
-      - makoto_network
 
   hashmap_frontend:
     build:
       context: .
       dockerfile: ./frontend/hashmap/Dockerfile
     ports:
-      - ${HASHMAP_FRONTEND_PORT}:3002
+      - ${HASHMAP_FRONTEND_PORT}:3000
     container_name: hashmap_frontend
     env_file:
       - .env.prod
-    networks:
-      - makoto_network
 
   db:
     restart: always
     image: postgres:latest
     container_name: makoto_postgres
-    volumes:
-      - ./.database/postgresql:/var/lib/postgresql/makoto/
+    # volumes:
+    #   - ./.database/postgresql:/var/lib/postgresql/makoto/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
     ports:
-      - 5432:5432
-    networks:
-      - makoto_db
-
-networks:
-  makoto_network:
-    external: true
-  makoto_db:
-    name: makoto_db
+      - 5435:5432

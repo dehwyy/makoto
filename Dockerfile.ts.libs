@@ -1,0 +1,57 @@
+FROM oven/bun as install
+
+WORKDIR /src
+
+COPY package.json .
+
+COPY libs/config/package.json libs/config/tsconfig.json libs/config/config.ts libs/config/
+
+COPY libs/lib/package.json libs/lib/tsconfig.json libs/lib/
+COPY libs/lib/src libs/lib/src/
+
+COPY libs/grpc/package.json libs/grpc/tsconfig.json libs/grpc/
+COPY libs/grpc/Cargo.toml libs/grpc/
+COPY libs/grpc/src libs/grpc/src/
+COPY libs/grpc/protos libs/grpc/protos/
+COPY libs/grpc/lib libs/grpc/lib/
+
+RUN mkdir frontend
+
+RUN bun install
+
+###
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+RUN apk add protoc cargo go
+RUN go install github.com/twitchtv/twirp/protoc-gen-twirp@latest
+
+COPY --from=install /src/libs libs
+COPY --from=install /src/node_modules node_modules
+COPY package.json .
+
+ENV TWIRP_TS_COMPILE="true"
+WORKDIR /app/libs/grpc
+RUN cargo run
+
+WORKDIR /app
+
+RUN cd libs/config && npm run ts
+RUN cd libs/lib && npm run ts
+RUN cd libs/grpc && npm run ts
+
+# copy to libs-prod which would be smaller (size)
+COPY libs/config/package.json libs-prod/config/package.json
+COPY libs/config/dist libs-prod/config/dist
+
+COPY libs/lib/package.json libs-prod/lib/package.json
+COPY libs/lib/dist libs-prod/lib/dist
+
+COPY libs/grpc/package.json libs-prod/grpc/package.json
+COPY libs/grpc/.ts libs-prod/grpc/.ts
+
+# remove to decrease bundle size
+RUN rm -rf libs
+# rename
+RUN mv libs-prod libs

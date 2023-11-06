@@ -3,16 +3,28 @@ version: '3'
 dotenv: [.env.prod, .env]
 
 tasks:
-  up:
-    deps: [containers-rmi]
+  build:
+    deps: [libs, containers-rmi]
     cmds:
       - echo "Running docker-compose up --build"
       - docker-compose --env-file .env.prod up --build
 
+  libs:
+    deps: [libs-go, libs-ts]
+    cmds:
+      - echo "Generated libs images ✅"
+
+  libs-go:
+    cmds:
+      - docker build -f Dockerfile.go.libs -t go/libs .
+  libs-ts:
+    cmds:
+      - docker build -f Dockerfile.ts.libs -t ts/libs .
+
   containers-rmi:
     silent: true
     cmds:
-      - echo "Running docker-compose down"
+      - echo "Removing old containers..."
       - docker rmi -f v2-$TWIRP_GATEWAY
       - docker rmi -f v2-$AUTH_BACKEND
       - docker rmi -f v2-$HASHMAP_BACKEND

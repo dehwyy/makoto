@@ -1,0 +1,13 @@
+.vscode
+build
+.svelte-kit
+node_modules
+tests
+.dockerignore
+.gitignore
+.npmrc
+.prettierignore
+.prettierrc
+playwright.config.ts
+README.md
+Dockerfile

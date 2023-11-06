@@ -1,0 +1,30 @@
+FROM golang:1.21.2-alpine
+
+RUN apk add protoc cargo
+
+RUN go install github.com/twitchtv/twirp/protoc-gen-twirp@latest && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
+
+ENV TWIRP_GO_COMPILE="true"
+
+WORKDIR /app
+
+# libs
+COPY libs/config/config.go libs/config/go.* libs/config/
+
+COPY libs/logger libs/logger/
+
+COPY libs/lib/pkg libs/lib/pkg/
+COPY libs/lib/go.* libs/lib/
+
+COPY libs/database libs/database/
+
+COPY libs/grpc/go.* libs/grpc/
+COPY libs/grpc/tools libs/grpc/tools/
+COPY libs/grpc/Cargo.toml libs/grpc/
+COPY libs/grpc/src libs/grpc/src/
+COPY libs/grpc/protos libs/grpc/protos/
+
+# compile protos
+WORKDIR /app/libs/grpc
+RUN cargo run

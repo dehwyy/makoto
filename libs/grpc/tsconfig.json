@@ -5,7 +5,9 @@
     "strict": false,
     "sourceMap": false,
     "outDir": "./.ts/lib",
-    "lib": ["ES2015.Reflect", "ES2015.Proxy", "ES2015"],
+    "target": "ESNext",
+    "lib": ["ES2015.Reflect", "ES2015.Proxy"],
+    "moduleResolution": "node",
     "skipLibCheck": true,
     "declaration": true,
   }
