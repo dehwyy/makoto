@@ -3,7 +3,17 @@ version: '3'
 dotenv: [.env.prod, .env]
 
 tasks:
+  up:
+    cmds:
+      - docker-compose --env-file .env.prod up
+
   build:
+    deps: [containers-rmi]
+    cmds:
+      - echo "Running docker-compose up"
+      - docker-compose --env-file .env.prod up
+
+  rebuild:
     deps: [libs, containers-rmi]
     cmds:
       - echo "Running docker-compose up --build"
