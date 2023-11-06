@@ -37,6 +37,16 @@ services:
       db:
         condition: service_healthy
 
+  main_frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/main/Dockerfile
+    ports:
+      - ${MAIN_FRONTEND_PORT}:3000
+    container_name: main_frontend
+    env_file:
+      - .env.prod
+
   auth_frontend:
     build:
       context: .
