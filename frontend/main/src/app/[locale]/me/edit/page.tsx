@@ -3,28 +3,44 @@ import { Dialog, DialogTrigger, DialogContent } from '$/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '$/components/ui/tabs'
 import { Input } from '$/components/ui/input'
 import { Label } from '$/components/ui/label'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Separator } from '$/components/ui/separator'
 import { Textarea } from '$/components/ui/textarea'
 import dynamic from 'next/dynamic'
 import { Button } from '$/components/ui/button'
 import Image from 'next/image'
-import { cn } from '$/lib/utils'
-import Link from 'next/link'
 import { Switch } from '$/components/ui/switch'
+import { HexColorPicker } from 'react-colorful'
+import { Select, SelectItem, SelectContent, SelectGroup, SelectTrigger } from '$/components/ui/select'
+import { useTheme } from 'next-themes'
 
 const PictureEditor = dynamic(() => import('$/components/picture-editor'), { ssr: false })
 
 const Page = () => {
   const initialName = 'dehwyy!'
+  const initialEmail = 'dehwyy@google.com'
   const customId = 'a0131d5d-6b2b-4b2a-8b5b-4b2a8b5b4b2a'
   const initialDescription = "Hello, I'm dehwyy and using Makoto but way longer sentence to test if it works."
-  const dark_background = 'dark:bg-[#171717]'
-  const background = 'bg-[#2ccce7]'
+  const dark_background = '#171717'
+  const background = '#2ccce7'
+
+  const { theme: currentTheme, setTheme } = useTheme()
 
   const [name, setName] = useState(initialName)
+  const [email, setEmail] = useState(initialEmail)
   const [id, setId] = useState(customId)
   const [description, setDescription] = useState(initialDescription)
+
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
+  const [bgTheme, setBgTheme] = useState<'light' | 'dark'>('dark')
+  const [initialDarkBg, setInitialDarkBg] = useState(dark_background)
+  const [darkBg, setDarkBg] = useState(dark_background)
+  const [initialLightBg, setInitialLightBg] = useState(background)
+  const [lightBg, setLightBg] = useState(background)
+
+  useEffect(() => {
+    isColorPickerOpen ? setTheme(bgTheme) : setBgTheme(currentTheme as 'light' | 'dark')
+  }, [bgTheme])
 
   const [image, setImage] = useState('')
 
@@ -52,6 +68,95 @@ const Page = () => {
                   onChange={e => setName(e.target.value)}
                 />
               </WithLabel>
+              <WithLabel id="email" text="email">
+                <Input
+                  className="w-full mt-2"
+                  type="email"
+                  id="email"
+                  autoComplete="email"
+                  placeholder={initialEmail}
+                  spellCheck={false}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
+              </WithLabel>
+              <Separator />
+              <div className="grid grid-cols-2 gap-5">
+                <p className="font-sans text-sm font-[600] mb-2 col-span-2">BACKGROUND COLOR</p>
+                <div className="w-full">
+                  <div className="flex flex-col">
+                    <Button
+                      onClick={() => {
+                        setIsColorPickerOpen(p => !p)
+                        setInitialDarkBg(darkBg)
+                        setInitialLightBg(lightBg)
+                      }}
+                      variant={isColorPickerOpen ? 'default' : 'outline'}
+                      className="w-full">
+                      {isColorPickerOpen ? 'Save' : 'Edit'}
+                    </Button>
+                    {isColorPickerOpen && (
+                      <Button
+                        onClick={() => {
+                          setIsColorPickerOpen(false)
+                          setLightBg(initialLightBg)
+                          setDarkBg(initialDarkBg)
+                        }}
+                        variant="destructive"
+                        className={`${
+                          (bgTheme === 'light' && initialLightBg != lightBg) || (bgTheme === 'dark' && initialDarkBg != darkBg)
+                            ? 'visible opacity-100 max-h-[41px] mt-2'
+                            : 'invisible opacity-0 max-h-[0px] py-0'
+                        } w-full transition-all`}>
+                        Discard
+                      </Button>
+                    )}
+                  </div>
+                  {isColorPickerOpen && (
+                    <div className="pt-5 flex flex-col gap-y-3 select-none">
+                      <p className="text-sm font-Content dark:text-gray-300 underline">Background depenends on theme!</p>
+                      <p className="text-sm dark:text-gray-300 -mb-2 text-center">Select for</p>
+                      <Select onValueChange={v => setBgTheme(v as 'light' | 'dark')}>
+                        <SelectTrigger>{bgTheme[0].toUpperCase() + bgTheme.substring(1)}</SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup className="font-Content">
+                            <SelectItem value="light">Light</SelectItem>
+                            <SelectItem value="dark">Dark</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm dark:text-gray-300 text-center">Theme</p>
+                    </div>
+                  )}
+                </div>
+                <div
+                  className={
+                    (isColorPickerOpen ? 'visible opacity-100 max-h-[300px]' : 'invisible opacity-0 max-h-[0px]') +
+                    ' transition-all duraiton-300 ease-in-out w-[200px]'
+                  }>
+                  <p className="text-center text-lg underline">Pick a color</p>
+                  {bgTheme === 'light' ? (
+                    <HexColorPicker color={lightBg} onChange={setLightBg} />
+                  ) : bgTheme === 'dark' ? (
+                    <HexColorPicker color={darkBg} onChange={setDarkBg} />
+                  ) : (
+                    <></>
+                  )}
+                  <Input
+                    className="mt-5"
+                    autoComplete="disabled"
+                    placeholder={bgTheme === 'light' ? lightBg : darkBg}
+                    spellCheck={false}
+                    value={bgTheme === 'light' ? lightBg : darkBg}
+                    onChange={e => {
+                      if (!e.target.value.startsWith('#')) return
+
+                      if (bgTheme === 'light') setLightBg(e.target.value)
+                      if (bgTheme === 'dark') setDarkBg(e.target.value)
+                    }}
+                  />
+                </div>
+              </div>
               <Separator />
               <WithLabel id="custom_id" text="custom id">
                 <Input
@@ -59,6 +164,7 @@ const Page = () => {
                   type="text"
                   id="custom_id"
                   placeholder={id}
+                  autoComplete="disabled"
                   spellCheck={false}
                   value={id}
                   onChange={e => setId(e.target.value)}
@@ -76,6 +182,7 @@ const Page = () => {
                 />
               </WithLabel>
               <Separator />
+
               <div>
                 <p className="font-sans text-sm font-[600] mb-2">AVATAR</p>
                 <Dialog>
@@ -96,7 +203,12 @@ const Page = () => {
                     <span className="font-Content text-[10px] relative bottom-[9px] underline select-none">https://makoto/me/{id}</span>
                   </div>
                 </div>
-                <div className={cn(dark_background, background, 'h-[60px]')} />
+                <div
+                  style={{
+                    backgroundColor: currentTheme === 'light' ? lightBg : darkBg,
+                  }}
+                  className="h-[60px]"
+                />
                 <div className="px-7 flex justify-between gap-x-7 pt-1">
                   <div className="dark:border-transparent border-secondary border-2 max-h-[110px] max-w-[110px] min-h-[110px] min-w-[110px] overflow-hidden rounded-full object-cover select-none relative bottom-4">
                     <Image priority={true} src={image || '/images/kawaii.png'} width={350} height={350} alt="avatar" />
