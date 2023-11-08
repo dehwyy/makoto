@@ -4,7 +4,7 @@
   "compilerOptions": {
     "strict": false,
     "sourceMap": false,
-    "outDir": "./.ts/lib",
+    "outDir": "./.tslib",
     "target": "ESNext",
     "lib": ["ES2015.Reflect", "ES2015.Proxy"],
     "moduleResolution": "node",

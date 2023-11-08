@@ -50,6 +50,7 @@ COPY libs/lib/dist libs-prod/lib/dist
 
 COPY libs/grpc/package.json libs-prod/grpc/package.json
 COPY libs/grpc/.ts libs-prod/grpc/.ts
+COPY libs/grpc/.tslib libs-prod/grpc/.tslib
 
 # remove to decrease bundle size
 RUN rm -rf libs

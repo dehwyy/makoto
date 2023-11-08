@@ -4,12 +4,12 @@
   "private": true,
   "exports": {
     ".": {
-      "types": "./.ts/lib/index.d.ts",
-      "import": "./.ts/lib/index.js"
+      "types": "./.tslib/index.d.ts",
+      "import": "./.tslib/index.js"
     },
     "./clients": {
-      "types": "./.ts/lib/clients/index.d.ts",
-      "import": "./.ts/lib/clients/index.js"
+      "types": "./.tslib/clients/index.d.ts",
+      "import": "./.tslib/clients/index.js"
     },
     "./generated/auth": {
       "types": "./.ts/generated/auth/auth.clients.client.d.ts",
@@ -22,13 +22,13 @@
   },
   "typesVersions": {
     "*": {
-      "clients":   ["./.ts/lib/clients/index.d.ts"],
+      "clients":   ["./.tslib/clients/index.d.ts"],
       "generated/auth": ["./.ts/generated/auth/auth.client.d.ts"],
       "generated/hashmap": ["./.ts/generated/hashmap/hashmap.client.d.ts"]
     }
   },
-  "types": "./.ts/lib/index.d.ts",
-  "main": "./.ts/lib/index.js",
+  "types": "./.tslib/index.d.ts",
+  "main": "./.tslib/index.js",
   "scripts": {
     "ts": "tsc"
   },
