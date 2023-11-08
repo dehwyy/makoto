@@ -1,6 +1,7 @@
-import { redirect, type RequestHandler } from '@sveltejs/kit'
 import { SafeTwirpClient } from '@makoto/grpc/clients'
 import { RpcInterceptors } from '@makoto/grpc'
+import type { RequestHandler } from '@sveltejs/kit'
+import { HandleAuth } from '$lib/api/handle_auth'
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
 	const code = url.searchParams.get('code')
@@ -24,5 +25,5 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		}
 	)
 
-	throw redirect(307, '/')
+	return HandleAuth.Handle({ status })
 }

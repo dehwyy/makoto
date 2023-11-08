@@ -2,11 +2,12 @@ import type { RequestHandler } from '@sveltejs/kit'
 import { SafeTwirpClient } from '@makoto/grpc/clients'
 import { SignInFetch } from '$lib/api/fetches'
 import { TypedFetch as tp } from '@makoto/lib/typed-fetch'
+import { HandleAuth } from '$lib/api/handle_auth'
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
 	const req = await tp.Get(request, SignInFetch)
 
-	const { headers, response } = await SafeTwirpClient(cookies).Authorization.signIn({
+	const { status } = await SafeTwirpClient(cookies).Authorization.signIn({
 		authMethod: {
 			oneofKind: 'credentials',
 			credentials: {
@@ -19,9 +20,5 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 		}
 	})
 
-	console.log(response)
-
-	return new Response(null, {
-		status: 200
-	})
+	return HandleAuth.Handle({ status, cookies })
 }
