@@ -26,8 +26,10 @@ export const load: LayoutServerLoad = async ({ cookies, params }) => {
 	const { response: items_response } = await SafeTwirpClient(cookies).Hashmap.getItems(
 		{
 			userId: '',
-			keyword: '',
-			part: 0
+			part: 0,
+			partSize: 50,
+			query: '',
+			tags: []
 		},
 		{
 			interceptors: [RpcInterceptors.AddAuthorizationHeader(token)]
@@ -38,11 +40,11 @@ export const load: LayoutServerLoad = async ({ cookies, params }) => {
 		{
 			authMethod: {
 				oneofKind: 'token',
-				token
+				token: ''
 			}
 		},
 		{
-			interceptors: [RpcInterceptors.WithToken(cookies)]
+			interceptors: [RpcInterceptors.AddAuthorizationHeader(token)]
 		}
 	)
 	return {

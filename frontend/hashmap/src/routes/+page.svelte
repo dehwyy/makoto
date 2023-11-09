@@ -5,14 +5,16 @@
 	import SearchPanel from '$lib/components/index/search-panel.svelte'
 	import Item from '$lib/components/item.svelte'
 
-	import { FilteredItems, Items } from '$lib/stores/items-store'
+	import { FilteredItems, Items , type Item as  ItemStoreType} from '$lib/stores/items-store'
 	import { RemoveItem } from '$lib/api/fetches'
 	import { onMount } from 'svelte'
 	import type { PageData } from './$types'
 	import AddItem from '$lib/components/index/add-item.svelte'
+	import type { Item as ItemRPC } from '@makoto/grpc/.ts/generated/hashmap/hashmap'
 
 	let isMounted = false
-	onMount(() => {
+	let previousItems: ItemStoreType[] = []
+	onMount(async () => {
 		isMounted = true
 	})
 
@@ -23,7 +25,11 @@
 	}
 
 	export let data: PageData
-	Items.Set(data.items.map(item => ({ ...item, tags: item.tags.map(tag => tag.text) })) || [])
+	$: {
+		const items = data.items.map((item: ItemRPC) => ({ ...item, tags: item.tags.map(tag => tag.text) }))
+		previousItems = items
+		Items.Set(items)
+		}
 </script>
 
 {#if isMounted}
@@ -47,25 +53,38 @@
 		<section
 			transition:fade={{ duration: 150 }}
 			class="flex flex-col gap-y-10 items-center lg:w-[80%] w-full">
-			{#if $FilteredItems.length === 0}
-				<p
-					transition:fade={{ duration: 150 }}
-					class="absolute z-10 text-center font-[800] text-5xl font-Jua mt-5">
-					No items were found
-				</p>
-			{:else}
-				<div class="w-full flex flex-col gap-y-5">
-					{#each $FilteredItems as item}
-						<Item
-							removeItem={() => removeItem(item.id)}
-							tags={item.tags}
-							item_id={item.id}
-							item={item.key}
-							value={item.value}
-							extra={item.extra} />
-					{/each}
-				</div>
-			{/if}
+			{#await $FilteredItems}
+			<div class="w-full flex flex-col gap-y-5 opacity-30">
+				{#each previousItems as item}
+					<Item
+						tags={[]}
+						item={item.key}
+						value={item.value}
+						extra={item.extra} />
+				{/each}
+			</div>
+			{:then $FilteredItems}
+			{#if $FilteredItems.length === 0 && previousItems.length === 0}
+			<p
+				transition:fade={{ duration: 150 }}
+				class="absolute z-10 text-center font-[800] text-5xl font-Jua mt-5">
+				No items were found
+			</p>
+		{:else}
+			<div class="w-full flex flex-col gap-y-5">
+				{#each $FilteredItems as item}
+					<Item
+						removeItem={() => removeItem(item.id)}
+						tags={item.tags.map(tag => tag.text)}
+						item_id={item.id}
+						item={item.key}
+						value={item.value}
+						extra={item.extra} />
+				{/each}
+			</div>
+		{/if}
+			{/await}
+
 		</section>
 	</main>
 {/if}

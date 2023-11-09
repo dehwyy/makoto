@@ -50,13 +50,6 @@ const CreateSafeClient = <T extends TwirpClient>(client: T, cookies: Cookies) =>
                 MakotoCookies.setGlobal(cookies, "token", token)
               }
 
-              if (response.requestHeaders?.Authorization && !token.length) {
-                MakotoCookies.delete(cookies, "token")
-              }
-
-
-
-
              return  new_response
             } catch (e) {
 

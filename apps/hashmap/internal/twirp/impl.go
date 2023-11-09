@@ -59,7 +59,7 @@ func (s *Server) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*h
 	items_rpc = utils.GetPart(items_rpc, int(req.Part), int(req.PartSize))
 
 	return &hashmap.GetItemsResponse{
-		Items: pipes.ToRpcItems(items),
+		Items: items_rpc,
 	}, nil
 }
 

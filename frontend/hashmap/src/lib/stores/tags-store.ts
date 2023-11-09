@@ -1,7 +1,6 @@
 import { derived, writable } from 'svelte/store'
 
 export interface TagInitial {
-	tagId: number
 	text: string
 	usages: number
 }
@@ -60,9 +59,9 @@ export class Tags {
 		return this.OptionMode.getValue(value)
 	}
 
-	static Toggle(tag_id: number, tags: Tag[]) {
+	static Toggle(tag_text: string, tags: Tag[]) {
 		// "!" at the end cuz it cannot be undefined
-		const current_option_index = tags.indexOf(tags.find(tag => tag.tagId === tag_id)!)
+		const current_option_index = tags.indexOf(tags.find(tag => tag.text === tag_text)!)
 
 		// toggle `selectMode`
 		// iterating using `.map` and if index == ClickedTagIndex (fn arg) => update `selectMode` (values in `this.OptionMode`) ELSE => do nothing
