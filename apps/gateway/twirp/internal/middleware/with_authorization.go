@@ -35,10 +35,7 @@ func (middleware *withAuthorization) Middleware(next http.Handler) http.Handler 
 
 		token = split_token[1]
 
-		transport := newTwirpClientRoundTripper()
-		twirpAuthorizationClient := auth.NewAuthRPCProtobufClient(middleware.authorizationClientUrl, &http.Client{
-			Transport: transport,
-		})
+		twirpAuthorizationClient := auth.NewAuthRPCProtobufClient(middleware.authorizationClientUrl, &http.Client{})
 
 		res, err := twirpAuthorizationClient.SignIn(ctx, &auth.SignInRequest{
 			AuthMethod: &auth.SignInRequest_Token{

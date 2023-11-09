@@ -45,7 +45,6 @@ func (s *TwirpAuthorizationService) SignUp(ctx context.Context, req *auth.SignUp
 }
 
 func (s *TwirpAuthorizationService) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
-
 	// if not by credentials && not by oauth2 && token is empty-> attach token
 	if req.GetCredentials() == nil && req.GetOauth2() == nil && req.GetToken() == "" {
 		token, _ := s.ReadHeader(ctx)
