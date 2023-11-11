@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package user;
+option go_package = "github.com/dehwyy/makoto/libs/grpc/generated/user";
+
+import "general.proto";
+
+service UserRPC {
+  rpc CreateUser(CreateUserPayload) returns (general.IsSuccess);
+}
+
+message CreateUserPayload {
+  string userId = 1;
+}

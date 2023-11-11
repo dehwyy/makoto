@@ -5,7 +5,7 @@ dotenv: [.env.prod, .env]
 tasks:
   up:
     cmds:
-      - docker-compose --env-file .env.prod up
+      - docker-compose --env-file .env.prod up --build
 
   build:
     deps: [containers-rmi]
@@ -70,3 +70,9 @@ tasks:
     cmds:
       - task: protoc-twirp-ts
       - task: protoc-twirp-go
+
+  grpc-rust:
+    env:
+      GRPC_RUST_COMPILE: true
+    cmds:
+      - cd libs/grpc && cargo run
