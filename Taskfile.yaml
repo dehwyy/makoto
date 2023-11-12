@@ -71,6 +71,12 @@ tasks:
       - task: protoc-twirp-ts
       - task: protoc-twirp-go
 
+  grpc-go:
+    env:
+      GRPC_GO_COMPILE: true
+    cmds:
+      - cd libs/grpc && cargo run
+
   grpc-rust:
     env:
       GRPC_RUST_COMPILE: true

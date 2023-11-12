@@ -3,7 +3,8 @@
 members = [
   "libs/grpc",
   "libs/config",
-  "apps/user"
+  "apps/user",
+  "libs/database"
 ]
 
 resolver = "2"

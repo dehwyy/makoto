@@ -42,6 +42,7 @@ type Config struct {
 	HttpGatewayUrl  string `required:"true"    envconfig:"HTTP_GATEWAY_URL"`
 	AuthUrl         string `required:"true"    envconfig:"AUTH_URL"`
 	HashmapUrl      string `required:"true"    envconfig:"HASHMAP_URL"`
+	UserUrl         string `required:"true"    envconfig:"USER_URL"`
 
 	// Gmail
 	GmailSennderName    string `required:"true"    envconfig:"GMAIL_SENDER_NAME"`

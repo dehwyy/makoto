@@ -38,9 +38,12 @@ func main() {
 		ReadAuthorizationData: md_authorization.Read,
 	})
 
+	user_service := twirp.NewUserService(config.UserUrl)
+
 	// mount
 	r.Mount(authorization_service.PathPrefix(), md_with_authorization_header.Middleware(authorization_service))
 	r.Mount(hashmap_service.PathPrefix(), md_authorization.Middleware(hashmap_service))
+	r.Mount(user_service.PathPrefix(), user_service)
 
 	// as TwirpGatewayUrl looks like `http://{host}:{port}/*`
 	port := ":" + strings.Split(config.TwirpGatewayUrl, ":")[2]
