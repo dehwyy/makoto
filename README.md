@@ -1,9 +1,13 @@
-# makoto/v2
+# Makoto/v2
 
-## techonologies:
-- ProtocolBuffer (twirp / grpc)
-- OAuth2: Google, (soon: GitHub, Discord)
-- PostgresSQL (gorm)
-- Docker
+## Tech Stack:
+- Protobuf (twirp, grpc, tonic)
+- Go
+- Rust
 - SvelteKit
-- Nuxt3 (would be rewrited to Next/Svelte/Astro)
+- Nextjs
+- Typescript
+- Docker
+- Postgres (GORM and SeaORM)
+- Microservice Architecture (monorepo)
+- GithubActions (?)

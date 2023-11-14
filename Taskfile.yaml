@@ -47,6 +47,10 @@ tasks:
       AUTH_FRONTEND: auth_frontend
       HASHMAP_FRONTEND: hashmap_frontend
 
+  rust-orm:
+    cmds:
+      - cd libs/database && sea-orm-cli generate entity -u postgres://postgres:postgres@localhost/makoto -o src/models --ignore-tables user_tokens,user_data,hashmap_items,hashmap_tags,hashmap_item_tags
+
   go-test:
     env:
       EMAIL_TEST_DISABLED: true
@@ -74,11 +78,5 @@ tasks:
   grpc-go:
     env:
       GRPC_GO_COMPILE: true
-    cmds:
-      - cd libs/grpc && cargo run
-
-  grpc-rust:
-    env:
-      GRPC_RUST_COMPILE: true
     cmds:
       - cd libs/grpc && cargo run
