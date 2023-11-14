@@ -1,0 +1,10 @@
+[package]
+name = "logger"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+flexi_logger = {version = "0.27.3", features = ["trc"]}
+log = "0.4.20"
