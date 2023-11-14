@@ -1,6 +1,8 @@
 use sea_orm::{Database as SeoOrmDatabase, ConnectOptions, DatabaseConnection, DbErr};
 use std::time::Duration;
 
+pub mod models;
+pub mod helpers;
 pub struct Database;
 
 impl Database {
