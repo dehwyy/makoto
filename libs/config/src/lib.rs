@@ -5,7 +5,10 @@ use std::env::current_dir as cwd;
 #[derive(Envconfig)]
 pub struct Config {
     #[envconfig(from = "USER_URL")]
-    pub user_url: String
+    pub user_url: String,
+
+    #[envconfig(from = "DATABASE_URL")]
+    pub database_url: String
 }
 
 impl Config {
