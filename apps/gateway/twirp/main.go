@@ -30,7 +30,7 @@ func main() {
 	md_authorization := middleware.NewMiddleware_OnlyAuthorized(config.AuthUrl, log)
 
 	// services
-	authorization_service := twirp.NewAuthorizationService(config.AuthUrl, twirp.TwirpAuthorizationService{
+	authorization_service := twirp.NewAuthorizationService(config.AuthUrl, config.UserUrl, twirp.TwirpAuthorizationService{
 		ReadHeader:             md_with_authorization_header.Read,
 		SetAuthorizationHeader: md_with_authorization_header.SetAuthorizationHeader,
 	})

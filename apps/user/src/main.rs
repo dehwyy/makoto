@@ -1,46 +1,29 @@
-pub mod user {
-    tonic::include_proto!("user");
-}
+mod repository;
+mod grpc;
 
-pub mod general {
-    tonic::include_proto!("general");
+mod result {
+    pub type T<R, E = Box<dyn std::error::Error>> = Result<R, E>;
 }
 
 use std::net::ToSocketAddrs;
-
-use tonic::{transport::Server,  Request,  Response, Status};
-use user::user_rpc_server::{UserRpcServer, UserRpc};
-use user::{CreateUserPayload};
-use general::IsSuccess;
-
-use database::Database;
+use tonic::transport::Server;
 use config::Config;
-
-#[derive(Debug, Default)]
-pub struct UserService {}
-
-#[tonic::async_trait]
-impl UserRpc for UserService {
-    async fn create_user(&self, request: Request<CreateUserPayload>) ->  Result<Response<IsSuccess>, Status> {
-        println!("requset {:?}", request);
-
-        Ok(Response::new(IsSuccess { is_success: true }))
-    }
-}
+use database::Database;
+use grpc::{UserService, UserRpcServer};
+use logger::{Logger, info};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> result::T<()> {
     let config = Config::new();
+    Logger::init().expect("Cannot run logger!");
 
+    let db = Database::new(config.database_url).await?;
 
-    // let db = Database::new(String::from("")).await?;
-
+    // addr looks like http(s)://localhost:4000 -> only localhost:4000 needed
     let addr = config.user_url.split("//").collect::<Vec<_>>()[1].to_socket_addrs()?.next().unwrap();
 
-
-
-    let user_service = UserService::default();
-
+    info!("Server started on port {}", addr);
+    let user_service = UserService::new(db);
         Server::builder()
         .add_service(UserRpcServer::new(user_service))
         .serve(addr)

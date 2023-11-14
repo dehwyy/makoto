@@ -7,6 +7,7 @@ import (
 	"github.com/dehwyy/makoto/apps/gateway/services"
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/grpc/generated/general"
+	"github.com/dehwyy/makoto/libs/grpc/generated/user"
 	tw "github.com/twitchtv/twirp"
 )
 
@@ -14,21 +15,32 @@ type TwirpAuthorizationService struct {
 	ReadHeader             func(context.Context) (string, error)
 	SetAuthorizationHeader func(context.Context, string) error
 
-	client auth.AuthRPC
+	client            auth.AuthRPC
+	userServiceClient user.UserRPC
 }
 
-func NewAuthorizationService(auth_service_url string, args TwirpAuthorizationService) auth.TwirpServer {
+func NewAuthorizationService(auth_service_url, user_service_url string, args TwirpAuthorizationService) auth.TwirpServer {
 	return auth.NewAuthRPCServer(&TwirpAuthorizationService{
 		ReadHeader: args.ReadHeader,
 
 		client: services.NewAuthorizationService(services.AuthorizationService{
 			AuthorizationServiceUrl: auth_service_url,
 		}),
+		userServiceClient: services.NewUserService(services.UserService{
+			UserServiceUrl: user_service_url,
+		}),
 	}, tw.WithServerPathPrefix("/authorization"))
 }
 
 func (s *TwirpAuthorizationService) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.AuthResponse, error) {
 	response, err := s.client.SignUp(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.userServiceClient.CreateUser(ctx, &user.CreateUserPayload{
+		UserId: response.UserId,
+	})
 	if err != nil {
 		return nil, err
 	}
