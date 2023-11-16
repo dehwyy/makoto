@@ -7,9 +7,8 @@ import (
 )
 
 type UserInfo struct {
-	ID              uint `gorm:"primarykey"`
-	UserId          uuid.UUID
-	Picture         string // would be data64 or url
+	UserId          uuid.UUID `gorm:"primarykey"`
+	Picture         string    // would be data64 or url
 	Description     string
 	BackgroundDark  string      // color in hex format - for dark mode
 	BackgroundLight string      // for light mode
