@@ -72,6 +72,16 @@ func (s *TwirpAuthorizationService) SignIn(ctx context.Context, req *auth.SignIn
 		return nil, err
 	}
 
+	// if account was created -> create account in UserInfo (when oauth2)
+	if response.IsCreated {
+		_, err = s.userServiceClient.CreateUser(ctx, &user.CreateUserPayload{
+			UserId: response.UserId,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err = s.set_token(ctx, response.Token); err != nil {
 		return nil, err
 	}

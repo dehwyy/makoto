@@ -61,14 +61,14 @@ func (middleware *withAuthorization) Middleware(next http.Handler) http.Handler 
 	})
 }
 
-func (middleware *withAuthorization) Read(ctx context.Context) (userId, token string, err error) {
+func (middleware *withAuthorization) Read(ctx context.Context) AuthCredentials {
 	userId, userId_ok := ctx.Value(_CtxKeyUserId).(string)
 	token, token_ok := ctx.Value(_CtxKeyAuthorizationHeader).(string)
 	if !(userId_ok && token_ok) {
-		return "", "", ErrAuthorizationFailed
+		return new_auth_credentials("", "", ErrAuthorizationHeaderNotFound)
 	}
 
 	middleware.l.Infof("userId: %v, token: %v", userId, token)
 	twirp.SetHTTPResponseHeader(ctx, _AuthorizationHeader, token)
-	return userId, token, nil
+	return new_auth_credentials(userId, token, nil)
 }

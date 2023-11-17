@@ -19,7 +19,7 @@ func NewMiddleware_OnlyAuthorized(url string, l logger.Logger) *onlyAuthorized {
 
 func (s *onlyAuthorized) Middleware(next http.Handler) http.Handler {
 	return s.md.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := s.md.Read(r.Context())
+		err := s.md.Read(r.Context()).GetError()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
@@ -29,7 +29,9 @@ func (s *onlyAuthorized) Middleware(next http.Handler) http.Handler {
 	}))
 }
 
-func (s *onlyAuthorized) Read(ctx context.Context) (userId, token string) {
-	userId, token, _ = s.md.Read(ctx)
-	return userId, token
+func (s *onlyAuthorized) Read(ctx context.Context) AuthCredentialsGranted {
+	token, _ := s.md.Read(ctx).GetToken()
+	userId, _ := s.md.Read(ctx).GetUserId()
+
+	return new_auth_credentials_granted(userId, token)
 }
