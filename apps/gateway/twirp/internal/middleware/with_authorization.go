@@ -7,6 +7,7 @@ import (
 
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/logger"
+	"github.com/twitchtv/twirp"
 )
 
 type withAuthorization struct {
@@ -68,6 +69,6 @@ func (middleware *withAuthorization) Read(ctx context.Context) (userId, token st
 	}
 
 	middleware.l.Infof("userId: %v, token: %v", userId, token)
-
+	twirp.SetHTTPResponseHeader(ctx, _AuthorizationHeader, token)
 	return userId, token, nil
 }
