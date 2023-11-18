@@ -9,7 +9,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// New initializes a new gorm.DB instance and connects to the specified database URL.
+//
+// Parameters:
+// - database_url: the URL of the database to connect to.
+// - l: the logger.Logger instance for logging.
+// - flags: optional boolean flags. [DisableErrorLogging]
+//
+// Returns:
+// - *gorm.DB: the initialized gorm.DB instance.
 func New(database_url string, l logger.Logger) *gorm.DB {
+
 	db, err := gorm.Open(postgres.Open(database_url), &gorm.Config{
 		PrepareStmt: true,
 	})

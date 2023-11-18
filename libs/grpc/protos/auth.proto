@@ -47,6 +47,7 @@ message AuthResponse {
   string token = 1;
   string userId = 2;
   string username = 3;
+  bool is_created = 4; // if new account was created
 }
 
 message IsUniqueUsernamePayload {
