@@ -34,11 +34,17 @@ jobs:
         with:
           toolchain: stable
 
+
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
 
-      - name: Run Task compile
+      - name: Install protoc plugins
+        run: go install github.com/twitchtv/twirp/protoc-gen-twirp@latest && go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+
+      - name: Run Task compile twirp
         run: task protoc-twirp-go
+      - name: Run Task compile grpc
+        run: task grpc-go
 
       - name: Run tests
         run: task go-test
