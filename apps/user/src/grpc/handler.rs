@@ -100,3 +100,83 @@ impl UserRpc for UserService {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use sea_orm::DbErr;
+    use crate::Database;
+    use crate::result::T as Res;
+    use super::*;
+
+    const USER_ID: &'static str = "67e55044-10b1-426f-9247-bb680e5fe0c9";
+    const USER_PICTURE: &'static str = "https://google/image.jpg";
+
+    async fn create_db() -> Result<DatabaseConnection, DbErr> {
+        Database::new(String::from("postgres://postgres:postgres@localhost/postgres")).await
+    }
+
+    async fn create_handler() -> Res<UserService> {
+        let db = create_db().await?;
+        Ok(UserService::new(db))
+    }
+
+    async fn create_user(s: &UserService) -> Res<()> {
+        let req = CreateUserPayload {
+            user_id: USER_ID.to_string(),
+            picture: USER_PICTURE.to_string(),
+        };
+
+        let response = s.create_user(Request::new(req)).await?;
+        let response = response.into_inner();
+
+        assert_eq!(response.is_success, true);
+
+        Ok(())
+    }
+
+    async fn update_user(s: &UserService) -> Res<()> {
+        let req = UpdateUserPayload {
+            user_id: USER_ID.to_string(),
+            picture: USER_PICTURE.to_string(),
+            dark_bg: "#b4d1c4".to_string(),
+            light_bg: "#ffffff".to_string(),
+            description: "random_description".to_string(),
+            languages: vec!("english".to_string(), "japanese".to_string()),
+        };
+
+        let res = s.update_user(Request::new(req)).await?;
+        let res = res.into_inner();
+
+        assert_eq!(res.is_success, true);
+
+        Ok(())
+    }
+
+    async fn get_user(s: &UserService) -> Res<()> {
+        let req = GetUserPayload {
+            user_id:  USER_ID.to_string()
+        };
+
+        let response = s.get_user(Request::new(req)).await?;
+        let response = response.into_inner();
+
+        assert_eq!(response.languages.len(), 2);
+        assert_eq!(response.dark_bg.len() > 0, true);
+        assert_eq!(response.light_bg.len() > 0, true);
+        assert_eq!(response.picture, USER_PICTURE.to_string());
+        assert_eq!(response.description.len() > 0, true);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn seq_test() -> Res<()> {
+        let s = create_handler().await?;
+
+        create_user(&s).await?;
+        update_user(&s).await?;
+        get_user(&s).await?;
+
+        Ok(())
+    }
+}
