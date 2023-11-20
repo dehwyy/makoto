@@ -1,3 +1,4 @@
+use logger::info;
 use sea_orm::{DatabaseConnection, ActiveModelTrait, EntityTrait, QueryFilter, ColumnTrait};
 use database::helpers::{nullable, not_null, AvailableLanguages};
 use database::models::{user_infos, languages, users_languages};
@@ -78,17 +79,16 @@ impl UserInfoRepository {
       ..Default::default()
     };
 
-    // insert
     user_model.save(&self.db).await?;
 
-    // delete all user's languages relations
     users_languages::Entity::delete_many()
       .filter(users_languages::Column::UserInfoUserId.eq(user_id))
       .exec(&self.db).await?;
 
-    // create new relations
-    users_languages::Entity::insert_many(user.languages.iter().filter_map(| lang | {
-      let language_id = AvailableLanguages::find(lang).unwrap_or(0);
+
+
+    let models: Vec<users_languages::ActiveModel> = user.languages.iter().filter_map(|language| {
+      let language_id = AvailableLanguages::find(language).unwrap_or(0);
 
       if language_id == 0 {
         return None;
@@ -100,9 +100,79 @@ impl UserInfoRepository {
       };
 
       Some(user_lang)
-    })).exec(&self.db).await?;
+    }).collect();
+
+    users_languages::Entity::insert_many(models).exec(&self.db).await?;
 
     Ok(true)
   }
 
+}
+
+#[cfg(test)]
+mod tests {
+  use sea_orm::DbErr;
+  use super::*;
+  use crate::Database;
+
+  const USER_ID: &'static str = "67e55044-10b1-426f-9247-bb680e5fe0c8";
+  const USER_PICTURE: &'static str = "https://google/image.jpg";
+
+  async fn create_db() -> Result<DatabaseConnection, DbErr> {
+    Database::new(String::from("postgres://postgres:postgres@localhost/postgres")).await
+  }
+
+  async fn create_repo() -> Res<UserInfoRepository> {
+    let db = create_db().await?;
+    Ok(UserInfoRepository::new(db))
+  }
+
+  async fn create_user() -> Res<()> {
+    let repo = create_repo().await?;
+    let response = repo.create(USER_ID.to_string(), USER_PICTURE.to_string()).await?;
+    assert_eq!(response, true);
+    Ok(())
+  }
+
+  async fn update_user() -> Res<()> {
+    let repo = create_repo().await?;
+
+    let user = UpdateUserModel {
+      description: "I have description".to_string(),
+      dark_bg: "".to_string(),
+      light_bg:  "".to_string(),
+      picture: USER_PICTURE.to_string(),
+      languages: vec!("russian".to_string(), "japanese".to_string())
+    };
+    let response = repo.update(&USER_ID.to_string(), user).await?;
+
+    assert_eq!(response, true);
+    Ok(())
+  }
+
+  async fn get_user() -> Res<()> {
+    let repo = create_repo().await?;
+    let response = repo.get(USER_ID.to_string()).await?;
+
+    match response {
+      FindUserResult::Found(user) => {
+        assert_eq!(user.user.picture.expect("user should have picture!"), USER_PICTURE.to_string());
+        assert_eq!(user.user.description.unwrap().len() > 0, true);
+        Ok(())
+      },
+      FindUserResult::NotFound => panic!("user should be found")
+    }
+  }
+
+  #[tokio::test]
+  async fn seq_test() -> Res<()> {
+    create_user().await?;
+    println!("Created user!");
+    update_user().await?;
+    println!("Updated user!");
+    get_user().await?;
+    println!("Get user!");
+
+    Ok(())
+  }
 }

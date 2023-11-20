@@ -51,6 +51,16 @@ tasks:
     cmds:
       - cd libs/database && sea-orm-cli generate entity -u postgres://postgres:postgres@localhost/makoto -o src/models --ignore-tables user_tokens,user_data,hashmap_items,hashmap_tags,hashmap_item_tags
 
+  # setup db
+  rust-db:
+    cmds:
+      - cd tests/setupdb && go run .
+
+  rust-user-test:
+    deps: [rust-db]
+    cmds:
+      - cargo test -p user  -- --test-threads=1
+
   go-test:
     env:
       EMAIL_TEST_DISABLED: true

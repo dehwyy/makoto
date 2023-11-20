@@ -1,7 +1,7 @@
 mod repository;
 mod grpc;
 
-mod result {
+pub mod result {
     pub type T<R, E = Box<dyn std::error::Error>> = Result<R, E>;
 }
 

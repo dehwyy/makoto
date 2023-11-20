@@ -10,4 +10,5 @@ use (
   ./libs/logger
   ./libs/database
   ./libs/grpc
+  ./tests/setupdb
 )

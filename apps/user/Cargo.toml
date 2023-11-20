@@ -14,5 +14,6 @@ database = {path = "../../libs/database"}
 config = {path = "../../libs/config"}
 logger = {path = "../../libs/logger"}
 
+
 [build-dependencies]
 tonic-build = "0.10.2"
