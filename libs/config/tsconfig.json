@@ -5,6 +5,8 @@
     "sourceMap": false,
     "outDir": "./dist",
     "skipLibCheck": true,
-    "declaration": true
+    "declaration": true,
+    "moduleResolution": "node",
+    "target": "ESNext",
   }
 }

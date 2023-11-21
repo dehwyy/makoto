@@ -16,15 +16,20 @@
       "import": "./.ts/generated/auth/auth.client.js"
     },
      "./generated/hashmap": {
-      "types": "./.ts/generated/hashmap/hashmap.clients.client.d.ts",
+      "types": "./.ts/generated/hashmap/hashmap.clients.d.ts",
       "import": "./.ts/generated/hashmap/hashmap.client.js"
+     },
+    "./generated/user": {
+      "types": "./.ts/generated/user/user.client.d.ts",
+      "import": "./.ts/generated/user/user.client.js"
      }
   },
   "typesVersions": {
     "*": {
       "clients":   ["./.tslib/clients/index.d.ts"],
       "generated/auth": ["./.ts/generated/auth/auth.client.d.ts"],
-      "generated/hashmap": ["./.ts/generated/hashmap/hashmap.client.d.ts"]
+      "generated/hashmap": ["./.ts/generated/hashmap/hashmap.client.d.ts"],
+      "generated/user": ["./.ts/generated/user/user.client.d.ts"]
     }
   },
   "types": "./.tslib/index.d.ts",

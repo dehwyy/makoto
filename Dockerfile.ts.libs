@@ -42,17 +42,16 @@ RUN cd libs/lib && npm run ts
 RUN cd libs/grpc && npm run ts
 
 # copy to libs-prod which would be smaller (size)
-COPY libs/config/package.json libs-prod/config/package.json
-COPY libs/config/dist libs-prod/config/dist
+# COPY libs/config/package.json libs-prod/config/package.json
+# COPY libs/config/dist libs-prod/config/dist
 
-COPY libs/lib/package.json libs-prod/lib/package.json
-COPY libs/lib/dist libs-prod/lib/dist
+# COPY libs/lib/package.json libs-prod/lib/package.json
+# COPY libs/lib/dist libs-prod/lib/dist
 
-COPY libs/grpc/package.json libs-prod/grpc/package.json
-COPY libs/grpc/.ts libs-prod/grpc/.ts
-COPY libs/grpc/.tslib libs-prod/grpc/.tslib
+# COPY libs/grpc/package.json libs-prod/grpc/package.json
+# COPY libs/grpc/.ts libs-prod/grpc/.ts
+# COPY libs/grpc/.tslib libs-prod/grpc/.tslib
 
-# remove to decrease bundle size
-RUN rm -rf libs
-# rename
-RUN mv libs-prod libs
+# RUN rm -rf libs
+# # rename
+# RUN mv libs-prod libs

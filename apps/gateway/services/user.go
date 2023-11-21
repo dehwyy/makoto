@@ -31,6 +31,28 @@ func (s *UserService) CreateUser(ctx context.Context, req *user.CreateUserPayloa
 	return user_client.CreateUser(ctx, req)
 }
 
+func (s *UserService) GetUser(ctx context.Context, req *user.GetUserPayload) (*user.GetUserResponse, error) {
+	user_client, close_fn, err := s.cl(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer close_fn()
+
+	return user_client.GetUser(ctx, req)
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, req *user.UpdateUserPayload) (*general.IsSuccess, error) {
+	user_client, close_fn, err := s.cl(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer close_fn()
+
+	return user_client.UpdateUser(ctx, req)
+}
+
 func (s *UserService) cl(ctx context.Context) (client user.UserRPCClient, close func(), err error) {
 	conn, err := grpc.Dial(s.UserServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

@@ -1,4 +1,4 @@
-interface CookieSetOptions {
+export interface CookieSetOptions {
 	httpOnly?: boolean
 	path?: string
 }
