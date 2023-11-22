@@ -5,15 +5,16 @@ import (
 	"net/http"
 
 	"github.com/dehwyy/makoto/libs/logger"
+	"github.com/redis/go-redis/v9"
 )
 
 type onlyAuthorized struct {
 	md *withAuthorization
 }
 
-func NewMiddleware_OnlyAuthorized(url string, l logger.Logger) *onlyAuthorized {
+func NewMiddleware_OnlyAuthorized(url string, rds *redis.Client, l logger.Logger) *onlyAuthorized {
 	return &onlyAuthorized{
-		md: NewMiddleware_WithAuthorization(url, l),
+		md: NewMiddleware_WithAuthorization(url, rds, l),
 	}
 }
 

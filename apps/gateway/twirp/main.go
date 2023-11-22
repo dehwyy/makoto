@@ -10,11 +10,18 @@ import (
 	"github.com/dehwyy/makoto/libs/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
 	log := logger.New()
 	config := makoto_config.New()
+
+	rds := redis.NewClient(&redis.Options{
+		Addr: config.GatewayRedisUrl,
+		DB:   0,
+	})
+
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{
@@ -28,7 +35,7 @@ func main() {
 	//  middleware that reads the `Authorization` header (as twirp doesn't give access to it directly)
 	md_with_authorization_header := middleware.NewMiddleware_WithAuthorizationHeader()
 	// md_with_authorization := middleware.NewMiddleware_WithAuthorization(config.AuthUrl, log)
-	md_only_with_authorization := middleware.NewMiddleware_OnlyAuthorized(config.AuthUrl, log)
+	md_only_with_authorization := middleware.NewMiddleware_OnlyAuthorized(config.AuthUrl, rds, log)
 
 	// services
 	authorization_service := twirp.NewAuthorizationService(config.AuthUrl, config.UserUrl, twirp.TwirpAuthorizationService{

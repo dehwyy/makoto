@@ -4,21 +4,25 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/dehwyy/makoto/libs/grpc/generated/auth"
 	"github.com/dehwyy/makoto/libs/logger"
+	"github.com/redis/go-redis/v9"
 	"github.com/twitchtv/twirp"
 )
 
 type withAuthorization struct {
 	authorizationClientUrl string
 	l                      logger.Logger
+	redis                  *redis.Client
 }
 
-func NewMiddleware_WithAuthorization(authorizationClientUrl string, l logger.Logger) *withAuthorization {
+func NewMiddleware_WithAuthorization(authorizationClientUrl string, rds *redis.Client, l logger.Logger) *withAuthorization {
 	return &withAuthorization{
 		authorizationClientUrl: authorizationClientUrl,
 		l:                      l,
+		redis:                  rds,
 	}
 }
 
@@ -34,24 +38,42 @@ func (middleware *withAuthorization) Middleware(next http.Handler) http.Handler 
 			return
 		}
 
+		var userId string
 		token = split_token[1]
 
-		twirpAuthorizationClient := auth.NewAuthRPCProtobufClient(middleware.authorizationClientUrl, &http.Client{})
+		// try to get values from redis
+		// looks like {"token": "userId"}
+		redis_value, err := middleware.redis.Get(ctx, token).Result()
 
-		res, err := twirpAuthorizationClient.SignIn(ctx, &auth.SignInRequest{
-			AuthMethod: &auth.SignInRequest_Token{
-				Token: token,
-			},
-		})
-		if err != nil {
-			middleware.l.Errorf("failed to call SignIn in AuthorizationMiddleware: %v", err)
-			next.ServeHTTP(w, r)
-			return
+		middleware.l.Infof("redis value: for %s, %s", token, redis_value)
+
+		if err == redis.Nil {
+			twirpAuthorizationClient := auth.NewAuthRPCProtobufClient(middleware.authorizationClientUrl, &http.Client{})
+
+			res, err := twirpAuthorizationClient.SignIn(ctx, &auth.SignInRequest{
+				AuthMethod: &auth.SignInRequest_Token{
+					Token: token,
+				},
+			})
+			if err != nil {
+				middleware.l.Errorf("failed to call SignIn in AuthorizationMiddleware: %v", err)
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// cache for 10 minutes
+			middleware.redis.Set(ctx, token, res.UserId, time.Minute*10)
+
+			userId = res.UserId
+			token = res.Token
+		} else {
+			// if value was found
+			userId = redis_value
 		}
 
 		// set value to ctx
-		ctx = context.WithValue(ctx, _CtxKeyUserId, res.UserId)
-		ctx = context.WithValue(ctx, _CtxKeyAuthorizationHeader, res.Token)
+		ctx = context.WithValue(ctx, _CtxKeyUserId, userId)
+		ctx = context.WithValue(ctx, _CtxKeyAuthorizationHeader, token)
 
 		// attach context to request
 		r = r.WithContext(ctx)
