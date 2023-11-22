@@ -1,0 +1,17 @@
+{
+  auto_https off
+}
+
+http://makoto.dehwyy {
+
+  route /passport/* {
+    uri strip_prefix /passport
+    reverse_proxy localhost:3001
+  }
+
+  redir /passport /passport/
+
+  route {
+    reverse_proxy :3000
+  }
+}
