@@ -11,7 +11,7 @@ tasks:
     deps: [containers-rmi]
     cmds:
       - echo "Running docker-compose up"
-      - docker-compose --env-file .env.prod up
+      - docker-compose --env-file ./.env.prod up
 
   rebuild:
     deps: [libs, containers-rmi]
