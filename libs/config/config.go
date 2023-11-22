@@ -17,9 +17,9 @@ const (
 )
 
 type Config struct {
-	DatabaseDsn string `required:"true"    envconfig:"DATABASE_DSN"`
-	JwtSecret   string `required:"true"    envconfig:"JWT_SECRET"`
-
+	DatabaseDsn     string `required:"true"    envconfig:"DATABASE_DSN"`
+	JwtSecret       string `required:"true"    envconfig:"JWT_SECRET"`
+	GatewayRedisUrl string `required:"true" envconfig:"GATEWAY_REDIS_URL"`
 	// OAuth2
 	// google
 	GoogleClientId     string `required:"true"    envconfig:"GOOGLE_CLIENT_ID"`

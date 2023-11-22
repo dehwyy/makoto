@@ -27,6 +27,7 @@ jobs:
           docker pull postgres
           docker pull nginx
           docker pull dpage/pgadmin4
+          docker pull redis/redis-stack:latest
 
       - name: Build libs for go
         run: docker build -f Dockerfile.go.libs -t go/libs .
@@ -38,6 +39,7 @@ jobs:
         with:
           envkey_JWT_SECRET: "not_a_secret"
           envkey_DATABASE_DSN: ${{ vars.DATABASE_DSN }}
+          envkey_GATEWAY_REDIS_URL: ${{ vars.GATEWAY_REDIS_URL }}
           envkey_TWIRP_GATEWAY_URL: ${{ vars.TWIRP_GATEWAY_URL }}
           envkey_HTTP_GATEWAY_URL: ${{ vars.HTTP_GATEWAY_URL }}
           envkey_AUTH_URL: ${{ vars.AUTH_URL }}

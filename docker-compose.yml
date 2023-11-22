@@ -81,6 +81,15 @@ services:
       - auth_frontend
       - hashmap_frontend
 
+
+  redis:
+    restart: unless-stopped
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   db:
     restart: always
     image: postgres:latest
@@ -117,3 +126,4 @@ services:
 volumes:
   makoto_db:
   pgadmin_data:
+  redis_data:
