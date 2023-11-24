@@ -5,6 +5,7 @@ go 1.21.2
 require (
 	github.com/dehwyy/makoto/libs/logger v0.0.0-20231012081555-72f2af8b2218
 	github.com/google/uuid v1.3.1
+	github.com/lib/pq v1.10.9
 	gorm.io/driver/postgres v1.5.3
 	gorm.io/gorm v1.25.5
 )

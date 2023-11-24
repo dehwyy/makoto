@@ -1,0 +1,12 @@
+{
+  auto_https off
+}
+
+http://makoto.dehwyy {
+
+  handle_path /passport* {
+    rewrite * /
+    reverse_proxy localhost:3001
+  }
+
+}

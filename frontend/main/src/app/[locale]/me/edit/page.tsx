@@ -1,33 +1,21 @@
 'use client'
-import { Dialog, DialogTrigger, DialogContent } from '$/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '$/components/ui/tabs'
-import { Input } from '$/components/ui/input'
-import { Label } from '$/components/ui/label'
-import { useState } from 'react'
-import { Separator } from '$/components/ui/separator'
-import { Textarea } from '$/components/ui/textarea'
-import dynamic from 'next/dynamic'
-import { Button } from '$/components/ui/button'
-import Image from 'next/image'
-import { cn } from '$/lib/utils'
-import Link from 'next/link'
-import { Switch } from '$/components/ui/switch'
+import Privacy from './privacy'
+import Profile from './profile'
 
-const PictureEditor = dynamic(() => import('$/components/picture-editor'), { ssr: false })
+const user = {
+  name: 'dehwyy',
+  email: 'dehwyy@google.com',
+  customId: '',
+  description: "Hello, I'm dehwyy and using Makoto but way longer sentence to test if it works.",
+  dark_background: '#171717',
+  light_background: '#2ccce7',
+  image: '',
+
+  isVerifiedEmail: false,
+}
 
 const Page = () => {
-  const initialName = 'dehwyy!'
-  const customId = 'a0131d5d-6b2b-4b2a-8b5b-4b2a8b5b4b2a'
-  const initialDescription = "Hello, I'm dehwyy and using Makoto but way longer sentence to test if it works."
-  const dark_background = 'dark:bg-[#171717]'
-  const background = 'bg-[#2ccce7]'
-
-  const [name, setName] = useState(initialName)
-  const [id, setId] = useState(customId)
-  const [description, setDescription] = useState(initialDescription)
-
-  const [image, setImage] = useState('')
-
   return (
     <div className="min-h-screen mx-auto pt-28 w-[90%] md:w-2/3">
       <Tabs defaultValue="profile" className="w-full">
@@ -38,138 +26,23 @@ const Page = () => {
 
         {/* User profile  */}
         <TabsContent value="profile">
-          <div className="p-5 dark:bg-black rounded-xl overflow-hidden border-2 border-secondary grid lg:grid-cols-2 gap-x-8">
-            <section className="font-Content px-3 flex flex-col gap-y-7">
-              <WithLabel id="display_name" text="display name">
-                <Input
-                  className="w-full mt-2"
-                  type="text"
-                  id="display_name"
-                  maxLength={20}
-                  placeholder={initialName}
-                  spellCheck={false}
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                />
-              </WithLabel>
-              <Separator />
-              <WithLabel id="custom_id" text="custom id">
-                <Input
-                  className="w-full mt-2"
-                  type="text"
-                  id="custom_id"
-                  placeholder={id}
-                  spellCheck={false}
-                  value={id}
-                  onChange={e => setId(e.target.value)}
-                />
-              </WithLabel>
-              <Separator />
-              <WithLabel id="description" text="description">
-                <Textarea
-                  className="w-full mt-2"
-                  id="description"
-                  placeholder={initialDescription}
-                  spellCheck={false}
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                />
-              </WithLabel>
-              <Separator />
-              <div>
-                <p className="font-sans text-sm font-[600] mb-2">AVATAR</p>
-                <Dialog>
-                  <DialogTrigger className="block" asChild>
-                    <Button className="min-w-[50%]">Edit</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <PictureEditor onSave={image => setImage(image)} />
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </section>
-            <section>
-              <p className="font-sans text-sm font-[600] mb-2">PREVIEW</p>
-              <div className="dark:bg-black rounded-xl overflow-hidden border-2 border-secondary">
-                <div className="h-[20px] dark:bg-black flex items-center my-0.5">
-                  <div className="bg-secondary rounded-md h-[13px] w-[93%] mx-auto px-2">
-                    <span className="font-Content text-[10px] relative bottom-[9px] underline select-none">https://makoto/me/{id}</span>
-                  </div>
-                </div>
-                <div className={cn(dark_background, background, 'h-[60px]')} />
-                <div className="px-7 flex justify-between gap-x-7 pt-1">
-                  <div className="dark:border-transparent border-secondary border-2 max-h-[110px] max-w-[110px] min-h-[110px] min-w-[110px] overflow-hidden rounded-full object-cover select-none relative bottom-4">
-                    <Image priority={true} src={image || '/images/kawaii.png'} width={350} height={350} alt="avatar" />
-                  </div>
-                  <div className="flex-auto self-center">
-                    <h3 className="font-Jua text-2xl dark:font-[800] font-[500] tracking-wider break-all">{name || initialName}</h3>
-                  </div>
-                </div>
-                <div className="px-7 pb-5">
-                  {/* integrations */}
-                  <div className="flex justify-between w-[110px] px-5"></div>
-
-                  {/* information */}
-                  <div className="pt-5 pl-3 flex flex-col gap-y-3">
-                    <p className="font-ContentT font-[500]">{description}</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
+          <Profile
+            name={user.name}
+            email={user.email}
+            customId={user.customId}
+            description={user.description}
+            dark_background={user.dark_background}
+            light_background={user.light_background}
+            image={user.image}
+            isVerifiedEmail={user.isVerifiedEmail}
+          />
         </TabsContent>
 
         {/* User privacy  */}
         <TabsContent value="privacy">
-          <div className="p-5 dark:bg-black rounded-xl overflow-hidden border-2 border-secondary grid justify-items-center lg:grid-cols-2 gap-x-8">
-            <section>
-              <h2 className="font-ContentT text-lg p-3 font-[600]">Profile privacy:</h2>
-              <div className="flex flex-col gap-y-6 mt-7 mb-3 font-ContentT">
-                <Privacy text="Who can see my profile?">
-                  <p>Nobody</p>
-                  <Switch />
-                  <p>Everyone</p>
-                </Privacy>
-                <Privacy text="Who can follow me?">
-                  <p>Nobody</p>
-                  <Switch />
-                  <p>Everyone</p>
-                </Privacy>
-              </div>
-            </section>
-            <section>
-              <h2 className="font-ContentT text-lg p-3 font-[600]">Services privacy:</h2>
-              <div className="flex flex-col gap-y-6 mt-7 mb-3 font-ContentT">
-                <Privacy text="Who can see my services?">
-                  <p>Nobody</p>
-                  <Switch />
-                  <p>Everyone</p>
-                </Privacy>
-              </div>
-            </section>
-          </div>
+          <Privacy />
         </TabsContent>
       </Tabs>
-    </div>
-  )
-}
-
-const Privacy = (props: { children: React.ReactNode; text: string }) => {
-  return (
-    <div className="flex flex-col gap-y-3">
-      <p className="underline">{props.text}</p>
-      <div className="flex gap-x-3">{props.children}</div>
-    </div>
-  )
-}
-
-const WithLabel = (props: { children: React.ReactNode; text: string; id: string }) => {
-  return (
-    <div>
-      <Label htmlFor={props.id} className="font-sans text-sm font-[600]">
-        {props.text.toUpperCase()}
-      </Label>
-      {props.children}
     </div>
   )
 }
