@@ -4,29 +4,41 @@
   "private": true,
   "exports": {
     ".": {
-      "types": "./dist/lib/index.d.ts",
-      "import": "./dist/lib/index.js"
+      "types": "./.tslib/index.d.ts",
+      "import": "./.tslib/index.js"
     },
     "./clients": {
-      "types": "./dist/lib/clients/index.d.ts",
-      "import": "./dist/lib/clients/index.js"
-    }
+      "types": "./.tslib/clients/index.d.ts",
+      "import": "./.tslib/clients/index.js"
+    },
+    "./generated/auth": {
+      "types": "./.ts/generated/auth/auth.clients.client.d.ts",
+      "import": "./.ts/generated/auth/auth.client.js"
+    },
+     "./generated/hashmap": {
+      "types": "./.ts/generated/hashmap/hashmap.clients.d.ts",
+      "import": "./.ts/generated/hashmap/hashmap.client.js"
+     },
+    "./generated/user": {
+      "types": "./.ts/generated/user/user.client.d.ts",
+      "import": "./.ts/generated/user/user.client.js"
+     }
   },
   "typesVersions": {
     "*": {
-      "clients": ["./dist/lib/clients/index.d.ts"]
+      "clients":   ["./.tslib/clients/index.d.ts"],
+      "generated/auth": ["./.ts/generated/auth/auth.client.d.ts"],
+      "generated/hashmap": ["./.ts/generated/hashmap/hashmap.client.d.ts"],
+      "generated/user": ["./.ts/generated/user/user.client.d.ts"]
     }
   },
-  "types": "./dist/lib/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "types": "./.tslib/index.d.ts",
+  "main": "./.tslib/index.js",
   "scripts": {
-    "generate:js": "tsc",
-    "generate:types": "tsc --declaration true --emitDeclarationOnly",
-    "ts": "bun run generate:js && bun run generate:types"
+    "ts": "tsc"
   },
   "dependencies": {
+    "@protobuf-ts/twirp-transport": "^2.9.1",
     "@protobuf-ts/plugin": "^2.9.1",
     "@protobuf-ts/runtime-rpc": "^2.9.1",
     "typescript": "^5.2.2"

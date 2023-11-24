@@ -9,8 +9,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"test:e2e": "playwright test",
-		"test:unit": "vitest",
-		"generate": "graphql-codegen"
+		"test:unit": "vitest"
 	},
 	"devDependencies": {
 		"@neoconfetti/svelte": "^1.0.0",

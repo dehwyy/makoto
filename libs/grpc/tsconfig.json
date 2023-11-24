@@ -1,12 +1,13 @@
 {
-  "extends": "../../tsconfig.json",
   "exclude": ["node_modules"],
-  "include": ["./generated/**/*.ts", "./lib/**/*.ts"],
+  "include": ["./lib/**/*.ts"],
   "compilerOptions": {
     "strict": false,
     "sourceMap": false,
-    "lib": ["ES2015.Proxy", "ES2015", "ES2015.Reflect"],
-    "outDir": "./dist",
+    "outDir": "./.tslib",
+    "target": "ESNext",
+    "lib": ["ES2015.Reflect", "ES2015.Proxy"],
+    "moduleResolution": "node",
     "skipLibCheck": true,
     "declaration": true,
   }

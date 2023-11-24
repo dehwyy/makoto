@@ -3,4 +3,9 @@
 members = [
   "libs/grpc",
   "libs/config",
+  "apps/user",
+  "libs/database",
+  "libs/logger"
 ]
+
+resolver = "2"

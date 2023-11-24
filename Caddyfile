@@ -4,9 +4,14 @@
 
 http://makoto.dehwyy {
 
-  handle_path /passport* {
-    rewrite * /
+  route /passport/* {
+    uri strip_prefix /passport
     reverse_proxy localhost:3001
   }
 
+  redir /passport /passport/
+
+  route {
+    reverse_proxy :3000
+  }
 }

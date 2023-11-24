@@ -6,7 +6,9 @@ use (
   ./apps/auth
   ./apps/hashmap
   ./libs/config
+  ./libs/lib
   ./libs/logger
   ./libs/database
   ./libs/grpc
+  ./tests/setupdb
 )

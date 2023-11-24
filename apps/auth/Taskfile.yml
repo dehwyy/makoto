@@ -1,0 +1,27 @@
+version: '3'
+
+dotenv: [.env.prod, .env]
+
+tasks:
+  tests:
+    deps: [twirp, utils, repository, pipes]
+    cmds:
+      - echo "@makoto/auth tests"
+
+  twirp:
+    cmds:
+      - cd internal/twirp && go test
+
+  utils:
+    env:
+      EMAIL_TEST_DISABLED: true
+    cmds:
+      - cd internal/utils && go test
+
+  repository:
+    cmds:
+      - cd internal/repository && go test
+
+  pipes:
+    cmds:
+      - cd internal/pipes && go test

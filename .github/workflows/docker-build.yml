@@ -1,0 +1,61 @@
+name: Docker Compose build
+
+on:
+  push:
+    branches:
+      - v2
+      - dev
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ '1.21.x' ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Pull image
+        run: |
+          docker pull postgres
+          docker pull nginx
+          docker pull dpage/pgadmin4
+          docker pull redis/redis-stack:latest
+
+      - name: Build libs for go
+        run: docker build -f Dockerfile.go.libs -t go/libs .
+      - name: Build libs for ts
+        run: docker build -f Dockerfile.ts.libs -t ts/libs .
+
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_JWT_SECRET: "not_a_secret"
+          envkey_DATABASE_DSN: ${{ vars.DATABASE_DSN }}
+          envkey_GATEWAY_REDIS_URL: ${{ vars.GATEWAY_REDIS_URL }}
+          envkey_TWIRP_GATEWAY_URL: ${{ vars.TWIRP_GATEWAY_URL }}
+          envkey_HTTP_GATEWAY_URL: ${{ vars.HTTP_GATEWAY_URL }}
+          envkey_AUTH_URL: ${{ vars.AUTH_URL }}
+          envkey_HASHMAP_URL: ${{ vars.HASHMAP_URL }}
+          envkey_USER_URL: ${{ vars.USER_URL }}
+          envkey_TWIRP_GATEWAY_PORT: ${{ vars.TWIRP_GATEWAY_PORT }}
+          envkey_HTTP_GATEWAY_PORT: ${{ vars.HTTP_GATEWAY_PORT }}
+          envkey_AUTH_PORT: ${{ vars.AUTH_PORT }}
+          envkey_HASHMAP_PORT: ${{ vars.HASHMAP_PORT }}
+          envkey_USER_PORT: ${{ vars.USER_PORT }}
+          envkey_MAIN_FRONTEND_PORT: ${{ vars.MAIN_FRONTEND_PORT }}
+          envkey_AUTH_FRONTEND_PORT: ${{ vars.AUTH_FRONTEND_PORT }}
+          envkey_HASHMAP_FRONTEND_PORT: ${{ vars.HASHMAP_FRONTEND_PORT }}
+          file_name: .env.prod
+          fail_on_empty: true
+          sort_keys: false
+
+      - name: Docker-compose build
+        run: docker-compose --env-file .env.prod build

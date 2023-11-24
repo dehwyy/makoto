@@ -1,3 +1,5 @@
+version: '3'
+
 services:
   twirp_gateway:
     build:
@@ -8,8 +10,6 @@ services:
     container_name: twirp_gateway
     env_file:
       - .env.prod
-    networks:
-      - makoto_network
 
   auth_backend:
     build:
@@ -21,10 +21,8 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
-    networks:
-      - makoto_db
-      - makoto_network
+      db:
+        condition: service_healthy
 
   hashmap_backend:
     build:
@@ -36,52 +34,96 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
-    networks:
-      - makoto_db
-      - makoto_network
+      db:
+        condition: service_healthy
+
+  main_frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/main/Dockerfile
+    ports:
+      - ${MAIN_FRONTEND_PORT}:3000
+    container_name: main_frontend
+    env_file:
+      - .env.prod
 
   auth_frontend:
     build:
       context: .
       dockerfile: ./frontend/auth/Dockerfile
     ports:
-      - ${AUTH_FRONTEND_PORT}:3001
+      - ${AUTH_FRONTEND_PORT}:3000
     container_name: auth_frontend
     env_file:
       - .env.prod
-    networks:
-      - makoto_network
 
   hashmap_frontend:
     build:
       context: .
       dockerfile: ./frontend/hashmap/Dockerfile
     ports:
-      - ${HASHMAP_FRONTEND_PORT}:3002
+      - ${HASHMAP_FRONTEND_PORT}:3000
     container_name: hashmap_frontend
     env_file:
       - .env.prod
-    networks:
-      - makoto_network
+
+  web-server:
+    image: nginx:latest
+    container_name: nginx-web-server
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./.nginx/ssl:/etc/nginx/ssl
+      - ./.nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - main_frontend
+      - auth_frontend
+      - hashmap_frontend
+
+
+  redis:
+    restart: unless-stopped
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
   db:
     restart: always
     image: postgres:latest
     container_name: makoto_postgres
     volumes:
-      - ./.database/postgresql:/var/lib/postgresql/makoto/
+      - makoto_db:/var/lib/postgresql/makoto/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
+      - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
     ports:
       - 5435:5432
-    networks:
-      - makoto_db
 
-networks:
-  makoto_network:
-    external: true
-    name: makoto_network
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "makoto.web3@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "postgres"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    logging:
+      driver: none
+
+volumes:
   makoto_db:
-    name: makoto_db
+  pgadmin_data:
+  redis_data:

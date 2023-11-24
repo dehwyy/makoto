@@ -17,8 +17,9 @@ const (
 )
 
 var (
-	USER_NOT_FOUND      = errors.New("User not found")
-	USER_WRONG_PASSWORD = errors.New("Wrong password")
+	UserNotFound      = errors.New("User not found")
+	UserWrongPassword = errors.New("Wrong password")
+	UserAlreadyExists = errors.New("User already exists")
 )
 
 type GetUserPayload struct {
@@ -60,6 +61,10 @@ func NewUserRepository(db *gorm.DB, l logger.Logger) *UserRepository {
 	}
 }
 
+// GetUserById retrieves a user by their ID or custom ID.
+//
+// It takes in a GetUserPayload object which contains the user ID or custom ID.
+// The function returns a user object of type UserData and an error object.
 func (u *UserRepository) GetUserById(user_payload GetUserPayload) (user *models.UserData, erorr error) {
 	if user_payload.Id != nil {
 		return user, u.db.Model(&models.UserData{}).Where("id = ?", *user_payload.Id).First(&user).Error
@@ -68,14 +73,32 @@ func (u *UserRepository) GetUserById(user_payload GetUserPayload) (user *models.
 	return user, u.db.Model(&models.UserData{}).Where("custom_id = ?", user_payload.CustomId).First(&user).Error
 }
 
+// GetUserByUsername retrieves a user from the UserRepository based on the given username.
+//
+// Parameters:
+// - username: a string representing the username of the user to retrieve.
+//
+// Returns:
+// - user: a pointer to a UserData struct representing the retrieved user.
+// - error: an error if there was an issue retrieving the user.
 func (u *UserRepository) GetUserByUsername(username string) (user *models.UserData, erorr error) {
 	return user, u.db.Model(&models.UserData{}).Where("username = ?", username).First(&user).Error
 }
 
+// GetUserByProviderId retrieves a user by their provider ID.
+//
+// provider_id: The provider ID of the user.
+// Returns:
+//
+//	user: The user with the specified provider ID.
+//	error: Any error that occurred during retrieval.
 func (u *UserRepository) GetUserByProviderId(provider_id string) (user *models.UserData, erorr error) {
 	return user, u.db.Model(&models.UserData{}).Where("provider_id = ?", provider_id).First(&user).Error
 }
 
+// CreateUser creates a new user in the UserRepository.
+//
+// It takes a CreateUserPayload as a parameter and returns an error.
 func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {
 	username := user_payload.Username
 
@@ -83,12 +106,16 @@ func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {
 	err := u.db.Model(&models.UserData{}).Where("username = ?", username).First(&found_user_by_username).Error
 
 	// if internal error => return it
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
-	// if gorm.ErrRecordNotFound => Ok => won't change username
-	// if user was found => Error would appear, but we have to change username (as it must be unique)
+	// if err == gorm.ErrRecordNotFound => Ok => won't change username
+	// if user was found ( err == nil ) => Error would appear, have to change username (as it must be unique) (non-local provider)
 	if err == nil {
+		// if provider == local and non-unique username -> throw error
+		if user_payload.Provider == ProviderLocal {
+			return UserAlreadyExists
+		}
 		username = fmt.Sprintf("%s_%s", username, string(user_payload.Provider)) // create new nickname. example: `dehwyy_github` or `dehwyy_google`
 	}
 
@@ -110,7 +137,14 @@ func (u *UserRepository) CreateUser(user_payload CreateUserPayload) error {
 	}).Error
 }
 
-func (u *UserRepository) ValidateUser(user_payload ValidateUserPayload) (id *uuid.UUID, err error) {
+// ValidateUser validates a user based on the given user payload.
+//
+// It takes a parameter of type ValidateUserPayload which represents the user payload
+// containing email, username, and user ID.
+//
+// It returns a pointer to a UUID and an error. The UUID represents the user's ID,
+// while the error indicates any validation errors that occurred during the process.
+func (u *UserRepository) ValidateUser(user_payload ValidateUserPayload) (id *uuid.UUID, username string, err error) {
 	var user_data models.UserData
 
 	if user_payload.Email != "" {
@@ -123,22 +157,48 @@ func (u *UserRepository) ValidateUser(user_payload ValidateUserPayload) (id *uui
 
 	// if username is equal to "" => user wasn't found as "" is a default string's value
 	if user_data.Username == "" {
-		return nil, USER_NOT_FOUND
+		return nil, "", UserNotFound
 	}
 
 	is_valid := u.hasher.Compare(user_payload.Password, user_data.Password)
 	if !is_valid {
-		return nil, USER_WRONG_PASSWORD
+		return nil, "", UserWrongPassword
 	}
 
-	return &user_data.ID, nil
+	return &user_data.ID, user_data.Username, nil
 
 }
 
+// VerifyUserEmail verifies the email of a user.
+//
+// Parameters:
+// - user_id: The UUID of the user.
+//
+// Returns:
+// - error: An error if the verification fails.
 func (u *UserRepository) VerifyUserEmail(user_id uuid.UUID) error {
 	return u.db.Model(&models.UserData{}).Where("id = ?", user_id).Update("is_verified", true).Error
 }
 
+// UpdateUserPassword updates the password of a user in the UserRepository.
+//
+// Parameters:
+// - user_id: The ID of the user.
+// - new_password: The new password for the user.
+//
+// Return type:
+// - error: An error if the update operation fails.
 func (u *UserRepository) UpdateUserPassword(user_id uuid.UUID, new_password string) error {
 	return u.db.Model(&models.UserData{}).Where("id = ?", user_id).Update("password", new_password).Error
+}
+
+// DeleteUser deletes a user from the repository.
+//
+// Parameters:
+// - user_id: The ID of the user to be deleted.
+//
+// Returns:
+// - error: An error if the deletion operation fails.
+func (u *UserRepository) DeleteUser(user_id uuid.UUID) error {
+	return u.db.Model(&models.UserData{}).Where("id = ?", user_id).Delete(&models.UserData{}).Error
 }

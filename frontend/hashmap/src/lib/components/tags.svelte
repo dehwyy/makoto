@@ -43,7 +43,7 @@
 				{#each $FilteredTags as tag}
 					<div
 						aria-hidden="true"
-						on:click={() => Tags.Toggle(tag.tagId, $TagsStore)}
+						on:click={() => Tags.Toggle(tag.text, $TagsStore)}
 						class="flex items-center w-full pl-3 pr-5 hover:bg-base-200 cursor-pointer option_wrapper">
 						<!-- Tag checkbox -->
 						<div class="h-[40px] w-[40px] grid place-items-center">

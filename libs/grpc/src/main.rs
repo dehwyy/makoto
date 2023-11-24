@@ -1,60 +1,75 @@
-use std::{fs, process::Command, time, thread, io::Read};
-fn main() {
-    const PATH_PROTOS: &str = "./protos";
-    const PATH_GENERATED: &str = "./generated";
-    const PATH_DIST: &str = "./dist";
+use std::{env, process::Command, io, fs, path::Path};
+//
+fn main() -> io::Result<()> {
+    const TWIRP_COMPILE: &str = "TWIRP_GO_COMPILE";
+    const GRPC_GO_COMPILE: &str = "GRPC_GO_COMPILE";
+    const TS_COMPILE: &str = "TWIRP_TS_COMPILE";
 
-    // 0. prebuild : rm files
-    let res = fs::remove_dir_all(PATH_GENERATED);
-    match res {
-        Ok(_) => println!("\n1.1.Removed old generated files"),
-        Err(_) => println!("\n1.1.No /generated dir to remove"),
-    };
+    if env::var(TWIRP_COMPILE).is_ok() {
+        let protos = vec!("auth", "general", "hashmap", "user");
+        let out = "generated";
+        let get_command = | out: String, name: &str | {
+            format!("protoc --go_out={0} --experimental_allow_proto3_optional --twirp_out={0} --go_opt=paths=source_relative --twirp_opt=paths=source_relative --proto_path=protos {1}.proto",
+            out, name)
+        };
 
-    let res = fs::remove_dir_all(PATH_DIST);
-    match res {
-        Ok(_) => println!("1.2.Removed old dist files\n"),
-        Err(_) => println!("1.2.No /dist dir to remove\n"),
-    };
+        compile(protos, out, get_command)?;
+    }
 
-    // 1. build
-    fs::read_dir(PATH_PROTOS).unwrap().for_each(|e| {
-        let filename_with_ext = &e.unwrap().file_name().to_str().unwrap().to_string();
-        let filename = &filename_with_ext.split(".").next().unwrap().to_string();
+    if env::var(TS_COMPILE).is_ok() {
+        let protos = vec!("auth", "general", "hashmap", "user");
+        let out = ".ts/generated";
+        let get_command = |out: String, name: &str| {
+            format!("npx protoc --ts_out={0} --experimental_allow_proto3_optional --ts_opt=generate_dependencies,eslint_disable,ts_nocheck,output_javascript --proto_path protos {1}.proto",
+            out, name)
+        };
 
-        // create appropirate dirs
-        fs::create_dir_all(PATH_GENERATED.to_owned() + "/" + filename).unwrap();
+        compile(protos, out, get_command)?;
+    }
 
-        let go_args = format!(
-            "--go_out=./generated/{0} --experimental_allow_proto3_optional --twirp_out=./generated/{0} --go_opt=paths=source_relative --twirp_opt=paths=source_relative --proto_path=./protos {1}",
-            filename, filename_with_ext
-        );
+    if env::var(GRPC_GO_COMPILE).is_ok() {
+        let protos = vec!("general", "user");
+        let out = "generated";
+        let get_command = | out: String, name: &str | {
+            format!("protoc --go_out={0} --experimental_allow_proto3_optional --go_opt=paths=source_relative --go-grpc_out={0} --go-grpc_opt=paths=source_relative --proto_path=protos {1}.proto",
+            out, name)
+        };
 
-        let ts_args = format!(
-            "protoc --ts_out=./generated/{0} --experimental_allow_proto3_optional --ts_opt=generate_dependencies,eslint_disable --proto_path ./protos {1}",
-            filename, filename_with_ext
-        );
+        compile(protos, out, get_command)?;
+    }
 
-        Command::new("protoc").args(go_args.split(" ").collect::<Vec<&str>>()).spawn().unwrap();
-        Command::new("npx").args(ts_args.split(" ").collect::<Vec<&str>>()).spawn().unwrap();
-    });
+    Ok(())
+}
 
-    // 2. post-build : transpile .ts -> .js and generate .d.ts
-    thread::sleep(time::Duration::from_secs(5));
+fn compile(
+    protos: Vec<&str>,
+    out: &str,
+    get_command: impl Fn(String, &str) -> String
+    ) -> io::Result<()> {
+    let out_dir = Path::new(out);
 
+    protos.iter().for_each(|name|
+        {
+            let out_dir = create_dir(&out_dir, name).unwrap();
+            run_command(&get_command(out_dir, name)).unwrap();
+        }
+    );
 
-    let mut file = fs::File::options().write(true).read(true).append(true).open("./generated/auth/auth.ts").unwrap();
+    Ok(())
+}
 
-    let mut buf = String::new();
-    file.read_to_string(&mut buf).unwrap();
-    fs::remove_file("generated/auth/auth.ts").unwrap();
-    fs::write("generated/auth/auth.ts", "//@ts-nocheck\n".to_string() + &buf).unwrap();
+fn create_dir(path: &Path, name: &str) -> io::Result<String> {
+    let new_dir = path.join(name);
 
+    fs::create_dir_all(&new_dir)?;
+    Ok(new_dir.to_str().unwrap().to_string())
+}
 
-    Command::new("npx").arg("tsc").spawn().unwrap(); // that's all as tsc (via typescript config) would do everything by itself
+fn run_command(command: &String) -> io::Result<()> {
+    Command::new(command.split(" ").next().unwrap())
+    .args(&mut command.split(" ").collect::<Vec<&str>>()[1..])
+    .spawn().unwrap()
+    .wait()?;
 
-
-    println!("2.Successfully generated grpc files!\n");
-
-    thread::sleep(time::Duration::from_secs(7));
+    Ok(())
 }

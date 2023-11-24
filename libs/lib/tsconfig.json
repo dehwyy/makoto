@@ -1,11 +1,13 @@
 {
-  "extends": "../../tsconfig.json",
   "exclude": ["node_modules"],
   "include": ["./src/**/*.ts"],
   "compilerOptions": {
     "sourceMap": false,
     "outDir": "./dist",
     "skipLibCheck": true,
-    "declaration": true
+    "declaration": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"]
   }
 }

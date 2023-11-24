@@ -16,7 +16,15 @@ service HashmapRPC {
 message GetItemsPayload {
   string user_id = 1;
   int32 part = 2; // default should be 0;
-  string keyword = 3; // query
+  int32 part_size = 3;
+  string query = 4;
+
+  message FilterTags {
+    string text = 1;
+    bool include = 2;
+  } // if include -> selected, have to be on item, else -> should not appear in item's tags
+
+  repeated FilterTags tags = 5;
 }
 
 message GetItemsResponse {

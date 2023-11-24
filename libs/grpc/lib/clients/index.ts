@@ -1,9 +1,10 @@
 import { RpcStatus } from "@protobuf-ts/runtime-rpc"
 import {AuthClient as AC} from "./auth"
 import  {HashmapClient as HS} from "./hashmap"
+import {UserInfoClient as UIC} from "./user"
 import {MakotoCookies, MakotoCookiesInterface as Cookies} from "@makoto/lib/cookies"
 
-interface TwirpClient {
+interface TwirpClientFake {
   methods: {
     localName: string
   }[]
@@ -19,7 +20,7 @@ interface TwirpResponse {
   }
 }
 
-const CreateSafeClient = <T extends TwirpClient>(client: T, cookies: Cookies) => new Proxy(client, {
+const CreateSafeClient = <T extends TwirpClientFake>(client: T, cookies: Cookies) => new Proxy(client, {
   get: (target, prop: string, rec) => {
     // if this is a RpcServiceMethod
     if (target["methods"].map(m => m.localName).includes(prop)) {
@@ -50,13 +51,6 @@ const CreateSafeClient = <T extends TwirpClient>(client: T, cookies: Cookies) =>
                 MakotoCookies.setGlobal(cookies, "token", token)
               }
 
-              if (response.requestHeaders?.Authorization && !token.length) {
-                MakotoCookies.delete(cookies, "token")
-              }
-
-
-
-
              return  new_response
             } catch (e) {
 
@@ -80,7 +74,8 @@ const CreateSafeClient = <T extends TwirpClient>(client: T, cookies: Cookies) =>
 
 const TwirpClient = (cookies: Cookies) => ({
   Authorization: CreateSafeClient(AC, cookies),
-  Hashmap: CreateSafeClient(HS, cookies)
+  Hashmap: CreateSafeClient(HS, cookies),
+  UserInfo: CreateSafeClient(UIC, cookies)
 })
 
 export {TwirpClient as SafeTwirpClient}

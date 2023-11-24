@@ -85,7 +85,7 @@ func (o *OAuth2) createTokenByCode(code string) *oauth2lib.Token {
 		o.l.Errorf("token exchange: %v", err)
 	}
 
-	o.l.Debugf("TOKEN EXCHANGE: %v", token)
+	o.l.Debugf("created token by code: %v", token)
 
 	return token
 }

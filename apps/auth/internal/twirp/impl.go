@@ -46,8 +46,16 @@ func NewTwirpServer(db *gorm.DB, config *config.Config, l logger.Logger) auth.Tw
 	})
 }
 
-// Only for credentials
+// SignUp creates a new user account and returns an authentication response. (credentials only)
 func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.AuthResponse, error) {
+	if req.Username == "" {
+		return nil, tw.InvalidArgumentError("username", "username cannot be empty")
+	} else if req.Email == "" {
+		return nil, tw.InvalidArgumentError("email", "email cannot be empty")
+	} else if req.Password == "" {
+		return nil, tw.InvalidArgumentError("password", "password cannot be empty")
+	}
+
 	user_uuid := uuid.New()
 
 	if err := s.user_repository.CreateUser(repository.CreateUserPayload{
@@ -59,8 +67,14 @@ func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.Aut
 		Password: req.Password,
 		Provider: repository.ProviderLocal,
 	}); err != nil {
+
 		s.l.Errorf("create user: %v", err)
-		return nil, tw.InternalError(err.Error())
+
+		if errors.Is(err, repository.UserAlreadyExists) {
+			return nil, tw.InvalidArgumentError("username", err.Error())
+		} else {
+			return nil, tw.InternalError(err.Error())
+		}
 	}
 
 	token, err := s.token_repository.CreateToken(user_uuid, req.Username)
@@ -70,19 +84,29 @@ func (s *Server) SignUp(ctx context.Context, req *auth.SignUpRequest) (*auth.Aut
 	}
 
 	return &auth.AuthResponse{
-		Token:    token,
-		Username: req.Username,
-		UserId:   user_uuid.String(),
+		Token:     token,
+		Username:  req.Username,
+		UserId:    user_uuid.String(),
+		IsCreated: true,
 	}, nil
 }
 
+// SignIn authenticates a user and returns an authentication response.
+//
+// Parameters:
+// - ctx: the context.Context object for handling deadlines, cancellation signals, and other request-scoped values.
+// - req: a pointer to the auth.SignInRequest object containing the user's sign-in request.
+//
+// Returns:
+// - An auth.AuthResponse pointer that contains the authentication response.
+// - An error object if any error occurs during the authentication process.
 func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.AuthResponse, error) {
 
 	token := req.GetToken()
 	var found_token *models.UserToken
 	var found_user *models.UserData
 
-	// ! if ONLY authorization header exists -> try to auth via token
+	// token authorization
 	if token != "" && req.GetOauth2() == nil && req.GetCredentials() == nil {
 
 		// try to find this token in db
@@ -114,9 +138,10 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			}
 
 			return &auth.AuthResponse{
-				Token:    token,
-				Username: user.Username,
-				UserId:   user.ID.String(),
+				Token:     token,
+				Username:  user.Username,
+				UserId:    user.ID.String(),
+				IsCreated: false,
 			}, nil
 		}
 
@@ -185,9 +210,10 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 			}
 
 			return &auth.AuthResponse{
-				Token:    token_db.AccessToken,
-				Username: response.Username,
-				UserId:   user_uuid.String(),
+				Token:     token_db.AccessToken,
+				Username:  response.Username,
+				UserId:    user_uuid.String(),
+				IsCreated: true,
 			}, err
 		}
 
@@ -199,16 +225,17 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		}
 
 		return &auth.AuthResponse{
-			Token:    token_db.AccessToken,
-			Username: found_user.Username,
-			UserId:   found_user.ID.String(),
+			Token:     token_db.AccessToken,
+			Username:  found_user.Username,
+			UserId:    found_user.ID.String(),
+			IsCreated: false,
 		}, nil
 	}
 
 	// ! By credentials
 	credentials := req.GetCredentials()
 
-	userId, err := s.user_repository.ValidateUser(repository.ValidateUserPayload{
+	userId, username, err := s.user_repository.ValidateUser(repository.ValidateUserPayload{
 		// ? either Username or Email would/should be provided
 		Username: credentials.GetUsername(),
 		Email:    credentials.GetEmail(),
@@ -216,10 +243,10 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 		Password: credentials.GetPassword(),
 	})
 
-	if errors.Is(err, repository.USER_NOT_FOUND) {
+	if errors.Is(err, repository.UserNotFound) {
 		return nil, tw.NewError(tw.Unauthenticated, "user with provided credentials wasn't found")
 
-	} else if errors.Is(err, repository.USER_WRONG_PASSWORD) {
+	} else if errors.Is(err, repository.UserWrongPassword) {
 		return nil, tw.NewError(tw.Unauthenticated, "wrong password")
 
 	} // would not return unnamed error => no simple check for nil
@@ -230,12 +257,17 @@ func (s *Server) SignIn(ctx context.Context, req *auth.SignInRequest) (*auth.Aut
 	}
 
 	return &auth.AuthResponse{
-		Token:    token,
-		Username: credentials.GetUsername(),
-		UserId:   userId.String(),
+		Token:     token,
+		Username:  username,
+		UserId:    userId.String(),
+		IsCreated: false,
 	}, nil
 }
 
+// IsUniqueUsername checks if a username is unique.
+//
+// Takes a context.Context and an *auth.IsUniqueUsernamePayload as parameters.
+// Returns an *auth.IsUnique and an error.
 func (s *Server) IsUniqueUsername(ctx context.Context, req *auth.IsUniqueUsernamePayload) (*auth.IsUnique, error) {
 	_, err := s.user_repository.GetUserByUsername(req.Username)
 	// if user wasn't found -> it will return error (instanceof gorm.ErrRecordNotFound)
@@ -248,9 +280,14 @@ func (s *Server) IsUniqueUsername(ctx context.Context, req *auth.IsUniqueUsernam
 		return nil, tw.InternalError(err.Error())
 	}
 
-	return nil, nil
+	return &auth.IsUnique{IsUnique: false}, nil
 }
 
+// TODO: untested yet
+// VerifyUserEmail verifies the user email.
+//
+// It takes a context.Context and a *general.UserId as parameters.
+// It returns a *general.IsSuccess and an error.
 func (s *Server) VerifyUserEmail(ctx context.Context, req *general.UserId) (*general.IsSuccess, error) {
 	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
@@ -268,17 +305,17 @@ func (s *Server) VerifyUserEmail(ctx context.Context, req *general.UserId) (*gen
 func (s *Server) ChangePassword(ctx context.Context, req *auth.ChangePasswordPayload) (*general.IsSuccess, error) {
 	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
-		return nil, tw.InternalError(err.Error())
+		return nil, tw.InvalidArgumentError("invalid userId", err.Error())
 	}
 
-	_, err = s.user_repository.ValidateUser(repository.ValidateUserPayload{
+	_, _, err = s.user_repository.ValidateUser(repository.ValidateUserPayload{
 		UserId:   user_id,
 		Password: req.OldPassword,
 	})
 	if err != nil {
-		if errors.Is(err, repository.USER_NOT_FOUND) {
+		if errors.Is(err, repository.UserNotFound) {
 			return nil, tw.NewError(tw.NotFound, "user with provided credentials wasn't found")
-		} else if errors.Is(err, repository.USER_WRONG_PASSWORD) {
+		} else if errors.Is(err, repository.UserWrongPassword) {
 			return nil, tw.NewError(tw.Unauthenticated, "wrong password")
 		}
 	}
@@ -295,11 +332,14 @@ func (s *Server) ChangePassword(ctx context.Context, req *auth.ChangePasswordPay
 func (s *Server) Logout(ctx context.Context, req *general.UserId) (*general.IsSuccess, error) {
 	user_id, err := uuid.Parse(req.UserId)
 	if err != nil {
-		return nil, tw.InternalError(err.Error())
+		return nil, tw.InvalidArgumentError("invalid userId", err.Error())
 	}
 
 	err = s.token_repository.DeleteTokenByUserId(user_id)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, tw.NotFoundError("token with provided userId wasn't found")
+		}
 		return nil, tw.InternalError(err.Error())
 	}
 

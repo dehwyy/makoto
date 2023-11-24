@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/dehwyy/makoto/apps/gateway/services"
+	"github.com/dehwyy/makoto/apps/gateway/twirp/internal/middleware"
 	"github.com/dehwyy/makoto/libs/grpc/generated/general"
 	"github.com/dehwyy/makoto/libs/grpc/generated/hashmap"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -13,7 +14,7 @@ import (
 type Empty = empty.Empty
 
 type TwirpHashmapService struct {
-	ReadAuthorizationData func(context.Context) (userId, token string)
+	ReadAuthorizationData func(context.Context) middleware.AuthCredentialsGranted
 
 	client hashmap.HashmapRPC
 }
@@ -29,16 +30,10 @@ func NewHashmapService(hashmap_service_url string, args TwirpHashmapService) has
 }
 
 func (s *TwirpHashmapService) GetItems(ctx context.Context, req *hashmap.GetItemsPayload) (*hashmap.GetItemsResponse, error) {
+	userId := s.ReadAuthorizationData(ctx).UserId()
+	req.UserId = userId
 
-	userId, _ := s.ReadAuthorizationData(ctx)
-
-	new_req := &hashmap.GetItemsPayload{
-		UserId:  userId,
-		Part:    req.Part,
-		Keyword: req.Keyword,
-	}
-
-	response, err := s.client.GetItems(ctx, new_req)
+	response, err := s.client.GetItems(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +43,7 @@ func (s *TwirpHashmapService) GetItems(ctx context.Context, req *hashmap.GetItem
 
 func (s *TwirpHashmapService) GetTags(ctx context.Context, req *general.UserId) (*hashmap.GetTagsResponse, error) {
 
-	userId, _ := s.ReadAuthorizationData(ctx)
+	userId := s.ReadAuthorizationData(ctx).UserId()
 
 	new_req := &general.UserId{
 		UserId: userId,
@@ -63,7 +58,7 @@ func (s *TwirpHashmapService) GetTags(ctx context.Context, req *general.UserId) 
 }
 
 func (s *TwirpHashmapService) CreateItem(ctx context.Context, req *hashmap.CreateItemPayload) (*hashmap.CreateItemResponse, error) {
-	userId, _ := s.ReadAuthorizationData(ctx)
+	userId := s.ReadAuthorizationData(ctx).UserId()
 
 	new_req := &hashmap.CreateItemPayload{
 		UserId: userId,
@@ -83,7 +78,7 @@ func (s *TwirpHashmapService) CreateItem(ctx context.Context, req *hashmap.Creat
 
 func (s *TwirpHashmapService) RemoveItem(ctx context.Context, req *hashmap.RemoveItemPayload) (*general.IsSuccess, error) {
 
-	userId, _ := s.ReadAuthorizationData(ctx)
+	userId := s.ReadAuthorizationData(ctx).UserId()
 
 	new_req := &hashmap.RemoveItemPayload{
 		UserId: userId,
@@ -100,7 +95,7 @@ func (s *TwirpHashmapService) RemoveItem(ctx context.Context, req *hashmap.Remov
 
 func (s *TwirpHashmapService) EditItem(ctx context.Context, req *hashmap.EditItemPayload) (*general.IsSuccess, error) {
 
-	userId, _ := s.ReadAuthorizationData(ctx)
+	userId := s.ReadAuthorizationData(ctx).UserId()
 
 	new_req := &hashmap.EditItemPayload{
 		UserId: userId,

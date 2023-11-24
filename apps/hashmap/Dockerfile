@@ -1,51 +1,17 @@
-FROM oven/bun as bun
+FROM golang:1.21.2-alpine
 
-# node_modules
-RUN mkdir -p /temp/dev
-COPY package.json /temp/dev
-RUN mkdir -p /temp/dev/frontend
-COPY libs /temp/dev/libs
-RUN cd /temp/dev && bun install
+WORKDIR /app
 
-# app build
-FROM node:18-alpine as builder
+COPY --from=go/libs /app/libs libs
+COPY apps/hashmap/go* apps/hashmap/
 
-# deps
-RUN apk add build-base curl libc6-compat g++ git protoc
+RUN go work init ./libs/config ./libs/logger ./libs/grpc ./libs/database ./libs/lib ./apps/hashmap
 
-# cargo install
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-ENV PATH="$HOME/.cargo/bin:${PATH}"
-ENV PATH="/root/.cargo/bin:${PATH}"
+WORKDIR /app/apps/hashmap
+RUN go mod download
 
-# go
-COPY --from=golang:1.21.0-alpine /usr/local/go/ /usr/local/go/
-ENV PATH="$PATH:/usr/local/go/bin"
-ENV PATH="$PATH:/root/go/bin"
+WORKDIR /app
+COPY apps/hashmap apps/hashmap/
 
-#
-WORKDIR /src
-
-# install deps for gprc(twirp gen)
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1  && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0 && \
-    go install github.com/twitchtv/twirp/protoc-gen-twirp@latest && \
-    npm i -g pnpm
-
-# copy files
-COPY --from=bun /temp/dev/node_modules ./node_modules
-COPY ./apps/hashmap/go.mod ./apps/hashmap/go.sum ./apps/hashmap/
-COPY ./apps/hashmap ./apps/hashmap
-COPY Cargo.toml .
-COPY libs libs
-
-# generate files go/ts
-RUN cd libs/grpc && cargo run
-
-# create go workspace only with necessary packages
-RUN go work init ./apps/hashmap ./libs/database ./libs/config ./libs/logger ./libs/grpc
-
-
-RUN  go build -o hashmap_backend ./apps/hashmap/cmd
-
-CMD ["./hashmap_backend"]
+RUN  go build -o hashmap ./apps/hashmap/cmd
+CMD ["./hashmap"]
