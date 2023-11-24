@@ -21,11 +21,12 @@ type UserData struct {
 	Email      string       `gorm:"not null"`
 	IsVerified *bool        `gorm:"default:false"`           // only for user.provider == local
 	CustomId   string       `gorm:"not null; unique; index"` // by default, CustomId == ProviderId
-	Picture    string       `gorm:"size:2048"`               // would be data64 or url
+	Picture    string       `gorm:"size:2048"`               // ! Deprecated -> user_info table would be in use instead
 	Provider   AuthProvider `gorm:"default:local"`           // "local" | "google" | "github" | "discord"
 	Role       string       `gorm:"default:user"`            // "user" | "admin"
 	ProviderId string       // Id specified in OAuthProvider, if Provider==local -> same as ID
 	Password   string
-	Token      UserToken `gorm:"foreignKey:UserId;references:ID"`
-	CreatedAt  time.Time
+	// HashPassword string
+	Token     UserToken `gorm:"foreignKey:UserId;references:ID"`
+	CreatedAt time.Time
 }

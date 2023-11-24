@@ -7,11 +7,13 @@ interface HandlerProps {
 
 export class HandleAuth {
 	static Handle({ status }: HandlerProps): Response | never {
-		const { code, detail } = status || { code: '500', detail: 'Internal Server Error' }
+		const { code, detail } = status || { code: 'Error', detail: 'Internal Server Error' }
 
-		if (code.startsWith('5') || code.startsWith('4')) {
+		console.log(`code: ${code} with detail ${detail}`)
+
+		if (code != 'OK') {
 			return new Response(null, {
-				status: Number(code),
+				status: 500,
 				statusText: detail.split('\n')[0] || 'Internal Server Error'
 			})
 		}
