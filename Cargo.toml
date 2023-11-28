@@ -5,7 +5,8 @@ members = [
   "libs/config",
   "apps/user",
   "libs/database",
-  "libs/logger"
+  "libs/logger",
+   "apps/service-discovery"
 ]
 
 resolver = "2"

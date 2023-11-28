@@ -1,0 +1,27 @@
+[package]
+name = "service-discovery"
+version = "0.1.0"
+authors = ["dehwyy makoto.web3@gmail.com"]
+edition = "2018"
+
+[lib]
+name = "wasm"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "service-discovery"
+path = "src/main.rs"
+
+[dependencies]
+wasm-bindgen = "0.2.84"
+async-nats = {version = "0.33.0", features = ["service"]}
+tokio = {version = "1.34.0", features = ["macros", "rt-multi-thread"]}
+futures = { version = "0.3.28", default-features = false, features = ["std"] }
+config = {path = "../../libs/config"}
+logger = {path = "../../libs/logger"}
+redis = {version = "0.23.3", features=["tokio-comp"]}
+bytes = "1.5.0"
+
+[profile.release]
+opt-level = "s"
