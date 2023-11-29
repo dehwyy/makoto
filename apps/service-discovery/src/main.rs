@@ -1,28 +1,28 @@
-use std::{time::Duration, io};
+mod data;
 
-use async_nats::jetstream::{stream::{Config, RetentionPolicy}, consumer::{self, DeliverPolicy}, message, Message as NatsJetStreamMessage};
+use std::time::Duration;
+
+use async_nats::jetstream::{stream::{Config, RetentionPolicy}, consumer, Message as NatsJetStreamMessage};
 use futures::StreamExt;
-use bytes::Bytes;
-use config::{constants::Nats as NatsConfig, ConfigRead, Config as EnvConfig};
+use config::constants::{nats as nats_const, redis as redis_const};
 use logger::info;
 extern crate redis;
 use redis::{Connection as RedisConnection, Commands};
+use data::data::DashboardData;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  let nats_vars = NatsConfig::new();
-  let config = EnvConfig::new();
-  logger::Logger::init();
+  logger::Logger::init().unwrap();
 
   // make a connection to NATS
-  let client = async_nats::connect(nats_vars.server_default).await?;
+  let client = async_nats::connect(nats_const::SERVER_DEFAULT).await?;
 
   // get JetStreram context using connection
   let js = async_nats::jetstream::new(client);
 
   // create or get JetStream
   let stream: async_nats::jetstream::stream::Stream = js.get_or_create_stream(Config {
-    name: nats_vars.js_service_discovery,
+    name: nats_const::JS_SERVICE_DISCOVERY.to_string(),
     description: Some("service discovery jetstream".to_string()),
     subjects: vec!("discovery.*".to_string()),
     max_age: Duration::from_secs(60),
@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
   // Create or get JetStreamConsumer
   let consumer = stream.get_or_create_consumer("discovery-consumer",consumer::pull::Config {
-    durable_name: Some(nats_vars.consumer_discovery),
+    durable_name: Some(nats_const::CONSUMER_DISCOVERY.to_string()),
     description: Some("service discovery consumer".to_string()),
     ack_policy: consumer::AckPolicy::Explicit, // default
     ..Default::default()
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
   // messages as Stream
   let mut messages = consumer.messages().await?;
 
-  let redis_client = redis::Client::open(config.redis_base_url)?;
+  let redis_client = redis::Client::open(redis_const::SERVER_DEFAULT)?;
   let mut redis_connection = redis_client.get_connection()?;
 
 
@@ -52,14 +52,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     message.ack().await?;
 
 
-    // discovery.register || discovery.unregister
+    // discovery.reg || discovery.unreg
     let message_subject = message.subject.split(".").nth(1).unwrap_or_default();
 
     println!("message subject {}", message_subject);
 
     match message_subject {
-      "reg" => handle_register(message, &mut redis_connection),
-      "unreg" => handle_unregister(message, &mut redis_connection),
+      "reg" => {
+        match handle_register(message, &mut redis_connection) {
+          Ok(_) => info!("successfully registered service"),
+          Err(err) => info!("register service: {}", err)
+        }
+      },
+      "unreg" => {
+        match handle_unregister(message, &mut redis_connection) {
+          Ok(_) => info!("successfully unregistered service"),
+          Err(err) => info!("unregister service: {}", err)
+        }
+      },
       _ => info!("wrong message subject {subject}", subject=message_subject)
     };
 
@@ -70,53 +80,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
   Ok(())
 }
 
-fn handle_register(message: NatsJetStreamMessage, redis_connection: &mut RedisConnection) {
+fn handle_register(message: NatsJetStreamMessage, redis_connection: &mut RedisConnection) -> makoto::Result<()> {
 
-  let (name, address) = match parse_nats_keyvalue_message(&message.payload) {
-    Ok(v) => v,
-    Err(e) => {
-      info!("error occuried while parsing nats message {}", e.to_string());
-      return;
-    }
-  };
+  let (name, address) = makoto::nats::MessageParser::key_value(&message.payload)?;
 
-  println!("name and address {} {}", name, address);
+  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, &address)?;
+  DashboardData::insert(name.clone(), address.clone(), "29.11.2023".to_string())?;
 
-  match redis_connection.set::<_, _, ()>(&name, &address) {
-    Ok(_) => {
-      info!("Successfully set: {name} {address}", name=name, address=address);
-    },
-    Err(e) => {
-      info!("Error occuried: {e}");
-    }
-  };
+  Ok(())
 }
 
-fn handle_unregister(message: NatsJetStreamMessage, redis_connection: &mut RedisConnection ) {
+fn handle_unregister(message: NatsJetStreamMessage, redis_connection: &mut RedisConnection ) -> makoto::Result<()> {
 
-  let name = match String::from_utf8(message.payload.to_vec()) {
-    Ok(v) => v,
-    Err(e) => {
-      info!("cannot parse message payload {}", e.to_string());
-      return;
-    }
-  };
+  let name = makoto::nats::MessageParser::plain(&message.payload)?;
 
-  match redis_connection.set::<_, _, ()>(&name, "") {
-    Ok(_) => {
-      info!("set empty value for {}", name);
-    },
-    Err(e) => {
-      info!("Error occuried: {e}");
-    }
-  };
-}
+  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, "")?;
+  DashboardData::insert(name.clone(), "".to_string(), "30.11.2023".to_string())?;
 
-fn parse_nats_keyvalue_message(message_payload: &Bytes) -> Result<(String, String), Box<dyn std::error::Error>> {
-  let message_payload = String::from_utf8(message_payload.to_vec())?;
-
-  match message_payload.split_once(";") {
-    Some(v) => Ok((v.0.to_string(), v.1.to_string())),
-    None => Err(Box::new(io::Error::other("cannot parse message_payload")))
-  }
+  Ok(())
 }
