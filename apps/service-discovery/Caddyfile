@@ -2,6 +2,15 @@
   auto_https off
 }
 
+
+
+
+
 http://localhost:2999 {
+  @static {
+    file
+    path *.ico *.css *.js *.gif *.webp *.avif *.jpg *.jpeg *.png *.svg *.woff *.woff2
+  }
+  header @static Cache-Control no-cache
   file_server
 }

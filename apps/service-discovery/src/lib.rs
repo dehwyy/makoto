@@ -3,9 +3,9 @@ mod node;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::{RequestMode, Window, MouseEvent, window};
+use web_sys::{RequestMode, MouseEvent, window};
 use data::data::DashboardDataJson;
-use node::fabric::Fabric as NodeFabric;
+use node::fabric::{Fabric as NodeFabric, CreatePayload as NodeCreatePayload};
 use makoto::wasm::{Fetcher, convert_js_value, FetchMethod};
 
 #[wasm_bindgen]
@@ -34,6 +34,7 @@ impl Dashboard {
 
     }
 
+    // setup listener (once)
     fn setup_listeners(&self) {
         let document = window().unwrap().document().unwrap();
 
@@ -63,14 +64,18 @@ impl Dashboard {
         }
     }
 
+    /// fetches file content as json using window.fetch
     async fn get_file_content() -> Result<String, JsValue> {
-        // TODO: add cache disable
         let fetcher = Fetcher::new(FetchMethod::GET, RequestMode::SameOrigin, "./data.json")?;
+
+        // attach headers
         fetcher.add_header("Content-Type", "application/json")?;
+        fetcher.add_header("Cache-Control", "no-store")?;
+
         Ok(fetcher.fetch_json_as_string(window().unwrap()).await?)
     }
 
-    /// upddates (html_state, html_events) in self
+    /// return new html by specified `view`
     async fn get_updated_html_by_view(view: DashboardView) -> makoto::Result<String> {
         let file_as_string = convert_js_value(Self::get_file_content().await)?;
 
@@ -96,10 +101,7 @@ impl Dashboard {
         }
     }
 
-    fn remove_all_records(&self) {
-        todo!()
-    }
-
+    /// set view and updates html using document.querySelector('selector').innerHtml = $var
     async fn set_view(view: DashboardView) {
         let document = window().unwrap().document().unwrap();
 
@@ -115,7 +117,11 @@ impl Dashboard {
             DashboardView::Events => vec!("Events", "Name", "Value", "Timestamp")
         };
         headers.iter().for_each(| header | {
-            header_nodes.push(NodeFabric::new_headers_table_node(&header.to_string()))
+            header_nodes.push(NodeFabric::create_node(NodeCreatePayload {
+                tag: "th",
+                attrs: "scope='col'",
+                inner: &header.to_string()
+            }))
         });
 
         // set Html
@@ -126,7 +132,6 @@ impl Dashboard {
 
 #[wasm_bindgen]
 pub async fn run() -> Result<(), JsValue> {
-
     //
     Dashboard::new().await.expect("cannot create Dashboard");
     Ok(())

@@ -1,6 +1,6 @@
 mod data;
 
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use async_nats::jetstream::{stream::{Config, RetentionPolicy}, consumer, Message as NatsJetStreamMessage};
 use futures::StreamExt;
@@ -85,7 +85,7 @@ fn handle_register(message: NatsJetStreamMessage, redis_connection: &mut RedisCo
   let (name, address) = makoto::nats::MessageParser::key_value(&message.payload)?;
 
   redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, &address)?;
-  DashboardData::insert(name.clone(), address.clone(), "29.11.2023".to_string())?;
+  DashboardData::insert(name.clone(), address.clone(), get_time_now())?;
 
   Ok(())
 }
@@ -95,7 +95,11 @@ fn handle_unregister(message: NatsJetStreamMessage, redis_connection: &mut Redis
   let name = makoto::nats::MessageParser::plain(&message.payload)?;
 
   redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, "")?;
-  DashboardData::insert(name.clone(), "".to_string(), "30.11.2023".to_string())?;
+  DashboardData::insert(name.clone(), "".to_string(), get_time_now())?;
 
   Ok(())
+}
+
+fn get_time_now() -> String {
+  chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()
 }

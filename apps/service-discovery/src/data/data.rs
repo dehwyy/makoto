@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{io::prelude::*, fs::File, collections::HashMap};
+use std::{io::prelude::*, fs::File, collections::BTreeMap};
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct DashboardDataJson {
@@ -41,15 +41,15 @@ impl DashboardData {
     // read file as string and parse it to struct
     let file_content = DashboardDataJson::new(DashboardData::read_file_as_string()?)?;
 
-    // init emtpy hashmap
-    let mut file_state: HashMap<String, ServiceAddress> = HashMap::new();
+    // init emtpy binary tree map (sorted hashmap)
+    let mut file_state: BTreeMap<String, ServiceAddress> = BTreeMap::new();
 
     // store existing value to hashmap
     for val in file_content.state.iter() {
       let _ = file_state.insert(val.name.clone(),
         ServiceAddress {
           name: val.name.clone(),
-          timestamp:timestamp.clone(),
+          timestamp: val.timestamp.clone(),
           addr: val.addr.clone()
         }
       );
