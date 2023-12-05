@@ -1,14 +1,11 @@
 mod data;
 
-use std::time::{Duration, SystemTime};
-
+use std::time::Duration;
 use async_nats::jetstream::{stream::{Config, RetentionPolicy}, consumer, Message as NatsJetStreamMessage};
 use futures::StreamExt;
 use config::constants::{nats as nats_const, redis as redis_const};
 use logger::info;
-extern crate redis;
 use redis::{Connection as RedisConnection, Commands};
-use data::data::DashboardData;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -45,12 +42,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
   let redis_client = redis::Client::open(redis_const::SERVER_DEFAULT)?;
   let mut redis_connection = redis_client.get_connection()?;
 
-
   // Listening to the stream and do something on
   while let Some(Ok(message)) = messages.next().await {
     println!("message receiver: {:?}", message);
-    message.ack().await?;
 
+    message.ack().await?;
 
     // discovery.reg || discovery.unreg
     let message_subject = message.subject.split(".").nth(1).unwrap_or_default();
@@ -80,12 +76,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
   Ok(())
 }
 
+// TODO: rewrite hset to rpush
+
 fn handle_register(message: NatsJetStreamMessage, redis_connection: &mut RedisConnection) -> makoto::Result<()> {
 
   let (name, address) = makoto::nats::MessageParser::key_value(&message.payload)?;
 
-  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, &address)?;
-  DashboardData::insert(name.clone(), address.clone(), get_time_now())?;
+
+  let value = [address.clone(), get_time_now()].join(",");
+  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, &value)?;
+
+  let value = [address, get_time_now(), "register".to_string()].join(",");
+  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES_EVENTS, &name, &value)?;
 
   Ok(())
 }
@@ -95,7 +97,9 @@ fn handle_unregister(message: NatsJetStreamMessage, redis_connection: &mut Redis
   let name = makoto::nats::MessageParser::plain(&message.payload)?;
 
   redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, "")?;
-  DashboardData::insert(name.clone(), "".to_string(), get_time_now())?;
+
+  let event = ["".to_string(), get_time_now(), "unregister".to_string()].join(",");
+  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES_EVENTS, &name, &event)?;
 
   Ok(())
 }

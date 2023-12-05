@@ -66,7 +66,7 @@ impl Dashboard {
 
     /// fetches file content as json using window.fetch
     async fn get_file_content() -> Result<String, JsValue> {
-        let fetcher = Fetcher::new(FetchMethod::GET, RequestMode::SameOrigin, "./data.json")?;
+        let fetcher = Fetcher::new(FetchMethod::GET, RequestMode::Cors, "http://localhost:4223/api/data")?;
 
         // attach headers
         fetcher.add_header("Content-Type", "application/json")?;
