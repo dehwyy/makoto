@@ -5,7 +5,8 @@ use web_sys::{RequestInit, Request, Window, Response};
 #[wasm_bindgen]
 pub enum FetchMethod {
   GET,
-  POST
+  POST,
+  DELETE
 }
 
 #[wasm_bindgen]
@@ -19,7 +20,8 @@ impl Fetcher {
   pub fn new(method: FetchMethod, mode: web_sys::RequestMode, url: &str) -> Result<Fetcher, JsValue> {
     let method = match method {
       FetchMethod::GET => "GET",
-      FetchMethod::POST => "POST"
+      FetchMethod::POST => "POST",
+      FetchMethod::DELETE => "DELETE"
     };
 
     let mut options = RequestInit::new();

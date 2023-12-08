@@ -29,7 +29,7 @@ futures = { version = "0.3.28", default-features = false, features = ["std"] }
 
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-redis = {version = "0.23.3", features=["tokio-comp"]}
+redis = {version = "0.24.0", features=["tokio-comp", "streams"]}
 async-nats = {version = "0.33.0", features = ["service"]}
 tokio = {version = "1.34.0", features = ["macros", "rt-multi-thread"]}
 chrono = "0.4.31"

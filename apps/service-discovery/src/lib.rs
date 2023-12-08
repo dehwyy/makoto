@@ -62,6 +62,31 @@ impl Dashboard {
             set_events.add_event_listener_with_callback("click", onclick.as_ref().unchecked_ref()).unwrap();
             onclick.forget();
         }
+
+        // RemoveRecords button
+        {
+            let remove_records_button = document.query_selector("#btn_remove").unwrap().expect("cannot get #btn-remove");
+
+             let onclick = Closure::<dyn FnMut(_)>::new(|_: MouseEvent | {
+                spawn_local(async {
+                    log("DUDE!");
+                    Self::delete_data().await.expect("cannot delete data");
+                })
+            });
+
+            remove_records_button.add_event_listener_with_callback("click", onclick.as_ref().unchecked_ref()).unwrap();
+            onclick.forget()
+        }
+    }
+
+    async fn delete_data() -> Result<(), JsValue> {
+        let fetcher = Fetcher::new(FetchMethod::DELETE, RequestMode::Cors, "http://localhost:4223/api/data")?;
+
+        fetcher.add_header("Content-Type", "application/json")?;
+        fetcher.add_header("Cache-Control", "no-store")?;
+
+        fetcher.fetch_json_as_string(window().unwrap()).await?;
+        Ok(())
     }
 
     /// fetches file content as json using window.fetch

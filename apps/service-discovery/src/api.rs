@@ -3,7 +3,7 @@ mod data;
 use std::{sync::{Mutex, Arc}, collections::HashMap};
 use tokio::net::TcpListener;
 use axum::{routing::get,response::Json as JsonResponse, http::StatusCode, extract::State, Json};
-use redis::{Connection as RedisConnection, Commands, Client as RedisClient};
+use redis::{streams as RedisStreams, Commands, Client as RedisClient};
 
 use data::data::{DashboardDataJson, ServiceAddress, Events};
 use config::constants::redis as redis_const;
@@ -34,6 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
   let cors = CorsLayer::new()
     .allow_headers(Any)
     .allow_origin(Any)
+    .allow_methods(Any)
     .allow_origin(Any);
 
   let app = axum::Router::new()
@@ -63,7 +64,9 @@ impl Endpoints {
       eprintln!("cannot connect to redis! {err}");
       StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    let _ =  redis_conn.del::<_, ()>(redis_const::HASHMAP_KEY_SERVICES);
+
+    let _ = redis_conn.del::<_, ()>(redis_const::HASHMAP_KEY_SERVICES);
+    let _ = redis_conn.del::<_, ()>(redis_const::STREAM_KEY_SERVICES_EVENTS);
 
     Ok(StatusCode::OK)
   }
@@ -89,31 +92,34 @@ impl Endpoints {
         v.push(ServiceAddress { name: key.clone(), addr: addr.to_string(), timestamp: timestamp.to_string() });
       }
 
+      v.sort_by(|a, b| a.name.cmp(&b.name));
+
       v
     };
 
-   let events = {
-      // format: "key": "value,timestampe,event"
-      let events: HashMap<String, String> = redis_conn.hgetall(redis_const::HASHMAP_KEY_SERVICES_EVENTS).map_err(|err| {
+    let events = {
+      let events: RedisStreams::StreamReadReply= redis_conn.xread(&[redis_const::STREAM_KEY_SERVICES_EVENTS], &["0-0"]).map_err(|err| {
         eprintln!("cannot hget dashboard {err}");
         StatusCode::INTERNAL_SERVER_ERROR
       })?;
 
-      let mut v: Vec<Events> = vec!();
-      for (key, value) in  events.iter() {
-        let value = value.splitn(3, ",").collect::<Vec<_>>();
-        // get first 3 elements from Vector, if len != 3 => panic!
-        let (addr, timestamp, event) = match value.len() {
-          3 => {
-            Some((value[0].to_string(), value[1].to_string(), value[2].to_string()))
-          },
-          _ => None
-        }.expect("cannot split value in redis_services_events");
+      let mut events_values: Vec<Events> = vec!();
+      for stream_record in events.keys.get(0).expect("cannot access events.keys at index 0").ids.iter() {
+        let v = vec!("key", "address", "timestamp", "event").iter().map(|key| {
+          let v =  stream_record.get::<String>(key);
+          v.expect("cannot get value by key")
+        }).collect::<Vec<String>>();
 
-        v.push(Events { event, name: key.clone(), value: addr, timestamp })
-      }
+        // no validation as if was done before!
+        events_values.push(Events {
+          event: v[3].clone(),
+          name: v[0].clone(),
+          value: v[1].clone(),
+          timestamp: v[2].clone()
+        });
+     }
 
-      v
+      events_values
     };
 
     Ok(JsonResponse(DashboardDataJson {

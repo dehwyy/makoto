@@ -76,7 +76,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
   Ok(())
 }
 
-// TODO: rewrite hset to rpush
 
 fn handle_register(message: NatsJetStreamMessage, redis_connection: &mut RedisConnection) -> makoto::Result<()> {
 
@@ -86,8 +85,9 @@ fn handle_register(message: NatsJetStreamMessage, redis_connection: &mut RedisCo
   let value = [address.clone(), get_time_now()].join(",");
   redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, &value)?;
 
-  let value = [address, get_time_now(), "register".to_string()].join(",");
-  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES_EVENTS, &name, &value)?;
+  redis_connection.xadd(redis_const::STREAM_KEY_SERVICES_EVENTS, "*", &[
+    ("key", &name), ("address", &address), ("timestamp", &get_time_now()), ("event", &"register".to_string())
+  ])?;
 
   Ok(())
 }
@@ -98,8 +98,9 @@ fn handle_unregister(message: NatsJetStreamMessage, redis_connection: &mut Redis
 
   redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES, &name, "")?;
 
-  let event = ["".to_string(), get_time_now(), "unregister".to_string()].join(",");
-  redis_connection.hset::<_, _, _, ()>(redis_const::HASHMAP_KEY_SERVICES_EVENTS, &name, &event)?;
+  let keys  =("key".to_string(), "address".to_string(), "timestamp".to_string(), "event".to_string());
+  let values = (name, "".to_string(), get_time_now(), "register".to_string());
+  redis_connection.xadd(redis_const::STREAM_KEY_SERVICES_EVENTS, "*", &[(keys, values)])?;
 
   Ok(())
 }
