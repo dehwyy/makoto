@@ -1,6 +1,8 @@
-mod utils;
+mod fetcher;
+mod actions;
 
-pub use utils::{Fetcher, FetchMethod};
+pub use fetcher::{Fetcher, FetchMethod};
+pub use actions::EventListener;
 use wasm_bindgen::JsValue;
 
 pub fn convert_js_value<T>(v: Result<T, JsValue>) -> Result<T, std::io::Error> {

@@ -1,22 +1,17 @@
-use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::{wasm_bindgen::{JsValue, JsCast}, JsFuture, js_sys::JSON};
-use web_sys::{RequestInit, Request, Window, Response};
+use web_sys::{RequestInit, Request, Response, window};
 
-#[wasm_bindgen]
 pub enum FetchMethod {
   GET,
   POST,
   DELETE
 }
 
-#[wasm_bindgen]
 pub struct Fetcher {
   request: Request
 }
 
-#[wasm_bindgen]
 impl Fetcher {
-  #[wasm_bindgen(constructor)]
   pub fn new(method: FetchMethod, mode: web_sys::RequestMode, url: &str) -> Result<Fetcher, JsValue> {
     let method = match method {
       FetchMethod::GET => "GET",
@@ -42,8 +37,16 @@ impl Fetcher {
     Ok(())
   }
 
-  pub async fn fetch_json_as_string(&self, window: Window) -> Result<String, JsValue> {
-    let response = JsFuture::from(window.fetch_with_request(&self.request)).await?;
+  /// Doesn't return response
+  pub async fn fetch(&self) -> Result<(), JsValue> {
+    let w = window().unwrap();
+    JsFuture::from(w.fetch_with_request(&self.request)).await?;
+    Ok(())
+  }
+
+  pub async fn fetch_json_as_string(&self) -> Result<String, JsValue> {
+    let w = window().unwrap();
+    let response = JsFuture::from(w.fetch_with_request(&self.request)).await?;
     let response: Response = response.dyn_into()?;
     let response_json = JsFuture::from(response.json()?).await?;
 

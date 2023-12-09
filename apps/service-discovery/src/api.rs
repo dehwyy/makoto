@@ -1,6 +1,6 @@
 mod data;
 
-use std::{sync::{Mutex, Arc}, collections::HashMap};
+use std::{sync::Arc, collections::HashMap};
 use tokio::net::TcpListener;
 use axum::{routing::get,response::Json as JsonResponse, http::StatusCode, extract::State, Json};
 use redis::{streams as RedisStreams, Commands, Client as RedisClient};
@@ -16,7 +16,6 @@ const PORT: &str = "4223";
 struct AppState {
   redis_client: RedisClient
 }
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>  {
@@ -97,13 +96,25 @@ impl Endpoints {
       v
     };
 
-    let events = {
+    let events: Vec<Events> = {
       let events: RedisStreams::StreamReadReply= redis_conn.xread(&[redis_const::STREAM_KEY_SERVICES_EVENTS], &["0-0"]).map_err(|err| {
         eprintln!("cannot hget dashboard {err}");
         StatusCode::INTERNAL_SERVER_ERROR
       })?;
 
+
+
       let mut events_values: Vec<Events> = vec!();
+
+      // if array is empty
+      if events.keys.len() == 0 {
+        return Ok(JsonResponse(DashboardDataJson {
+          events: vec!(),
+          state
+        }));
+      }
+
+
       for stream_record in events.keys.get(0).expect("cannot access events.keys at index 0").ids.iter() {
         let v = vec!("key", "address", "timestamp", "event").iter().map(|key| {
           let v =  stream_record.get::<String>(key);
