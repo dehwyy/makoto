@@ -13,7 +13,7 @@ impl MessageParser {
 
     match message_payload.split_once(";") {
       Some(v) => Ok((v.0.to_string(), v.1.to_string())),
-      None => Err(Box::new(std::io::Error::other("cannot parse message_payload")))
+      None => Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "cannot parse message_payload")))
     }
   }
 }

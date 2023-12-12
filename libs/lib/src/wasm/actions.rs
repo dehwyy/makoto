@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::closure::Closure;
+use wasm_bindgen::closure::{Closure, IntoWasmClosure};
 use web_sys::{window, MouseEvent};
 
 pub struct EventListener;
