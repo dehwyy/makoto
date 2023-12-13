@@ -1,0 +1,12 @@
+[package]
+name = "grpc-gateway"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tonic = "0.10.2"
+prost = "0.12.3"
+grpc = {path = "../../libs/grpc"}
+makoto = {path = "../../libs/lib"}
+tonic-web = "0.10.2"
+tokio = { version = "1.35.0", features = ["macros", "rt-multi-thread"] }

@@ -3,9 +3,12 @@
 members = [
   "libs/grpc",
   "libs/config",
-  "apps/user",
   "libs/database",
-  "libs/logger"
+  "libs/logger",
+  "libs/lib",
+  "apps/user",
+  "apps/service-discovery",
+  "apps/gateway",
 ]
 
 resolver = "2"

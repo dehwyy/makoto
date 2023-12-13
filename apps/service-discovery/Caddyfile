@@ -1,0 +1,8 @@
+{
+  auto_https off
+}
+
+
+http://localhost:2999 {
+  file_server
+}
