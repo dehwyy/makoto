@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package api_auth;
+
+import "api/general.proto";
+
+// all termporary codes should be stored in gateway instead of AuthService
+// Request like "ProceedTo..." are not neseccary in this rpc scheme
+
+service AuthRpc {
+  rpc SignUp(SignUpRequest) returns (AuthorizationResponse) {}
+  rpc SignIn(SignInRequest) returns (AuthorizationResponse) {}
+  rpc SignInOauth(SignInOauthRequest) returns (AuthorizationResponse) {}
+  rpc SignInToken(SignInTokenRequest) returns (AuthorizationResponse) {}
+  rpc SignOut(SignOutRequest) returns (general.BoolStatus) {}
+
+  rpc ConfirmEmail(ConfirmMailRequest) returns (general.BoolStatus) {}
+  rpc UpdatePassword(SubmitNewPasswordByCodeRequest) returns (AuthorizationResponse) {}
+
+  rpc IsEmailAvailable(IsEmailAvailableRequest) returns (general.BoolStatus) {}
+  rpc IsUsernameAvailable(IsUsernameAvailableRequest) returns (general.BoolStatus) {}
+}
+
+message SignUpRequest {
+  string username= 1;
+  string email = 2;
+  string password = 3;
+}
+
+message SignInRequest {
+  // either _username_ or _email_
+    string username = 1;
+    string email = 2;
+  //
+  string password = 3;
+}
+
+message SignInOauthRequest {
+  string provider = 1;
+  string code = 2;
+}
+
+message SignInTokenRequest {
+  string token = 1;
+}
+
+message SignOutRequest {
+  string token = 1;
+}
+
+message AuthorizationResponse {
+  string username = 1;
+  string used_id = 2;
+  string token = 3;
+}
+
+message ConfirmMailRequest {
+  string email = 1;
+}
+
+message ConfirmMailByCodeRequest {
+  string code = 1;
+}
+
+message ProceedToUpdatePasswordRequest {
+  string old_password = 1;
+}
+
+message ProceedToUpdatePasswordResponse {
+  // TODO: describe exact without any vulnerabilities
+  string ucode = 1; // unique generated code (hashed?)
+}
+
+message ProceedToRecoverPasswordRequest {
+  string email = 1;
+}
+message UpdatePasswordRequest {
+  string new_password = 1;
+}
+
+message SubmitNewPasswordByCodeRequest {
+  string ucode = 1;
+  string new_password = 2;
+}
+
+message IsEmailAvailableRequest {
+  string email = 1;
+}
+
+message IsUsernameAvailableRequest {
+  string username = 1;
+}
