@@ -4,6 +4,8 @@ use std::env::current_dir as get_cwd;
 
 pub mod constants;
 pub mod hosts;
+pub mod db;
+pub mod secrets;
 
 fn init_from_file<T>(filename: &str) -> T
 where T: Default + EnvConfigTrait

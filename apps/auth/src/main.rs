@@ -1,4 +1,6 @@
 mod service;
+mod repository;
+mod utils;
 
 use tonic::transport::Server;
 use service::service::AuthRpcServiceImplementation;

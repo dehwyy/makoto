@@ -1,0 +1,9 @@
+version: '3'
+
+dotenv: [.env]
+
+tasks:
+  db:migrate:
+    cmds:
+      - go run libs/db/src/main.go
+      - cd libs/db && sea-orm-cli generate entity -u $DATABASE_URL -o src/rust/models
