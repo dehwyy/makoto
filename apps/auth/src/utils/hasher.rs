@@ -15,3 +15,16 @@ impl Hasher {
     })?)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_hasher() {
+    let s = "some_string_9489";
+    let hash = Hasher::hash(s).unwrap();
+    assert_eq!(true, hash.len() > 1);
+    assert_eq!(true, Hasher::verify(s, &hash).unwrap());
+  }
+}

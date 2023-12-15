@@ -1,4 +1,4 @@
-use jwt::{AlgorithmType,  Token,  SignWithKey, VerifyWithKey, Header, VerifyWithStore};
+use jwt::{AlgorithmType,  Token,  SignWithKey, VerifyWithKey, Header};
 use std::collections::BTreeMap;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use hmac::{Hmac, Mac};
@@ -88,4 +88,49 @@ impl Jwt {
   fn get_time_now() -> Duration {
     SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went back??")
   }
+}
+
+#[cfg(test)]
+mod tests {
+  use std::env;
+
+use super::*;
+
+  fn prelude() -> JwtPayload {
+    let jwt_payload = JwtPayload {
+      username: "dehwyy".to_string(),
+      user_id: "1f2".to_string()
+    };
+
+    env::set_var("JWT_SECRET", "jwt_secret_bruh");
+
+    jwt_payload
+  }
+
+  #[test]
+  fn generate_refresh_jwt() {
+    let jwt_payload = prelude();
+
+    let token = Jwt::new_refresh_token(jwt_payload).unwrap();
+    assert_eq!(true, token.len() > 10);
+  }
+
+  #[test]
+  fn generate_access_jwt() {
+    let jwt_payload = prelude();
+
+    let token = Jwt::new_access_token(jwt_payload).unwrap();
+    assert_eq!(true, token.len() > 10);
+  }
+
+  #[test]
+  fn verify_access_jwt() {
+    let jwt_payload = prelude();
+
+    let token = Jwt::new_access_token(jwt_payload).unwrap();
+    let response = Jwt::verify_access_token(token).unwrap();
+
+    assert_eq!(response.username, "dehwyy".to_string());
+  }
+
 }
