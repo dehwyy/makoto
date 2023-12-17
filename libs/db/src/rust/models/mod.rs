@@ -3,3 +3,5 @@
 pub mod prelude;
 
 pub mod user_credentials;
+pub mod user_oauths;
+pub mod user_tokens;

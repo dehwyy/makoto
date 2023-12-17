@@ -2,8 +2,16 @@ module github.com/dehwyy/makoto/libs/db
 
 go 1.21.2
 
+replace (
+	github.com/dehwyy/makoto/libs/config => ../config
+	github.com/dehwyy/makoto/libs/logger => ../log
+)
+
 require (
+	github.com/dehwyy/makoto/libs/config v0.0.0-00010101000000-000000000000
+	github.com/dehwyy/makoto/libs/logger v0.0.0-00010101000000-000000000000
 	github.com/google/uuid v1.5.0
+	github.com/lib/pq v1.10.9
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 )
@@ -14,6 +22,10 @@ require (
 	github.com/jackc/pgx/v5 v5.4.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/kelseyhightower/envconfig v1.4.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 )

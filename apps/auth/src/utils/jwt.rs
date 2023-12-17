@@ -1,17 +1,25 @@
+use chrono::{Utc, Duration, FixedOffset, DateTime};
 use jwt::{AlgorithmType,  Token,  SignWithKey, VerifyWithKey, Header};
-use std::collections::BTreeMap;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use sea_orm::prelude::{DateTimeWithTimeZone, DateTimeUtc};
+use std::{collections::BTreeMap, ops::Sub};
+use std::ops::Add;
 use hmac::{Hmac, Mac};
 
 use makoto_logger::error;
 
-const ACCESS_TOKEN_EXPIRATION_TIME_SECS: u64 = 60 * 60; // 1 hour
+const ACCESS_TOKEN_EXPIRATION_TIME_SECS: i64 = 60 * 60; // 1 hour
 
 enum TokenKind {
   AccessToken(Duration),
   RefreshToken
 }
 
+enum TokenCreated {
+  AccessToken(String, DateTimeWithTimeZone),
+  RefreshToken(String)
+}
+
+#[derive(Clone)]
 pub struct JwtPayload {
   pub username: String,
   pub user_id: String
@@ -20,12 +28,26 @@ pub struct JwtPayload {
 pub struct Jwt;
 
 impl Jwt {
-  pub fn new_access_token(jwt_payload: JwtPayload) -> Result<String, ()> {
-    Self::sign(jwt_payload, TokenKind::AccessToken(Duration::from_secs(ACCESS_TOKEN_EXPIRATION_TIME_SECS)))
+  pub fn new_access_token(jwt_payload: JwtPayload) -> Result<(String, DateTimeWithTimeZone), String> {
+    let token = Self::sign(
+      jwt_payload, TokenKind::AccessToken(
+      Duration::seconds(ACCESS_TOKEN_EXPIRATION_TIME_SECS))
+    ).map_err(|err| err.to_string())?;
+
+    if let TokenCreated::AccessToken(token, exp) = token {
+      Ok((token, exp))
+    } else {
+      Err("Error creating access token".to_string()) // should not happen
+    }
   }
 
-  pub fn new_refresh_token(jwt_payload: JwtPayload) -> Result<String, ()> {
-    Self::sign(jwt_payload, TokenKind::RefreshToken)
+  pub fn new_refresh_token(jwt_payload: JwtPayload) -> Result<String, String> {
+    let token = Self::sign(jwt_payload, TokenKind::RefreshToken).map_err(|err| err.to_string())?;
+    if let TokenCreated::RefreshToken(token) = token {
+      Ok(token)
+    } else {
+      Err("Error creating refresh token".to_string()) // should not happen
+    }
   }
 
   pub fn verify_access_token(token: String) -> Result<JwtPayload, ()> {
@@ -34,11 +56,14 @@ impl Jwt {
     })?;
 
     let claims = token.claims();
-    let exp_nanos = claims.get("exp").expect("cannot get key 'exp' in token's claims").parse::<u64>().expect("cannot parse to u64 'exp'");
-    let exp = Duration::from_nanos(exp_nanos);
 
-    // clarify whether token is expired
-    if exp - Self::get_time_now() < Duration::from_secs(0) {
+
+
+    let exp = claims.get("exp").expect("cannot get key 'exp' in token's claims").parse::<DateTime<FixedOffset>>().expect("cannot parse to u64 'exp'");
+
+
+    // if Now is greater than Exp -> expiration time has exceed
+    if exp < Utc::now() {
       return Err(());
     }
 
@@ -51,7 +76,7 @@ impl Jwt {
   }
 
 
-  fn sign(jwt_payload: JwtPayload, token_kind: TokenKind) -> Result<String, ()> {
+  fn sign(jwt_payload: JwtPayload, token_kind: TokenKind) -> Result<TokenCreated, String> {
     let header = Header {
       algorithm: AlgorithmType::Hs256,
       ..Default::default()
@@ -62,31 +87,30 @@ impl Jwt {
       ("user_id".to_string(), jwt_payload.user_id),
     ]);
 
-    match token_kind {
-      TokenKind::AccessToken(expiration_time) => {
-        claims.insert("exp".to_string(), (Self::get_time_now() + expiration_time).as_nanos().to_string());
-      }
-      _ => {}
+    let mut expiration = Utc::now().fixed_offset();
+    if let TokenKind::AccessToken(expiration_time) = token_kind {
+      expiration = expiration.add(expiration_time);
+      claims.insert("exp".to_string(), expiration.to_string());
     }
-
-
 
     let token = Token::new(header, claims).sign_with_key(&Self::get_jwt_signing_key()).map_err(|err| {
       error!("Error signing token: {}", err);
+      err.to_string()
     })?;
 
+    let token = token.as_str().to_string();
 
-    Ok(token.as_str().to_string())
+    match token_kind {
+      TokenKind::AccessToken(_) => Ok(TokenCreated::AccessToken(token, expiration)),
+      TokenKind::RefreshToken => Ok(TokenCreated::RefreshToken(token)),
+    }
+
   }
 
   fn get_jwt_signing_key() -> Hmac<sha2::Sha256> {
       let jwt_secret = makoto_config::secrets::Secrets::new().jwt_secret.expect("cannot retrieve jwt secret from env!");
 
       Hmac::new_from_slice(jwt_secret.as_bytes()).expect("invalid length in generate hmac key! (according to docs)") as Hmac<sha2::Sha256>
-  }
-
-  fn get_time_now() -> Duration {
-    SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went back??")
   }
 }
 
@@ -120,7 +144,7 @@ use super::*;
     let jwt_payload = prelude();
 
     let token = Jwt::new_access_token(jwt_payload).unwrap();
-    assert_eq!(true, token.len() > 10);
+    assert_eq!(true, token.0.len() > 10);
   }
 
   #[test]
@@ -128,7 +152,7 @@ use super::*;
     let jwt_payload = prelude();
 
     let token = Jwt::new_access_token(jwt_payload).unwrap();
-    let response = Jwt::verify_access_token(token).unwrap();
+    let response = Jwt::verify_access_token(token.0).unwrap();
 
     assert_eq!(response.username, "dehwyy".to_string());
   }

@@ -10,7 +10,8 @@ import (
 )
 
 type Config struct {
-	DatabaseDsn string `required:"true"    envconfig:"DATABASE_DSN"`
+	DatabaseDsn     string `required:"true"    envconfig:"DATABASE_DSN"`
+	DatabaseTestDsn string `required:"true"    envconfig:"DATABASE_TEST_DSN"`
 }
 
 func NewConfig() *Config {

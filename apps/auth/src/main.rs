@@ -17,7 +17,13 @@ async fn main() -> MakotoResult<()> {
     let hosts = makoto_config::hosts::Hosts::new();
     let addr = hosts.auth.parse()?;
 
-    let auth_service= AuthRpcServiceImplementation::new();
+    let db = makoto_db::new().await.expect("cannot open database connection");
+
+    let credentials_repo = repository::credentials::Credentials::new(db.clone());
+    let tokens_repo = repository::token::Tokens::new(db.clone());
+    let oauth_repo = repository::oauth::Oauth::new(db.clone());
+
+    let auth_service= AuthRpcServiceImplementation::new(credentials_repo, tokens_repo, oauth_repo);
     let auth_service = AuthRpcServer::new(auth_service);
 
     info!("server start! host: {}", addr);

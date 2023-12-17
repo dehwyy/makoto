@@ -8,22 +8,89 @@ use makoto_grpc::pkg::api_auth::{
 
 use makoto_grpc::Result as GrpcResult;
 use makoto_grpc::pkg::general::BoolStatus;
-use tonic::Request as Req;
+use makoto_logger::error;
 
-#[derive(Default)]
-pub struct AuthRpcServiceImplementation;
+use sea_orm::prelude::Uuid;
+use tokio::join;
+use tonic::{Request as Req, Status, Response, async_trait};
+
+use crate::repository::credentials::{Credentials, UserPayload};
+use crate::repository::token::Tokens;
+use crate::repository::oauth::Oauth;
+
+use crate::utils::hasher::Hasher;
+use crate::utils::validator::Validator;
+
+pub struct AuthRpcServiceImplementation {
+  pub credentials_repository: Credentials,
+  pub tokens_repository: Tokens,
+  pub oauth_repository: Oauth
+}
 
 impl AuthRpcServiceImplementation {
-  pub fn new() -> Self {
+  pub fn new(credentials_repo: Credentials, tokens_repo: Tokens, oauth_repo: Oauth) -> Self {
     Self {
+      credentials_repository: credentials_repo,
+      tokens_repository: tokens_repo,
+      oauth_repository: oauth_repo
     }
   }
 }
 
-#[tonic::async_trait]
+#[async_trait]
 impl AuthRpc for AuthRpcServiceImplementation {
   async fn sign_up(&self, req: Req<SignUpRequest>) -> GrpcResult<AuthorizationResponse> {
-    todo!()
+    let req = req.into_inner();
+
+    // validation
+    {
+      Validator::username(&req.username).map_err(|msg| Status::invalid_argument(msg))?;
+      Validator::email(&req.email).map_err(|msg| Status::invalid_argument(msg))?;
+      Validator::password(&req.password).map_err(|msg| Status::invalid_argument(msg))?;
+    }
+
+    // check availability
+    {
+      let (username, email) =  join!(
+        self.credentials_repository.is_username_available(&req.username),
+        self.credentials_repository.is_email_available(&req.email)
+      );
+
+      let is_available = username.map_err(|msg| Status::internal(msg))?;
+      if !is_available {
+        return Err(Status::already_exists("username is already taken"));
+      }
+
+      let is_available = email.map_err(|msg| Status::internal(msg))?;
+      if !is_available {
+        return Err(Status::already_exists("email is already taken"));
+      }
+    }
+
+    // new user_id
+    let user_id = Uuid::new_v4();
+
+    // create user
+    self.credentials_repository.create_user(UserPayload {
+      user_id: user_id.clone(),
+      username: req.username.clone(),
+      email: req.email,
+      password: Hasher::hash(req.password).expect("cannot hash password"),
+    }).await.map_err(|msg| Status::internal(msg))?;
+
+    // generate tokens
+    let new_access_token = self.tokens_repository.create_new_token_pair(user_id.clone(), &req.username).await.map_err(|msg| Status::internal(msg))?;
+
+    // initialize empty oauth
+    // self.oauth_repository.create_empty_record(user_id.clone()).await.map_err(|msg| Status::internal(msg))?;
+
+    Ok(Response::new(
+      AuthorizationResponse {
+        token: new_access_token,
+        username: req.username,
+        used_id: user_id.to_string()
+      }
+    ))
   }
 
   async fn sign_in(&self, req: Req<SignInRequest>) -> GrpcResult<AuthorizationResponse> {
@@ -57,6 +124,37 @@ impl AuthRpc for AuthRpcServiceImplementation {
   async fn is_username_available(&self, req: Req<IsUsernameAvailableRequest>) -> GrpcResult<BoolStatus> {
     todo!()
   }
+}
+
+#[cfg(test)]
+mod tests {
+  use std::env;
+
+use super::*;
+  use lazy_static::lazy_static;
+
+  async fn get_test_service() -> AuthRpcServiceImplementation {
+    let db = makoto_db::get_test_db().await;
+    let credentials = Credentials::new(db.clone());
+    let tokens = Tokens::new(db.clone());
+    let oauth = Oauth::new(db.clone());
+
+    AuthRpcServiceImplementation::new(credentials, tokens, oauth)
+  }
 
 
+  #[tokio::test]
+  async fn test_signup() {
+    let service = get_test_service().await;
+
+    service.sign_up(Req::new(SignUpRequest {
+      username: "dehwyy".to_string(),
+      email: "dehwyy@qqq.com".to_string(),
+      password: "some_pass".to_string()
+    }))
+      .await.map_err(|err| {
+        eprintln!("{err:?}")
+      })
+      .unwrap();
+  }
 }

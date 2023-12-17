@@ -1,3 +1,5 @@
+pub mod models;
+
 use sea_orm::{DatabaseConnection,  Database, ConnectOptions};
 
 pub async fn new() -> Result<DatabaseConnection, ()> {
@@ -11,4 +13,24 @@ pub async fn new() -> Result<DatabaseConnection, ()> {
     })?;
 
     Ok(db)
+}
+
+pub async fn get_test_db() -> DatabaseConnection {
+    let db_url = makoto_config::db::Database::new().database_test_url.expect("cannot get database_test_url from env!");
+
+    let connection_options = ConnectOptions::new(db_url);
+
+    Database::connect(connection_options).await.unwrap()
+}
+
+pub mod utilities {
+    use sea_orm::{ActiveValue, Value, sea_query::Nullable};
+
+    pub fn nullable<T: Into<Value> + Nullable>(value: T) -> ActiveValue<Option<T>> {
+    ActiveValue::Set(Some(value))
+    }
+
+    pub fn not_null<T: Into<Value>>(value: T) -> ActiveValue<T> {
+    ActiveValue::Set(value)
+    }
 }

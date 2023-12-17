@@ -146,17 +146,22 @@ name = "auth"
 version = "0.1.0"
 dependencies = [
  "bcrypt",
+ "chrono",
  "hmac",
  "jwt",
+ "lazy_static",
  "makoto_config",
+ "makoto_db",
  "makoto_grpc",
  "makoto_lib",
  "makoto_logger",
  "prost",
+ "regex",
  "sea-orm",
  "sha2",
  "tokio",
  "tonic",
+ "uuid",
 ]
 
 [[package]]
@@ -406,8 +411,10 @@ checksum = "7f2c685bad3eb3d45a01354cedb7d5faa66194d1d58ba6e267a8de788f79db38"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-targets 0.48.5",
 ]
 
@@ -3051,6 +3058,7 @@ version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e395fcf16a7a3d8127ec99782007af141946b4795001f876d54fb0d55978560"
 dependencies = [
+ "getrandom",
  "serde",
 ]
 

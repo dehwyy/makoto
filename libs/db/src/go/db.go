@@ -24,7 +24,7 @@ func New(database_url string) *gorm.DB {
 	db_settings.SetMaxIdleConns(10)
 	db_settings.SetConnMaxIdleTime(5)
 
-	err = db.AutoMigrate(models.UserCredentials{})
+	err = db.AutoMigrate(models.UserCredentials{}, models.UserTokens{}, models.UserOauth{})
 	if err != nil {
 		panic(err)
 	}

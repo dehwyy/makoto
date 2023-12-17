@@ -5,5 +5,12 @@ dotenv: [.env]
 tasks:
   db:migrate:
     cmds:
-      - go run libs/db/src/main.go
+      - go run libs/db/src/main.go migrate
       - cd libs/db && sea-orm-cli generate entity -u $DATABASE_URL -o src/rust/models
+  db:test-drop:
+    cmds:
+      - go run libs/db/src/main.go test-drop
+
+  db:test-migrate:
+    cmds:
+      - go run libs/db/src/main.go test-migrate

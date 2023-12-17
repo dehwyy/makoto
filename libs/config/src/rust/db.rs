@@ -5,6 +5,9 @@ use super::init_from_file;
 pub struct Database {
     #[envconfig(from = "DATABASE_URL")]
     pub database_url: Option<String>,
+
+    #[envconfig(from = "DATABASE_TEST_URL")]
+    pub database_test_url: Option<String>,
 }
 
 impl Database {
