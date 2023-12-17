@@ -1,12 +1,20 @@
 package makoto_db
 
 import (
+	"fmt"
+
 	"github.com/dehwyy/makoto/libs/db/src/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func New(database_url string) *gorm.DB {
+	fmt.Printf("database_url: %s\n", database_url)
+
+	if database_url == "" {
+		database_url = "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
+	}
+
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN: database_url,
 	}), &gorm.Config{})

@@ -16,7 +16,7 @@ pub async fn new() -> Result<DatabaseConnection, ()> {
 }
 
 pub async fn get_test_db() -> DatabaseConnection {
-    let db_url = makoto_config::db::Database::new().database_test_url.expect("cannot get database_test_url from env!");
+    let db_url = makoto_config::db::Database::new().database_test_url.unwrap_or("postgres://postgres:postgres@localhost/postgres".to_string());
 
     let connection_options = ConnectOptions::new(db_url);
 
