@@ -33,6 +33,45 @@ impl Credentials {
     Ok(user.insert(&self.db).await.map_err(|err| err.to_string())?)
   }
 
+  pub async fn get_user_by_id(&self, user_id: Uuid) -> Result<user_credentials::Model, String> {
+    let user = UserCredentials::find()
+          .filter(
+            user_credentials::Column::Id.eq(user_id)
+          ).one(&self.db)
+          .await.map_err(|msg| msg.to_string())?;
+
+    match user {
+      Some(user) => Ok(user),
+      None => Err("user not found (id)".to_string())
+    }
+  }
+
+  pub async fn get_user_by_username(&self, username: &str) -> Result<user_credentials::Model, String> {
+    let user = UserCredentials::find()
+          .filter(
+            user_credentials::Column::Username.eq(username)
+          ).one(&self.db)
+          .await.map_err(|msg| msg.to_string())?;
+
+    match user {
+      Some(user) => Ok(user),
+      None => Err("user not found (username)".to_string())
+    }
+  }
+
+  pub async fn get_user_by_email(&self, email: &str) -> Result<user_credentials::Model, String> {
+    let user = UserCredentials::find()
+          .filter(
+            user_credentials::Column::Email.eq(email)
+          ).one(&self.db)
+          .await.map_err(|msg| msg.to_string())?;
+
+    match user {
+      Some(user) => Ok(user),
+      None => Err("user not found (email)".to_string())
+    }
+  }
+
   pub async fn is_username_available(&self, username: &str) -> Result<bool, String> {
     let user = UserCredentials::find()
           .filter(

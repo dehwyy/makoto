@@ -8,7 +8,7 @@ use makoto_grpc::pkg::api_auth::{
 
 use makoto_grpc::Result as GrpcResult;
 use makoto_grpc::pkg::general::BoolStatus;
-use makoto_logger::error;
+use makoto_logger::{info, warn};
 
 use sea_orm::prelude::Uuid;
 use tokio::join;
@@ -94,7 +94,34 @@ impl AuthRpc for AuthRpcServiceImplementation {
   }
 
   async fn sign_in(&self, req: Req<SignInRequest>) -> GrpcResult<AuthorizationResponse> {
-    todo!()
+    let req = req.into_inner();
+
+    let user = match req.username.is_empty() {
+      true => self.credentials_repository.get_user_by_email(&req.email).await,
+      false => self.credentials_repository.get_user_by_username(&req.username).await
+    }.map_err(|err| Status::not_found(err))?;
+
+    let password = match user.password {
+      Some(password) => password,
+      None => return Err(Status::not_found("empty password (trying to signin using oauth2 user)"))
+    };
+
+    // check password
+    if !Hasher::verify(&req.password, &password).map_err(|_| Status::internal("cannot verify password (hasher error)"))? {
+      warn!("password is incorrect for user {}", user.username);
+      return Err(Status::unauthenticated("password is incorrect"));
+    }
+
+    // generate new access_token
+    let new_access_token = self.tokens_repository.create_new_access_token(user.id.clone(), &user.username).await.map_err(|msg| Status::internal(msg))?;
+
+    Ok(Response::new(
+      AuthorizationResponse {
+        token: new_access_token,
+        username: user.username,
+        used_id: user.id.to_string()
+      }
+    ))
   }
 
   async fn sign_in_oauth(&self, req: Req<SignInOauthRequest>) -> GrpcResult<AuthorizationResponse> {
@@ -144,7 +171,7 @@ use super::*;
 
 
   #[tokio::test]
-  async fn test_signup() {
+  async fn test_signup_signin_flow() {
     let service = get_test_service().await;
 
     service.sign_up(Req::new(SignUpRequest {
@@ -156,5 +183,15 @@ use super::*;
         eprintln!("{err:?}")
       })
       .unwrap();
+
+      service.sign_in(Req::new(SignInRequest {
+        username: "dehwyy".to_string(),
+        email: "dehwyy@qqq.com".to_string(),
+        password: "some_pass".to_string()
+      }))
+        .await.map_err(|err| {
+          eprintln!("{err:?}")
+        })
+        .unwrap();
   }
 }
